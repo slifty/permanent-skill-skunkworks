@@ -13,8 +13,21 @@ export interface FakeAccount {
 	loginDelayMilliseconds?: number;
 }
 
+export interface FakeRequest {
+	query: URLSearchParams;
+	body: unknown;
+}
+
+export interface FakeReply {
+	status?: number;
+	body: unknown;
+}
+
+export type FakeRoute = (request: FakeRequest) => FakeReply;
+
 export interface FakePermanent {
 	apiUrl: string;
+	routes: Map<string, FakeRoute>;
 	requests: Array<{
 		path: string;
 		body: unknown;
@@ -120,33 +133,78 @@ const handleVerify = (
 	reply(response, failure("warning.auth.token_does_not_match"));
 };
 
+const firstEntry = (body: unknown): LegacyEntry => {
+	const {
+		RequestVO: {
+			data: [entry = {}],
+		},
+	} = legacyBody.parse(body);
+	return entry;
+};
+
+const replyJson = (response: ServerResponse, reply: FakeReply): void => {
+	response.writeHead(reply.status ?? 200, {
+		"Content-Type": "application/json",
+	});
+	response.end(JSON.stringify(reply.body));
+};
+
+const STORAGE_PATH = "/api/s3";
+
+const checkApiContract = (
+	request: IncomingMessage,
+	body: unknown,
+	token: string,
+): FakeReply | undefined => {
+	if ((request.url ?? "").startsWith(STORAGE_PATH)) {
+		return request.headers.authorization === undefined
+			? undefined
+			: { status: 400, body: { error: "storage must not get the token" } };
+	}
+	if (request.headers.authorization !== `Bearer ${token}`) {
+		return { status: 401, body: { error: "missing or wrong bearer token" } };
+	}
+	const isLegacy =
+		typeof body === "object" && body !== null && "RequestVO" in body;
+	if (!isLegacy && request.headers["request-version"] !== "2") {
+		return { status: 400, body: { error: "Request-Version: 2 required" } };
+	}
+	return undefined;
+};
+
 export const startFakePermanent = async (
 	account: FakeAccount,
 	token = fakeToken(),
 ): Promise<FakePermanent> => {
 	const requests: FakePermanent["requests"] = [];
+	const routes = new Map<string, FakeRoute>();
 	const state: FakeState = { account, token, mfaSessions: new Set() };
 	const server: Server = createServer((request, response) => {
 		void (async (): Promise<void> => {
-			const body = legacyBody.parse(JSON.parse(await text(request)));
-			requests.push({
-				path: request.url ?? "",
-				body,
-				headers: request.headers,
-			});
-			const {
-				RequestVO: {
-					data: [entry = {}],
-				},
-			} = body;
-			if (request.url === "/api/auth/login") {
+			const raw = await text(request);
+			const body: unknown = raw === "" ? undefined : JSON.parse(raw);
+			const url = new URL(request.url ?? "/", "http://fake");
+			requests.push({ path: url.pathname, body, headers: request.headers });
+			if (url.pathname === "/api/auth/login") {
 				await delay(account.loginDelayMilliseconds ?? 0);
-				handleLogin(state, entry, response);
-			} else if (request.url === "/api/auth/verify") {
-				handleVerify(state, entry, request, response);
-			} else {
-				response.writeHead(404).end();
+				handleLogin(state, firstEntry(body), response);
+				return;
 			}
+			if (url.pathname === "/api/auth/verify") {
+				handleVerify(state, firstEntry(body), request, response);
+				return;
+			}
+			const contractError = checkApiContract(request, body, token);
+			if (contractError !== undefined) {
+				replyJson(response, contractError);
+				return;
+			}
+			const route = routes.get(`${request.method} ${url.pathname}`);
+			if (route === undefined) {
+				replyJson(response, { status: 404, body: { error: "not found" } });
+				return;
+			}
+			replyJson(response, route({ query: url.searchParams, body }));
 		})();
 	});
 	server.listen(0, "127.0.0.1");
@@ -157,6 +215,7 @@ export const startFakePermanent = async (
 	}
 	return {
 		apiUrl: `http://127.0.0.1:${address.port}/api`,
+		routes,
 		requests,
 		close: async () => {
 			server.closeAllConnections();
