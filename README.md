@@ -19,7 +19,7 @@ plugin's local MCP server runs with it.
 ```
 
 The plugin asks which Permanent environment to use (`production`,
-`staging` or `dev`). The default is `production`.
+`staging`, `dev` or `local`). The default is `production`.
 
 ### Cowork
 

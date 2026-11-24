@@ -38834,6 +38834,7 @@ var PermanentClient = class {
 };
 
 // src/permanent/environment.ts
+import { createHash } from "node:crypto";
 var ENVIRONMENTS = {
   production: {
     name: "production",
@@ -38849,13 +38850,17 @@ var ENVIRONMENTS = {
     name: "dev",
     apiUrl: "https://app.dev.permanent.org/api",
     webUrl: "https://app.dev.permanent.org"
+  },
+  local: {
+    name: "local",
+    apiUrl: "https://local.permanent.org/api",
+    webUrl: "https://local.permanent.org"
   }
 };
+var isSet = (value) => value !== void 0 && value.trim() !== "" && !value.trim().startsWith("${");
 var DEFAULT_ENVIRONMENT = "production";
 var resolveEnvironment = (name) => {
-  const trimmed = name?.trim() ?? "";
-  const isUnset = trimmed === "" || trimmed.startsWith("${");
-  const key = isUnset ? DEFAULT_ENVIRONMENT : trimmed.toLowerCase();
+  const key = isSet(name) ? name.trim().toLowerCase() : DEFAULT_ENVIRONMENT;
   const { [key]: environment } = ENVIRONMENTS;
   if (environment === void 0) {
     throw new Error(
@@ -38863,6 +38868,22 @@ var resolveEnvironment = (name) => {
     );
   }
   return environment;
+};
+var CUSTOM_ID_LENGTH = 12;
+var withoutTrailingSlash = (url2) => url2.trim().replace(new RegExp("\\/+$", "v"), "");
+var webUrlFor = (apiUrl) => apiUrl.replace(new RegExp("\\/api$", "v"), "");
+var environmentFromSettings = (settings) => {
+  const { PERMANENT_API_URL: rawApiUrl, PERMANENT_WEB_URL: rawWebUrl } = settings;
+  if (!isSet(rawApiUrl)) {
+    return resolveEnvironment(settings.PERMANENT_ENVIRONMENT);
+  }
+  const apiUrl = withoutTrailingSlash(rawApiUrl);
+  const id5 = createHash("sha256").update(apiUrl).digest("hex").slice(0, CUSTOM_ID_LENGTH);
+  return {
+    name: `custom-${id5}`,
+    apiUrl,
+    webUrl: isSet(rawWebUrl) ? withoutTrailingSlash(rawWebUrl) : webUrlFor(apiUrl)
+  };
 };
 
 // src/permanent/publications.ts
@@ -38956,11 +38977,11 @@ var PublicationStore = class {
 };
 
 // src/stories/progress.ts
-import { createHash } from "node:crypto";
+import { createHash as createHash2 } from "node:crypto";
 import { readFile as readFile3 } from "node:fs/promises";
 import { join as join4 } from "node:path";
 var progressFile = external_exports.record(external_exports.string(), external_exports.string());
-var digestOf = (value) => createHash("sha256").update(JSON.stringify(value)).digest("hex");
+var digestOf = (value) => createHash2("sha256").update(JSON.stringify(value)).digest("hex");
 var parseProgress = (contents) => {
   if (contents === void 0) {
     return {};
@@ -39431,7 +39452,7 @@ var writeManifest = async (path, manifest) => {
 };
 
 // src/photos/scan.ts
-import { createHash as createHash2 } from "node:crypto";
+import { createHash as createHash3 } from "node:crypto";
 import { createReadStream } from "node:fs";
 import { readFile as readFile5, readdir, stat } from "node:fs/promises";
 import { join as join5, resolve } from "node:path";
@@ -39593,11 +39614,11 @@ var mergeFound = (results) => ({
   unreadable: results.flatMap((result) => result.unreadable)
 });
 var hashStream = async (path) => {
-  const hash2 = createHash2("sha256");
+  const hash2 = createHash3("sha256");
   await pipeline(createReadStream(path), hash2);
   return hash2.digest("hex");
 };
-var hashBuffer = (contents) => createHash2("sha256").update(contents).digest("hex");
+var hashBuffer = (contents) => createHash3("sha256").update(contents).digest("hex");
 var readImage = async (path) => {
   const contents = await readFile5(path);
   return {
@@ -40177,7 +40198,7 @@ var registerShareTools = (server, {
 import { isAbsolute as isAbsolute4 } from "node:path";
 
 // src/uploads/upload-files.ts
-import { createHash as createHash3 } from "node:crypto";
+import { createHash as createHash4 } from "node:crypto";
 import { createReadStream as createReadStream2 } from "node:fs";
 import { stat as stat2 } from "node:fs/promises";
 import { basename, extname as extname2 } from "node:path";
@@ -40286,7 +40307,7 @@ var HASH_CONCURRENCY = 4;
 var UPLOAD_CONCURRENCY = 3;
 var DUPLICATE_NAME = "already exists in this location";
 var hashFile = async (path) => {
-  const hash2 = createHash3("sha256");
+  const hash2 = createHash4("sha256");
   await pipeline2(createReadStream2(path), hash2);
   return hash2.digest("hex");
 };
@@ -40993,7 +41014,7 @@ var UploadLedger = class {
 var SERVER_NAME = "permanent";
 var SERVER_VERSION = "0.1.0";
 var defaultDependencies = () => {
-  const environment = resolveEnvironment(process.env.PERMANENT_ENVIRONMENT);
+  const environment = environmentFromSettings(process.env);
   const dataDirectory = defaultDataDirectory();
   const auth = new InterimAuth({
     environment,

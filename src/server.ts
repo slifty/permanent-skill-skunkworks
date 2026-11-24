@@ -2,7 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { CredentialStore, defaultDataDirectory } from "./auth/credentials.ts";
 import { InterimAuth } from "./auth/interim-auth.ts";
 import { PermanentClient } from "./permanent/api.ts";
-import { resolveEnvironment } from "./permanent/environment.ts";
+import { environmentFromSettings } from "./permanent/environment.ts";
 import { PublicationStore } from "./permanent/publications.ts";
 import { StoryProgress } from "./stories/progress.ts";
 import { registerAccountTools } from "./tools/account.ts";
@@ -32,7 +32,7 @@ export interface ServerDependencies {
 }
 
 export const defaultDependencies = (): ServerDependencies => {
-	const environment = resolveEnvironment(process.env.PERMANENT_ENVIRONMENT);
+	const environment = environmentFromSettings(process.env);
 	const dataDirectory = defaultDataDirectory();
 	const auth = new InterimAuth({
 		environment,

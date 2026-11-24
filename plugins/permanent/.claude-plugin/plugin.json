@@ -20,7 +20,7 @@
 		"environment": {
 			"type": "string",
 			"title": "Permanent environment",
-			"description": "Which Permanent environment to use: production, staging or dev",
+			"description": "Which Permanent environment to use: production, staging, dev or local",
 			"default": "production"
 		}
 	}

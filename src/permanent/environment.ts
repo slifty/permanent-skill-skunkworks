@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+
 export interface PermanentEnvironment {
 	name: string;
 	apiUrl: string;
@@ -20,16 +22,28 @@ const ENVIRONMENTS: Record<string, PermanentEnvironment> = {
 		apiUrl: "https://app.dev.permanent.org/api",
 		webUrl: "https://app.dev.permanent.org",
 	},
+	local: {
+		name: "local",
+		apiUrl: "https://local.permanent.org/api",
+		webUrl: "https://local.permanent.org",
+	},
 };
+
+export interface EnvironmentSettings {
+	PERMANENT_ENVIRONMENT?: string | undefined;
+	PERMANENT_API_URL?: string | undefined;
+	PERMANENT_WEB_URL?: string | undefined;
+}
+
+const isSet = (value: string | undefined): value is string =>
+	value !== undefined && value.trim() !== "" && !value.trim().startsWith("${");
 
 const DEFAULT_ENVIRONMENT = "production";
 
 export const resolveEnvironment = (
 	name: string | undefined,
 ): PermanentEnvironment => {
-	const trimmed = name?.trim() ?? "";
-	const isUnset = trimmed === "" || trimmed.startsWith("${");
-	const key = isUnset ? DEFAULT_ENVIRONMENT : trimmed.toLowerCase();
+	const key = isSet(name) ? name.trim().toLowerCase() : DEFAULT_ENVIRONMENT;
 	const { [key]: environment } = ENVIRONMENTS;
 	if (environment === undefined) {
 		throw new Error(
@@ -37,4 +51,33 @@ export const resolveEnvironment = (
 		);
 	}
 	return environment;
+};
+
+const CUSTOM_ID_LENGTH = 12;
+
+const withoutTrailingSlash = (url: string): string =>
+	url.trim().replace(/\/+$/v, "");
+
+const webUrlFor = (apiUrl: string): string => apiUrl.replace(/\/api$/v, "");
+
+export const environmentFromSettings = (
+	settings: EnvironmentSettings,
+): PermanentEnvironment => {
+	const { PERMANENT_API_URL: rawApiUrl, PERMANENT_WEB_URL: rawWebUrl } =
+		settings;
+	if (!isSet(rawApiUrl)) {
+		return resolveEnvironment(settings.PERMANENT_ENVIRONMENT);
+	}
+	const apiUrl = withoutTrailingSlash(rawApiUrl);
+	const id = createHash("sha256")
+		.update(apiUrl)
+		.digest("hex")
+		.slice(0, CUSTOM_ID_LENGTH);
+	return {
+		name: `custom-${id}`,
+		apiUrl,
+		webUrl: isSet(rawWebUrl)
+			? withoutTrailingSlash(rawWebUrl)
+			: webUrlFor(apiUrl),
+	};
 };
