@@ -1,7 +1,7 @@
 import { once } from "node:events";
 import { createServer } from "node:http";
 import { setTimeout as delay } from "node:timers/promises";
-import { text } from "node:stream/consumers";
+import { buffer } from "node:stream/consumers";
 import { z } from "zod";
 import type { IncomingMessage, Server, ServerResponse } from "node:http";
 
@@ -16,11 +16,14 @@ export interface FakeAccount {
 export interface FakeRequest {
 	query: URLSearchParams;
 	body: unknown;
+	raw: Buffer;
+	headers: IncomingMessage["headers"];
 }
 
 export interface FakeReply {
 	status?: number;
 	body: unknown;
+	headers?: Record<string, string>;
 }
 
 export type FakeRoute = (request: FakeRequest) => FakeReply;
@@ -145,6 +148,7 @@ const firstEntry = (body: unknown): LegacyEntry => {
 const replyJson = (response: ServerResponse, reply: FakeReply): void => {
 	response.writeHead(reply.status ?? 200, {
 		"Content-Type": "application/json",
+		...reply.headers,
 	});
 	response.end(JSON.stringify(reply.body));
 };
@@ -181,8 +185,10 @@ export const startFakePermanent = async (
 	const state: FakeState = { account, token, mfaSessions: new Set() };
 	const server: Server = createServer((request, response) => {
 		void (async (): Promise<void> => {
-			const raw = await text(request);
-			const body: unknown = raw === "" ? undefined : JSON.parse(raw);
+			const raw = await buffer(request);
+			const isJson = (request.headers["content-type"] ?? "").includes("json");
+			const body: unknown =
+				isJson && raw.length > 0 ? JSON.parse(raw.toString("utf8")) : undefined;
 			const url = new URL(request.url ?? "/", "http://fake");
 			requests.push({ path: url.pathname, body, headers: request.headers });
 			if (url.pathname === "/api/auth/login") {
@@ -204,7 +210,15 @@ export const startFakePermanent = async (
 				replyJson(response, { status: 404, body: { error: "not found" } });
 				return;
 			}
-			replyJson(response, route({ query: url.searchParams, body }));
+			replyJson(
+				response,
+				route({
+					query: url.searchParams,
+					body,
+					raw,
+					headers: request.headers,
+				}),
+			);
 		})();
 	});
 	server.listen(0, "127.0.0.1");

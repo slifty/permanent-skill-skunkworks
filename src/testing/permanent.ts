@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { CredentialStore } from "../auth/credentials.ts";
 import { InterimAuth } from "../auth/interim-auth.ts";
 import { PermanentClient } from "../permanent/api.ts";
+import { UploadLedger } from "../uploads/ledger.ts";
 import { fakeToken, startFakePermanent } from "./fake-permanent.ts";
 import type { ServerDependencies } from "../server.ts";
 import type { FakeAccount, FakePermanent } from "./fake-permanent.ts";
@@ -43,12 +44,10 @@ export const startTestPermanent = async (
 		apiUrl: fake.apiUrl,
 		webUrl: "http://web",
 	};
+	const dataDirectory = await mkdtemp(join(tmpdir(), "permanent-test-"));
 	const auth = new InterimAuth({
 		environment,
-		store: new CredentialStore(
-			await mkdtemp(join(tmpdir(), "permanent-test-")),
-			"test",
-		),
+		store: new CredentialStore(dataDirectory, "test"),
 		openBrowser: () => undefined,
 	});
 	return {
@@ -56,6 +55,8 @@ export const startTestPermanent = async (
 		token,
 		auth,
 		client: new PermanentClient(environment, auth),
+		ledger: new UploadLedger(dataDirectory, "test"),
+		uploadOptions: { pollIntervalMilliseconds: 10 },
 		signIn: async () => {
 			const url = await auth.startSignIn();
 			await submitForm(`${url}/login`, {

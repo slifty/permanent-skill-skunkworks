@@ -2241,10 +2241,10 @@ var require_resolve = __commonJS({
       }
       return count;
     }
-    function getFullPath(resolver, id2 = "", normalize) {
+    function getFullPath(resolver, id3 = "", normalize) {
       if (normalize !== false)
-        id2 = normalizeId(id2);
-      const p = resolver.parse(id2);
+        id3 = normalizeId(id3);
+      const p = resolver.parse(id3);
       return _getFullPath(resolver, p);
     }
     exports.getFullPath = getFullPath;
@@ -2254,13 +2254,13 @@ var require_resolve = __commonJS({
     }
     exports._getFullPath = _getFullPath;
     var TRAILING_SLASH_HASH = /#\/?$/;
-    function normalizeId(id2) {
-      return id2 ? id2.replace(TRAILING_SLASH_HASH, "") : "";
+    function normalizeId(id3) {
+      return id3 ? id3.replace(TRAILING_SLASH_HASH, "") : "";
     }
     exports.normalizeId = normalizeId;
-    function resolveUrl(resolver, baseId, id2) {
-      id2 = normalizeId(id2);
-      return resolver.resolve(baseId, id2);
+    function resolveUrl(resolver, baseId, id3) {
+      id3 = normalizeId(id3);
+      return resolver.resolve(baseId, id3);
     }
     exports.resolveUrl = resolveUrl;
     var ANCHOR = /^[a-z_][-a-z0-9._]*$/i;
@@ -3030,8 +3030,8 @@ var require_compile = __commonJS({
       if (Object.keys(root.schema).length > 0 && refPath === baseId) {
         return getJsonPointer.call(this, p, root);
       }
-      const id2 = (0, resolve_1.normalizeId)(refPath);
-      const schOrRef = this.refs[id2] || this.schemas[id2];
+      const id3 = (0, resolve_1.normalizeId)(refPath);
+      const schOrRef = this.refs[id3] || this.schemas[id3];
       if (typeof schOrRef == "string") {
         const sch = resolveSchema.call(this, root, schOrRef);
         if (typeof (sch === null || sch === void 0 ? void 0 : sch.schema) !== "object")
@@ -3042,7 +3042,7 @@ var require_compile = __commonJS({
         return;
       if (!schOrRef.validate)
         compileSchema.call(this, schOrRef);
-      if (id2 === (0, resolve_1.normalizeId)(ref)) {
+      if (id3 === (0, resolve_1.normalizeId)(ref)) {
         const { schema } = schOrRef;
         const { schemaId } = this.opts;
         const schId = schema[schemaId];
@@ -4525,15 +4525,15 @@ var require_core = __commonJS({
             this.addSchema(sch, void 0, _meta, _validateSchema);
           return this;
         }
-        let id2;
+        let id3;
         if (typeof schema === "object") {
           const { schemaId } = this.opts;
-          id2 = schema[schemaId];
-          if (id2 !== void 0 && typeof id2 != "string") {
+          id3 = schema[schemaId];
+          if (id3 !== void 0 && typeof id3 != "string") {
             throw new Error(`schema ${schemaId} must be string`);
           }
         }
-        key = (0, resolve_1.normalizeId)(key || id2);
+        key = (0, resolve_1.normalizeId)(key || id3);
         this._checkUnique(key);
         this.schemas[key] = this._addSchema(schema, _meta, key, _validateSchema, true);
         return this;
@@ -4612,11 +4612,11 @@ var require_core = __commonJS({
           case "object": {
             const cacheKey = schemaKeyRef;
             this._cache.delete(cacheKey);
-            let id2 = schemaKeyRef[this.opts.schemaId];
-            if (id2) {
-              id2 = (0, resolve_1.normalizeId)(id2);
-              delete this.schemas[id2];
-              delete this.refs[id2];
+            let id3 = schemaKeyRef[this.opts.schemaId];
+            if (id3) {
+              id3 = (0, resolve_1.normalizeId)(id3);
+              delete this.schemas[id3];
+              delete this.refs[id3];
             }
             return this;
           }
@@ -4723,10 +4723,10 @@ var require_core = __commonJS({
         }
       }
       _addSchema(schema, meta3, baseId, validateSchema = this.opts.validateSchema, addSchema = this.opts.addUsedSchema) {
-        let id2;
+        let id3;
         const { schemaId } = this.opts;
         if (typeof schema == "object") {
-          id2 = schema[schemaId];
+          id3 = schema[schemaId];
         } else {
           if (this.opts.jtd)
             throw new Error("schema must be object");
@@ -4736,7 +4736,7 @@ var require_core = __commonJS({
         let sch = this._cache.get(schema);
         if (sch !== void 0)
           return sch;
-        baseId = (0, resolve_1.normalizeId)(id2 || baseId);
+        baseId = (0, resolve_1.normalizeId)(id3 || baseId);
         const localRefs = resolve_1.getSchemaRefs.call(this, schema, baseId);
         sch = new compile_1.SchemaEnv({ schema, schemaId, meta: meta3, baseId, localRefs });
         this._cache.set(sch.schema, sch);
@@ -4749,9 +4749,9 @@ var require_core = __commonJS({
           this.validateSchema(schema, true);
         return sch;
       }
-      _checkUnique(id2) {
-        if (this.schemas[id2] || this.refs[id2]) {
-          throw new Error(`schema with key or id "${id2}" already exists`);
+      _checkUnique(id3) {
+        if (this.schemas[id3] || this.refs[id3]) {
+          throw new Error(`schema with key or id "${id3}" already exists`);
         }
       }
       _compileSchemaEnv(sch) {
@@ -12364,15 +12364,15 @@ var $ZodObjectJIT = /* @__PURE__ */ $constructor("$ZodObjectJIT", (inst, def) =>
     const syms = normalized.symbolKeys;
     const doc = new Doc(["payload", "ctx"], { shape, inst, memo: memo2, syms });
     const parseStr = (k) => `shape[${k}]._zod.run({ value: input[${k}], issues: [] }, ctx)`;
-    const prefixStr = (id2, k) => `
-          let ${id2}_ab = false;
-          for (let i = 0; i < ${id2}.issues.length; i++) {
-            const iss = ${id2}.issues[i];
+    const prefixStr = (id3, k) => `
+          let ${id3}_ab = false;
+          for (let i = 0; i < ${id3}.issues.length; i++) {
+            const iss = ${id3}.issues[i];
             iss.path = iss.path ? [${k}, ...iss.path] : [${k}];
             payload.issues.push(iss);
-            if (iss.continue !== true) ${id2}_ab = true;
+            if (iss.continue !== true) ${id3}_ab = true;
           }
-          if (${id2}_ab && ctx && ctx.abortEarly) {
+          if (${id3}_ab && ctx && ctx.abortEarly) {
             payload.value = newResult;
             return payload;
           }`;
@@ -12386,34 +12386,34 @@ var $ZodObjectJIT = /* @__PURE__ */ $constructor("$ZodObjectJIT", (inst, def) =>
     for (const key of normalized.allKeys) {
       if (key === "__proto__")
         continue;
-      const id2 = ids[key];
+      const id3 = ids[key];
       const k = typeof key === "symbol" ? `syms[${syms.indexOf(key)}]` : esc(key);
       const isPresent = `${k} in input`;
       const schema = shape[key];
       const optin = schema?._zod?.optin;
       const isOptionalIn = optin !== void 0;
       const isOptionalOut = schema?._zod?.optout === "optional";
-      doc.write(`const ${id2} = ${parseStr(k)};`);
+      doc.write(`const ${id3} = ${parseStr(k)};`);
       if (isOptionalIn && isOptionalOut) {
-        const assign = optin === "optional" ? `${id2}_present` : `${id2}.value !== undefined || ${id2}_present`;
+        const assign = optin === "optional" ? `${id3}_present` : `${id3}.value !== undefined || ${id3}_present`;
         doc.write(`
-        const ${id2}_present = ${isPresent};
-        if (!${id2}.issues.length || ${id2}_present) {
-          if (${id2}.issues.length) {${prefixStr(id2, k)}
+        const ${id3}_present = ${isPresent};
+        if (!${id3}.issues.length || ${id3}_present) {
+          if (${id3}.issues.length) {${prefixStr(id3, k)}
           }
 
           if (${assign}) {
-            newResult[${k}] = ${id2}.value;
+            newResult[${k}] = ${id3}.value;
           }
         }
 
       `);
       } else if (!isOptionalIn) {
         doc.write(`
-        const ${id2}_present = ${isPresent};
-        if (${id2}.issues.length) {${prefixStr(id2, k)}
+        const ${id3}_present = ${isPresent};
+        if (${id3}.issues.length) {${prefixStr(id3, k)}
         }
-        if (!${id2}_present && !${id2}.issues.length) {
+        if (!${id3}_present && !${id3}.issues.length) {
           payload.issues.push({
             code: "invalid_type",
             expected: "nonoptional",
@@ -12426,22 +12426,22 @@ var $ZodObjectJIT = /* @__PURE__ */ $constructor("$ZodObjectJIT", (inst, def) =>
           }
         }
 
-        if (${id2}_present) {
-          newResult[${k}] = ${id2}.value;
+        if (${id3}_present) {
+          newResult[${k}] = ${id3}.value;
         }
 
       `);
       } else {
         doc.write(`
-        if (${id2}.issues.length) {${prefixStr(id2, k)}
+        if (${id3}.issues.length) {${prefixStr(id3, k)}
         }
       `);
         if (optin === "defaulted") {
-          doc.write(`newResult[${k}] = ${id2}.value;`);
+          doc.write(`newResult[${k}] = ${id3}.value;`);
         } else {
           doc.write(`
-        if (${id2}.value !== undefined || ${isPresent}) {
-          newResult[${k}] = ${id2}.value;
+        if (${id3}.value !== undefined || ${isPresent}) {
+          newResult[${k}] = ${id3}.value;
         }
       `);
         }
@@ -24469,26 +24469,26 @@ function extractDefs(ctx, schema) {
     return;
   const idToSchema = /* @__PURE__ */ new Map();
   for (const entry of ctx.seen.entries()) {
-    const id2 = ctx.metadataRegistry.get(entry[0])?.id;
-    if (id2) {
-      const existing = idToSchema.get(id2);
+    const id3 = ctx.metadataRegistry.get(entry[0])?.id;
+    if (id3) {
+      const existing = idToSchema.get(id3);
       if (existing && existing !== entry[0]) {
-        throw new Error(`Duplicate schema id "${id2}" detected during JSON Schema conversion. Two different schemas cannot share the same id when converted together.`);
+        throw new Error(`Duplicate schema id "${id3}" detected during JSON Schema conversion. Two different schemas cannot share the same id when converted together.`);
       }
-      idToSchema.set(id2, entry[0]);
+      idToSchema.set(id3, entry[0]);
     }
   }
   const makeURI = (entry) => {
     const defsSegment = ctx.target === "draft-2020-12" ? "$defs" : "definitions";
     if (ctx.external) {
       const externalId = ctx.external.registry.get(entry[0])?.id;
-      const uriGenerator = ctx.external.uri ?? ((id3) => id3);
+      const uriGenerator = ctx.external.uri ?? ((id4) => id4);
       if (externalId) {
         return { ref: uriGenerator(externalId) };
       }
-      const id2 = entry[1].defId ?? entry[1].schema.id ?? `schema${ctx.counter++}`;
-      entry[1].defId = id2;
-      return { defId: id2, ref: `${uriGenerator("__shared")}#/${defsSegment}/${encodeJSONPointerSegment(id2)}` };
+      const id3 = entry[1].defId ?? entry[1].schema.id ?? `schema${ctx.counter++}`;
+      entry[1].defId = id3;
+      return { defId: id3, ref: `${uriGenerator("__shared")}#/${defsSegment}/${encodeJSONPointerSegment(id3)}` };
     }
     const uriPrefix = `#`;
     const defUriPrefix = `${uriPrefix}/${defsSegment}/`;
@@ -24536,8 +24536,8 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
         continue;
       }
     }
-    const id2 = ctx.metadataRegistry.get(entry[0])?.id;
-    if (id2) {
+    const id3 = ctx.metadataRegistry.get(entry[0])?.id;
+    if (id3) {
       extractToDef(entry);
       continue;
     }
@@ -24770,10 +24770,10 @@ function finalize(ctx, schema) {
   } else {
   }
   if (ctx.external?.uri) {
-    const id2 = ctx.external.registry.get(schema)?.id;
-    if (!id2)
+    const id3 = ctx.external.registry.get(schema)?.id;
+    if (!id3)
       throw new Error("Schema is missing an `id` property");
-    result.$id = ctx.external.uri(id2);
+    result.$id = ctx.external.uri(id3);
   }
   assignProps(result, root.defId ? root.schema : root.def ?? root.schema);
   const rootMetaId = ctx.metadataRegistry.get(schema)?.id;
@@ -25379,7 +25379,7 @@ function stringifyKeyNames(bySchema, json2, visited) {
   const values = json2.enum ?? (json2.const !== void 0 ? [json2.const] : void 0);
   if (!numericType && !values?.some((v) => typeof v === "number"))
     return json2;
-  const { minimum, maximum, exclusiveMinimum, exclusiveMaximum, multipleOf, format, id: id2, ...rest } = json2;
+  const { minimum, maximum, exclusiveMinimum, exclusiveMaximum, multipleOf, format, id: id3, ...rest } = json2;
   if (rest.enum)
     rest.enum = rest.enum.map((v) => typeof v === "number" ? String(v) : v);
   else if (typeof rest.const === "number")
@@ -36683,7 +36683,7 @@ var ExperimentalServerTasks = class {
       if (hasPreviousToolUse) {
         const toolUseIds = new Set(previousContent.filter((c) => c.type === "tool_use").map((c) => c.id));
         const toolResultIds = new Set(lastContent.filter((c) => c.type === "tool_result").map((c) => c.toolUseId));
-        if (toolUseIds.size !== toolResultIds.size || ![...toolUseIds].every((id2) => toolResultIds.has(id2))) {
+        if (toolUseIds.size !== toolResultIds.size || ![...toolUseIds].every((id3) => toolResultIds.has(id3))) {
           throw new Error("ids of tool_result blocks and tool_use blocks from previous message do not match");
         }
       }
@@ -37108,7 +37108,7 @@ var Server = class extends Protocol {
       if (hasPreviousToolUse) {
         const toolUseIds = new Set(previousContent.filter((c) => c.type === "tool_use").map((c) => c.id));
         const toolResultIds = new Set(lastContent.filter((c) => c.type === "tool_result").map((c) => c.toolUseId));
-        if (toolUseIds.size !== toolResultIds.size || ![...toolUseIds].every((id2) => toolResultIds.has(id2))) {
+        if (toolUseIds.size !== toolResultIds.size || ![...toolUseIds].every((id3) => toolResultIds.has(id3))) {
           throw new Error("ids of tool_result blocks and tool_use blocks from previous message do not match");
         }
       }
@@ -38768,7 +38768,11 @@ var PermanentApiError = class extends Error {
 var withQuery = (url2, query = {}) => {
   const params = new URLSearchParams();
   for (const [key, value] of Object.entries(query)) {
-    if (value !== void 0) {
+    if (Array.isArray(value)) {
+      value.forEach((item) => {
+        params.append(`${key}[]`, String(item));
+      });
+    } else if (value !== void 0) {
       params.set(key, String(value));
     }
   }
@@ -38961,6 +38965,7 @@ var summarizeFolder = (vo) => ({
 var summarizeRecord = (vo) => ({
   recordId: vo.recordId,
   name: vo.displayName ?? vo.uploadFileName ?? "",
+  fileName: orUndefined(vo.uploadFileName),
   kind: stripPrefix(vo.type, "type.record.") ?? vo.type,
   date: orUndefined(vo.displayDT),
   description: orUndefined(vo.description),
@@ -39081,15 +39086,589 @@ var registerArchiveTools = (server, client) => {
   );
 };
 
+// src/tools/upload.ts
+import { isAbsolute } from "node:path";
+import { setTimeout as delay2 } from "node:timers/promises";
+
+// src/permanent/records.ts
+var READY = "status.generic.ok";
+var FAILED = /* @__PURE__ */ new Set([
+  "status.generic.error",
+  "status.generic.manual_review"
+]);
+var stelaRecord = external_exports.looseObject({
+  recordId: external_exports.coerce.number(),
+  displayName: external_exports.string().nullish(),
+  status: external_exports.string(),
+  thumbUrl200: external_exports.string().nullish()
+});
+var stateOf = (status) => {
+  if (status === READY) {
+    return "ready";
+  }
+  return FAILED.has(status) ? "failed" : "processing";
+};
+var getRecordProcessing = async (client, recordIds) => {
+  const records = await client.stela({
+    path: "/records",
+    query: { recordIds },
+    schema: external_exports.array(stelaRecord)
+  });
+  return records.map((record2) => ({
+    recordId: record2.recordId,
+    name: record2.displayName ?? void 0,
+    state: stateOf(record2.status),
+    status: record2.status.replace(new RegExp("^status\\.", "v"), ""),
+    thumbnail: record2.thumbUrl200 ?? void 0
+  }));
+};
+
+// src/uploads/upload-files.ts
+import { createHash } from "node:crypto";
+import { createReadStream } from "node:fs";
+import { stat } from "node:fs/promises";
+import { basename, extname as extname2 } from "node:path";
+import { pipeline } from "node:stream/promises";
+
+// src/concurrency.ts
+var mapWithConcurrency = async (inputs, limit, transform2) => {
+  const results = new Array(inputs.length);
+  const pending = inputs.entries();
+  const work = async () => {
+    const next = pending.next();
+    if (next.done === true) {
+      return;
+    }
+    const {
+      value: [index, input2]
+    } = next;
+    results[index] = await transform2(input2);
+    await work();
+  };
+  const workerCount = Math.min(limit, inputs.length);
+  await Promise.all(Array.from({ length: workerCount }, work));
+  return results;
+};
+
+// src/permanent/upload.ts
+import { openAsBlob } from "node:fs";
+var MULTIPART_PART_BYTES = 10485760;
+var MULTIPART_THRESHOLD_BYTES = 104857600;
+var PART_CONCURRENCY = 3;
+var presignedUpload = external_exports.object({
+  destinationUrl: external_exports.string(),
+  presignedPost: external_exports.object({
+    url: external_exports.string(),
+    fields: external_exports.record(external_exports.string(), external_exports.string())
+  })
+});
+var multipartUrls = external_exports.object({
+  urls: external_exports.array(external_exports.string()),
+  uploadId: external_exports.string(),
+  key: external_exports.string()
+});
+var StorageUploadError = class extends Error {
+  constructor(status, body) {
+    super(`Permanent's file storage rejected the upload (${status}): ${body}`);
+  }
+};
+var assertStored = async (response) => {
+  if (!response.ok) {
+    throw new StorageUploadError(response.status, await response.text());
+  }
+};
+var uploadWithPost = async (client, file2) => {
+  const { destinationUrl, presignedPost } = await client.backEnd({
+    path: "/record/getPresignedUrl",
+    method: "POST",
+    body: {
+      displayName: file2.uploadFileName,
+      parentFolderId: file2.parentFolderId,
+      uploadFileName: file2.uploadFileName,
+      fileType: file2.contentType,
+      size: file2.size
+    },
+    schema: presignedUpload
+  });
+  const form = new FormData();
+  for (const [name, value] of Object.entries(presignedPost.fields)) {
+    form.append(name, value);
+  }
+  form.append("Content-Type", file2.contentType);
+  form.append(
+    "file",
+    await openAsBlob(file2.path, { type: file2.contentType }),
+    file2.uploadFileName
+  );
+  await assertStored(
+    await fetch(presignedPost.url, { method: "POST", body: form })
+  );
+  return destinationUrl;
+};
+var uploadInParts = async (client, file2) => {
+  const { urls, uploadId, key } = await client.backEnd({
+    path: "/record/getMultipartUploadUrls",
+    method: "POST",
+    body: { fileSizeInBytes: file2.size },
+    schema: multipartUrls
+  });
+  const blob = await openAsBlob(file2.path);
+  const parts = await mapWithConcurrency(
+    [...urls.entries()],
+    PART_CONCURRENCY,
+    async ([index, url2]) => {
+      const start = index * MULTIPART_PART_BYTES;
+      const response = await fetch(url2, {
+        method: "PUT",
+        body: blob.slice(start, start + MULTIPART_PART_BYTES)
+      });
+      await assertStored(response);
+      return {
+        PartNumber: index + 1,
+        ETag: response.headers.get("etag") ?? ""
+      };
+    }
+  );
+  return { uploadId, key, parts };
+};
+var uploadRecord = async (client, file2) => {
+  const location2 = file2.size > MULTIPART_THRESHOLD_BYTES ? { multipartUploadData: await uploadInParts(client, file2) } : { s3url: await uploadWithPost(client, file2) };
+  return await client.backEnd({
+    path: "/record/registerRecord",
+    method: "POST",
+    body: {
+      displayName: file2.uploadFileName,
+      parentFolderId: file2.parentFolderId,
+      uploadFileName: file2.uploadFileName,
+      size: file2.size,
+      failOnDuplicateName: true,
+      ...location2
+    },
+    schema: recordVo
+  });
+};
+
+// src/photos/media.ts
+import { extname } from "node:path";
+var IMAGE_EXTENSIONS = /* @__PURE__ */ new Set([
+  ".jpg",
+  ".jpeg",
+  ".png",
+  ".heic",
+  ".heif",
+  ".tif",
+  ".tiff",
+  ".webp",
+  ".gif",
+  ".avif"
+]);
+var VIDEO_EXTENSIONS = /* @__PURE__ */ new Set([".mp4", ".mov", ".m4v", ".avi", ".mkv"]);
+var CONTENT_TYPES = {
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".png": "image/png",
+  ".heic": "image/heic",
+  ".heif": "image/heif",
+  ".tif": "image/tiff",
+  ".tiff": "image/tiff",
+  ".webp": "image/webp",
+  ".gif": "image/gif",
+  ".avif": "image/avif",
+  ".mp4": "video/mp4",
+  ".mov": "video/quicktime",
+  ".m4v": "video/x-m4v",
+  ".avi": "video/x-msvideo",
+  ".mkv": "video/x-matroska"
+};
+var getContentType = (path) => CONTENT_TYPES[extname(path).toLowerCase()] ?? "application/octet-stream";
+var getMediaKind = (path) => {
+  const extension = extname(path).toLowerCase();
+  if (IMAGE_EXTENSIONS.has(extension)) {
+    return "image";
+  }
+  if (VIDEO_EXTENSIONS.has(extension)) {
+    return "video";
+  }
+  return void 0;
+};
+
+// src/uploads/upload-files.ts
+var HASH_CONCURRENCY = 4;
+var UPLOAD_CONCURRENCY = 3;
+var DUPLICATE_NAME = "already exists in this location";
+var hashFile = async (path) => {
+  const hash2 = createHash("sha256");
+  await pipeline(createReadStream(path), hash2);
+  return hash2.digest("hex");
+};
+var describe3 = (error62) => error62 instanceof Error ? error62.message : String(error62);
+var withSuffix = (fileName, copy) => {
+  const extension = extname2(fileName);
+  return `${fileName.slice(0, fileName.length - extension.length)} (${copy})${extension}`;
+};
+var emptyReport = () => ({
+  uploaded: [],
+  alreadyUploaded: [],
+  conflicts: [],
+  duplicates: [],
+  failed: [],
+  remaining: []
+});
+var isPublicKind = (kind) => kind === "public" || kind === "root.public";
+var NameAllocator = class {
+  onPermanent;
+  claimed = /* @__PURE__ */ new Set();
+  constructor(existing) {
+    this.onPermanent = new Set(
+      existing.filter((name) => name !== void 0).map((name) => name.toLowerCase())
+    );
+  }
+  takenOnPermanent(fileName) {
+    return this.onPermanent.has(fileName.toLowerCase());
+  }
+  claim(fileName) {
+    let candidate = fileName;
+    let copy = 1;
+    while (this.claimed.has(candidate.toLowerCase()) || copy > 1 && this.takenOnPermanent(candidate)) {
+      copy += 1;
+      candidate = withSuffix(fileName, copy);
+    }
+    this.claimed.add(candidate.toLowerCase());
+    return candidate;
+  }
+};
+var prepare = async (request, report, names) => {
+  const hashed = await mapWithConcurrency(
+    request.paths,
+    HASH_CONCURRENCY,
+    async (path) => {
+      try {
+        const stats = await stat(path);
+        if (!stats.isFile()) {
+          return { path, error: "Not a file" };
+        }
+        return {
+          path,
+          size: stats.size,
+          modifiedMs: stats.mtimeMs,
+          sha256: await hashFile(path)
+        };
+      } catch (error62) {
+        return { path, error: describe3(error62) };
+      }
+    }
+  );
+  const uploadedBefore = await request.ledger.forFolder(request.folderId);
+  const prepared = [];
+  const inThisBatch = /* @__PURE__ */ new Map();
+  for (const item of hashed) {
+    if ("error" in item) {
+      report.failed.push({ path: item.path, error: item.error });
+      continue;
+    }
+    const sameAs = inThisBatch.get(item.sha256);
+    if (sameAs !== void 0) {
+      report.duplicates.push({ path: item.path, sameAs });
+      continue;
+    }
+    inThisBatch.set(item.sha256, item.path);
+    const known = uploadedBefore.get(item.sha256);
+    if (known !== void 0) {
+      report.alreadyUploaded.push({
+        path: item.path,
+        recordId: known.recordId
+      });
+      continue;
+    }
+    const original = basename(item.path);
+    if (names.takenOnPermanent(original)) {
+      report.conflicts.push({ path: item.path, fileName: original });
+      continue;
+    }
+    prepared.push({ ...item, fileName: names.claim(original) });
+  }
+  return prepared;
+};
+var CHANGED_WHILE_UPLOADING = "The file changed while it was being uploaded. Try again once it has stopped changing.";
+var NOT_REMEMBERED = "Uploaded, but this computer couldn't record it, so uploading it to this folder again would make a copy.";
+var isUnchanged = async (file2) => {
+  const now = await stat(file2.path).catch(() => void 0);
+  return now?.size === file2.size && now.mtimeMs === file2.modifiedMs;
+};
+var recordUpload = async (request, file2, recordId) => {
+  try {
+    await request.ledger.add({
+      folderId: request.folderId,
+      sha256: file2.sha256,
+      recordId,
+      path: file2.path,
+      fileName: file2.fileName,
+      uploadedAt: (/* @__PURE__ */ new Date()).toISOString()
+    });
+    return void 0;
+  } catch (error62) {
+    return `${NOT_REMEMBERED} (${describe3(error62)})`;
+  }
+};
+var sendFile = async (request, report, file2) => {
+  try {
+    const { recordId } = await uploadRecord(request.client, {
+      path: file2.path,
+      parentFolderId: request.folderId,
+      uploadFileName: file2.fileName,
+      contentType: getContentType(file2.path),
+      size: file2.size
+    });
+    return recordId;
+  } catch (error62) {
+    if (error62 instanceof PermanentApiError && error62.message.includes(DUPLICATE_NAME)) {
+      report.conflicts.push({ path: file2.path, fileName: file2.fileName });
+    } else {
+      report.failed.push({ path: file2.path, error: describe3(error62) });
+    }
+    return void 0;
+  }
+};
+var uploadOne = async (request, report, file2) => {
+  const now = request.now ?? Date.now;
+  if (now() >= request.deadline) {
+    report.remaining.push(file2.path);
+    return;
+  }
+  if (!await isUnchanged(file2)) {
+    report.failed.push({ path: file2.path, error: CHANGED_WHILE_UPLOADING });
+    return;
+  }
+  const recordId = await sendFile(request, report, file2);
+  if (recordId === void 0) {
+    return;
+  }
+  const changed = !await isUnchanged(file2);
+  const warning = changed ? CHANGED_WHILE_UPLOADING : await recordUpload(request, file2, recordId);
+  report.uploaded.push({
+    path: file2.path,
+    recordId,
+    fileName: file2.fileName,
+    ...warning === void 0 ? {} : { warning }
+  });
+};
+var uploadFiles = async (request) => await request.ledger.exclusively(
+  request.folderId,
+  async () => await uploadToFolder(request)
+);
+var uploadToFolder = async (request) => {
+  const folder = await getFolderContents(
+    request.client,
+    request.archiveId,
+    request.folderId
+  );
+  if (isPublicKind(folder.kind) && !request.allowPublic) {
+    throw new Error(
+      `"${folder.name}" is public: anything uploaded there is visible to everyone. Upload to a folder in My Files instead, or ask the member before passing allowPublic.`
+    );
+  }
+  const report = emptyReport();
+  const names = new NameAllocator(
+    folder.records.map((record2) => record2.fileName)
+  );
+  const prepared = await prepare(request, report, names);
+  await mapWithConcurrency(prepared, UPLOAD_CONCURRENCY, async (file2) => {
+    await uploadOne(request, report, file2);
+  });
+  return report;
+};
+
+// src/tools/upload.ts
+var UPLOAD_BUDGET_MILLISECONDS = 9e4;
+var MAX_FILES_PER_CALL = 200;
+var MAX_WAIT_SECONDS2 = 120;
+var POLL_INTERVAL_MILLISECONDS = 3e3;
+var MILLISECONDS_PER_SECOND2 = 1e3;
+var id2 = external_exports.number().int().positive();
+var waitForProcessing = async (client, recordIds, deadline, pollMilliseconds) => {
+  const records = await getRecordProcessing(client, recordIds);
+  const stillProcessing = records.some(
+    (record2) => record2.state === "processing"
+  );
+  if (!stillProcessing || Date.now() + pollMilliseconds > deadline) {
+    return records;
+  }
+  await delay2(pollMilliseconds);
+  return await waitForProcessing(client, recordIds, deadline, pollMilliseconds);
+};
+var registerUploadTools = (server, client, ledger, options = {}) => {
+  server.registerTool(
+    "upload_files",
+    {
+      title: "Upload files to Permanent",
+      description: "Upload local files into a Permanent folder. Safe to call again with the same files: anything already uploaded to that folder is skipped. Works for a limited time per call, so if `remaining` is not empty, call again with those paths. A file whose name is already used by a different file in the folder is reported under `conflicts` and not uploaded. Refuses public folders unless allowPublic is set after the member agreed.",
+      inputSchema: {
+        archiveId: id2,
+        folderId: id2,
+        paths: external_exports.array(
+          external_exports.string().refine(isAbsolute, {
+            error: "Use an absolute path on this computer"
+          })
+        ).min(1).max(MAX_FILES_PER_CALL),
+        allowPublic: external_exports.boolean().default(false)
+      },
+      annotations: {
+        readOnlyHint: false,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: true
+      }
+    },
+    async ({ archiveId, folderId, paths, allowPublic }) => jsonResult(
+      await uploadFiles({
+        client,
+        ledger,
+        archiveId,
+        folderId,
+        paths,
+        allowPublic,
+        deadline: Date.now() + (options.uploadBudgetMilliseconds ?? UPLOAD_BUDGET_MILLISECONDS)
+      })
+    )
+  );
+  server.registerTool(
+    "check_processing",
+    {
+      title: "Check Permanent processing",
+      description: "Check whether Permanent has finished processing uploaded files (thumbnails and previews). Optionally waits until they are all ready or failed.",
+      inputSchema: {
+        recordIds: external_exports.array(id2).min(1).max(MAX_FILES_PER_CALL),
+        waitSeconds: external_exports.number().min(0).max(MAX_WAIT_SECONDS2).default(0)
+      },
+      annotations: { readOnlyHint: true, openWorldHint: true }
+    },
+    async ({ recordIds, waitSeconds }) => {
+      const records = await waitForProcessing(
+        client,
+        recordIds,
+        Date.now() + waitSeconds * MILLISECONDS_PER_SECOND2,
+        options.pollIntervalMilliseconds ?? POLL_INTERVAL_MILLISECONDS
+      );
+      return jsonResult({
+        ready: records.filter((record2) => record2.state === "ready").length,
+        processing: records.filter((record2) => record2.state === "processing").length,
+        failed: records.filter((record2) => record2.state === "failed").length,
+        records
+      });
+    }
+  );
+};
+
+// src/uploads/ledger.ts
+import { readFile as readFile2 } from "node:fs/promises";
+import { join as join3 } from "node:path";
+
+// src/files.ts
+import { randomBytes as randomBytes2 } from "node:crypto";
+import { mkdir as mkdir2, rename, rm as rm2, writeFile as writeFile2 } from "node:fs/promises";
+import { dirname as dirname2, join as join2 } from "node:path";
+var OWNER_ONLY2 = 384;
+var SUFFIX_BYTES = 6;
+var writeFileAtomically = async (path, contents) => {
+  await mkdir2(dirname2(path), { recursive: true });
+  const temporary = join2(
+    dirname2(path),
+    `.${randomBytes2(SUFFIX_BYTES).toString("hex")}.tmp`
+  );
+  try {
+    await writeFile2(temporary, contents, {
+      encoding: "utf8",
+      mode: OWNER_ONLY2
+    });
+    await rename(temporary, path);
+  } catch (error62) {
+    await rm2(temporary, { force: true });
+    throw error62;
+  }
+};
+
+// src/uploads/ledger.ts
+var ledgerEntry = external_exports.object({
+  folderId: external_exports.number(),
+  sha256: external_exports.string(),
+  recordId: external_exports.number(),
+  path: external_exports.string(),
+  fileName: external_exports.string(),
+  uploadedAt: external_exports.string()
+});
+var ledgerFile = external_exports.object({ entries: external_exports.array(ledgerEntry) });
+var UnreadableLedgerError = class extends Error {
+  constructor(path) {
+    super(
+      `The record of earlier uploads at ${path} can't be read, so uploading now could duplicate files. Move that file aside to start a fresh record, then try again.`
+    );
+  }
+};
+var parseLedger = (path, contents) => {
+  try {
+    return ledgerFile.parse(JSON.parse(contents)).entries;
+  } catch (_error) {
+    throw new UnreadableLedgerError(path);
+  }
+};
+var UploadLedger = class {
+  path;
+  pending = Promise.resolve();
+  folderLocks = /* @__PURE__ */ new Map();
+  constructor(dataDirectory, environment) {
+    this.path = join3(dataDirectory, `uploads.${environment}.json`);
+  }
+  async forFolder(folderId) {
+    const entries = await this.read();
+    return new Map(
+      entries.filter((entry) => entry.folderId === folderId).map((entry) => [entry.sha256, entry])
+    );
+  }
+  async exclusively(folderId, work) {
+    const previous = this.folderLocks.get(folderId) ?? Promise.resolve();
+    const result = previous.then(work);
+    const settled = result.catch(() => void 0);
+    this.folderLocks.set(folderId, settled);
+    void settled.then(() => {
+      if (this.folderLocks.get(folderId) === settled) {
+        this.folderLocks.delete(folderId);
+      }
+    });
+    return await result;
+  }
+  async add(entry) {
+    const next = this.pending.then(async () => {
+      const entries = await this.read();
+      await writeFileAtomically(
+        this.path,
+        JSON.stringify({ entries: [...entries, entry] })
+      );
+    });
+    this.pending = next.catch(() => void 0);
+    await next;
+  }
+  async read() {
+    const contents = await readFile2(this.path, "utf8").catch(
+      (error62) => {
+        if (error62 instanceof Error && "code" in error62 && error62.code === "ENOENT") {
+          return void 0;
+        }
+        throw error62;
+      }
+    );
+    return contents === void 0 ? [] : parseLedger(this.path, contents);
+  }
+};
+
 // src/tools/curation.ts
-import { isAbsolute as isAbsolute3 } from "node:path";
+import { isAbsolute as isAbsolute4 } from "node:path";
 
 // src/manifest/file.ts
-import { chmod as chmod2, mkdir as mkdir2, readFile as readFile2, writeFile as writeFile2 } from "node:fs/promises";
-import { dirname as dirname2, isAbsolute as isAbsolute2 } from "node:path";
+import { chmod as chmod2, mkdir as mkdir3, readFile as readFile3, writeFile as writeFile3 } from "node:fs/promises";
+import { dirname as dirname3, isAbsolute as isAbsolute3 } from "node:path";
 
 // src/manifest/schema.ts
-import { isAbsolute } from "node:path";
+import { isAbsolute as isAbsolute2 } from "node:path";
 
 // src/dates/edtf.ts
 var DATE = new RegExp("^(?<year>\\d{4})(?:-(?<month>\\d{2})(?:-(?<day>\\d{2}))?)?(?<qualifier>[?~%])?$", "v");
@@ -39160,7 +39739,7 @@ var location = external_exports.object({
 var date5 = external_exports.string().refine(isSupportedEdtf, { error: "Not a supported EDTF date" }).describe(
   "EDTF date: '2024-06-01', '2024-06-01T18:30:00', '2024-06', '2024~' or '2024-06-01/2024-06-02'"
 );
-var absolutePath = external_exports.string().refine(isAbsolute, { error: "Must be an absolute path" });
+var absolutePath = external_exports.string().refine(isAbsolute2, { error: "Must be an absolute path" });
 var manifestItem = external_exports.object({
   path: absolutePath.describe("Absolute path to the local file"),
   title: external_exports.string().optional(),
@@ -39211,57 +39790,37 @@ var storyManifest = external_exports.object({
 
 // src/manifest/file.ts
 var JSON_INDENT2 = "	";
-var OWNER_ONLY2 = 384;
+var OWNER_ONLY3 = 384;
 var requireAbsolute = (path) => {
-  if (!isAbsolute2(path)) {
+  if (!isAbsolute3(path)) {
     throw new Error(`Use an absolute path, not "${path}"`);
   }
   return path;
 };
 var readManifest = async (path) => {
-  const contents = await readFile2(requireAbsolute(path), "utf8");
+  const contents = await readFile3(requireAbsolute(path), "utf8");
   return storyManifest.parse(JSON.parse(contents));
 };
 var writeManifest = async (path, manifest) => {
   const fullPath = requireAbsolute(path);
   const validated = storyManifest.parse(manifest);
-  await mkdir2(dirname2(fullPath), { recursive: true });
-  await writeFile2(
+  await mkdir3(dirname3(fullPath), { recursive: true });
+  await writeFile3(
     fullPath,
     `${JSON.stringify(validated, null, JSON_INDENT2)}
 `,
-    { encoding: "utf8", mode: OWNER_ONLY2 }
+    { encoding: "utf8", mode: OWNER_ONLY3 }
   );
-  await chmod2(fullPath, OWNER_ONLY2);
+  await chmod2(fullPath, OWNER_ONLY3);
   return fullPath;
 };
 
 // src/photos/scan.ts
-import { createHash } from "node:crypto";
-import { createReadStream } from "node:fs";
-import { readFile as readFile3, readdir, stat } from "node:fs/promises";
-import { join as join2, resolve } from "node:path";
-import { pipeline } from "node:stream/promises";
-
-// src/concurrency.ts
-var mapWithConcurrency = async (inputs, limit, transform2) => {
-  const results = new Array(inputs.length);
-  const pending = inputs.entries();
-  const work = async () => {
-    const next = pending.next();
-    if (next.done === true) {
-      return;
-    }
-    const {
-      value: [index, input2]
-    } = next;
-    results[index] = await transform2(input2);
-    await work();
-  };
-  const workerCount = Math.min(limit, inputs.length);
-  await Promise.all(Array.from({ length: workerCount }, work));
-  return results;
-};
+import { createHash as createHash2 } from "node:crypto";
+import { createReadStream as createReadStream2 } from "node:fs";
+import { readFile as readFile4, readdir, stat as stat2 } from "node:fs/promises";
+import { join as join4, resolve } from "node:path";
+import { pipeline as pipeline2 } from "node:stream/promises";
 
 // src/photos/exif.ts
 var import_exifr = __toESM(require_full_umd(), 1);
@@ -39334,32 +39893,6 @@ var readPhotoMetadata = async (contents) => {
   };
 };
 
-// src/photos/media.ts
-import { extname } from "node:path";
-var IMAGE_EXTENSIONS = /* @__PURE__ */ new Set([
-  ".jpg",
-  ".jpeg",
-  ".png",
-  ".heic",
-  ".heif",
-  ".tif",
-  ".tiff",
-  ".webp",
-  ".gif",
-  ".avif"
-]);
-var VIDEO_EXTENSIONS = /* @__PURE__ */ new Set([".mp4", ".mov", ".m4v", ".avi", ".mkv"]);
-var getMediaKind = (path) => {
-  const extension = extname(path).toLowerCase();
-  if (IMAGE_EXTENSIONS.has(extension)) {
-    return "image";
-  }
-  if (VIDEO_EXTENSIONS.has(extension)) {
-    return "video";
-  }
-  return void 0;
-};
-
 // src/photos/scan.ts
 var MILLISECONDS_PER_MINUTE = 6e4;
 var SCAN_CONCURRENCY = 8;
@@ -39377,13 +39910,13 @@ var mergeFound = (results) => ({
   unreadable: results.flatMap((result) => result.unreadable)
 });
 var hashStream = async (path) => {
-  const hash2 = createHash("sha256");
-  await pipeline(createReadStream(path), hash2);
+  const hash2 = createHash2("sha256");
+  await pipeline2(createReadStream2(path), hash2);
   return hash2.digest("hex");
 };
-var hashBuffer = (contents) => createHash("sha256").update(contents).digest("hex");
+var hashBuffer = (contents) => createHash2("sha256").update(contents).digest("hex");
 var readImage = async (path) => {
-  const contents = await readFile3(path);
+  const contents = await readFile4(path);
   return {
     sha256: hashBuffer(contents),
     metadata: await readPhotoMetadata(contents)
@@ -39404,7 +39937,7 @@ var findInDirectory = async (directory, recursive2) => {
   const visible = entries.filter((entry) => !entry.name.startsWith("."));
   const results = await Promise.all(
     visible.map(async (entry) => {
-      const entryPath = join2(directory, entry.name);
+      const entryPath = join4(directory, entry.name);
       if (entry.isDirectory()) {
         return recursive2 ? await findInDirectory(entryPath, recursive2) : emptyFound();
       }
@@ -39415,7 +39948,7 @@ var findInDirectory = async (directory, recursive2) => {
 };
 var findFiles = async (rawPath, recursive2) => {
   const path = resolve(rawPath);
-  const stats = await stat(path).catch(() => void 0);
+  const stats = await stat2(path).catch(() => void 0);
   if (stats === void 0) {
     return { ...emptyFound(), missing: [path] };
   }
@@ -39424,7 +39957,7 @@ var findFiles = async (rawPath, recursive2) => {
 var scanFile = async (path) => {
   const kind = getMediaKind(path) ?? "image";
   const [stats, { sha256, metadata }] = await Promise.all([
-    stat(path),
+    stat2(path),
     kind === "image" ? readImage(path) : readVideo(path)
   ]);
   return {
@@ -39513,7 +40046,7 @@ var registerCurationTools = (server) => {
       description: "Scan local files or folders for photos and videos. Returns each file's date (from EXIF when present, otherwise the file's modified time), GPS location, camera and size, marks exact duplicates, and suggests groups of items taken close together in time. Does not upload anything.",
       inputSchema: {
         paths: external_exports.array(
-          external_exports.string().refine(isAbsolute3, {
+          external_exports.string().refine(isAbsolute4, {
             error: "Use an absolute path on this computer"
           })
         ).min(1).describe("Absolute paths of files or folders on this computer"),
@@ -39592,17 +40125,28 @@ var SERVER_NAME = "permanent";
 var SERVER_VERSION = "0.1.0";
 var defaultDependencies = () => {
   const environment = resolveEnvironment(process.env.PERMANENT_ENVIRONMENT);
+  const dataDirectory = defaultDataDirectory();
   const auth = new InterimAuth({
     environment,
-    store: new CredentialStore(defaultDataDirectory(), environment.name)
+    store: new CredentialStore(dataDirectory, environment.name)
   });
-  return { auth, client: new PermanentClient(environment, auth) };
+  return {
+    auth,
+    client: new PermanentClient(environment, auth),
+    ledger: new UploadLedger(dataDirectory, environment.name)
+  };
 };
 var createServer2 = (dependencies = defaultDependencies()) => {
   const server = new McpServer({ name: SERVER_NAME, version: SERVER_VERSION });
   registerCurationTools(server);
   registerAccountTools(server, dependencies.auth);
   registerArchiveTools(server, dependencies.client);
+  registerUploadTools(
+    server,
+    dependencies.client,
+    dependencies.ledger,
+    dependencies.uploadOptions
+  );
   return server;
 };
 

@@ -22,6 +22,7 @@ export interface FolderSummary {
 export interface RecordSummary {
 	recordId: number;
 	name: string;
+	fileName?: string | undefined;
 	kind: string;
 	date?: string | undefined;
 	description?: string | undefined;
@@ -64,6 +65,7 @@ const summarizeFolder = (vo: FolderVo): FolderSummary => ({
 const summarizeRecord = (vo: z.infer<typeof recordVo>): RecordSummary => ({
 	recordId: vo.recordId,
 	name: vo.displayName ?? vo.uploadFileName ?? "",
+	fileName: orUndefined(vo.uploadFileName),
 	kind: stripPrefix(vo.type, "type.record.") ?? vo.type,
 	date: orUndefined(vo.displayDT),
 	description: orUndefined(vo.description),
