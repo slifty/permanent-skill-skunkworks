@@ -38,13 +38,13 @@ carries.
 
 ## Decisions
 
-| Question | Decision |
-|---|---|
-| Does the story need to be public? | **No.** The goal is to use Permanent's own views to present the story. Publishing to Public is optional; a share link or the member's own archive view is enough. |
-| Auth | Use the interim web-app-style login, behind a swappable auth module. FusionAuth configuration work is decoupled from this project and comes later. |
-| Do the `storyscroll` / `slideshow` folder views render? | **No, not anywhere today** (see below). The MVP uses List, Grid and Timeline. |
-| Where does the plugin live? | This repository for now. It moves to a PermanentOrg home later. |
-| Public Claude directory listing? | Not yet. Install from this repo's marketplace internally. List it publicly eventually. |
+| Question                                                | Decision                                                                                                                                                          |
+| ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Does the story need to be public?                       | **No.** The goal is to use Permanent's own views to present the story. Publishing to Public is optional; a share link or the member's own archive view is enough. |
+| Auth                                                    | Use the interim web-app-style login, behind a swappable auth module. FusionAuth configuration work is decoupled from this project and comes later.                |
+| Do the `storyscroll` / `slideshow` folder views render? | **No, not anywhere today** (see below). The MVP uses List, Grid and Timeline.                                                                                     |
+| Where does the plugin live?                             | This repository for now. It moves to a PermanentOrg home later.                                                                                                   |
+| Public Claude directory listing?                        | Not yet. Install from this repo's marketplace internally. List it publicly eventually.                                                                            |
 
 ### Story views
 
@@ -77,7 +77,7 @@ Private / <Event name>                 ← source of truth; full upload
 **Timeline view is limited to Public.** The web app offers its Views panel
 only for non-root folders in Public. A private story renders as List or
 Grid. If the timeline presentation matters for the demo, publishing (or
-building the story in Public) is the way to get it. *Unverified:* whether
+building the story in Public) is the way to get it. _Unverified:_ whether
 the share-link view honours a folder's saved view.
 
 1. **Gather.** Claude reads the folders the member points at.
@@ -94,13 +94,13 @@ the share-link view honours a folder's saved view.
 
 ## MVP phases
 
-| Phase | Goal | Ships |
-|---|---|---|
-| **0. Scaffold** | Installable plugin | `plugin.json`, `marketplace.json`, skill and MCP server skeletons |
-| **1. Curation skill** | Gather → curate → manifest | Works with no Permanent API |
-| **2. Interim auth** | Sign in from the MCP server | Web-app-style login behind a swappable auth module (see below) |
-| **3. MCP server v0** | The actions | Browse, folders, upload + wait, metadata, folder presentation, share link, optional publish. Built on `@permanentorg/sdk`, with direct calls where it has gaps. |
-| **4. End-to-end demo** | The ask, start to finish | Demo script and a test archive on dev or staging |
+| Phase                  | Goal                        | Ships                                                                                                                                                           |
+| ---------------------- | --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **0. Scaffold**        | Installable plugin          | `plugin.json`, `marketplace.json`, skill and MCP server skeletons                                                                                               |
+| **1. Curation skill**  | Gather → curate → manifest  | Works with no Permanent API                                                                                                                                     |
+| **2. Interim auth**    | Sign in from the MCP server | Web-app-style login behind a swappable auth module (see below)                                                                                                  |
+| **3. MCP server v0**   | The actions                 | Browse, folders, upload + wait, metadata, folder presentation, share link, optional publish. Built on `@permanentorg/sdk`, with direct calls where it has gaps. |
+| **4. End-to-end demo** | The ask, start to finish    | Demo script and a test archive on dev or staging                                                                                                                |
 
 **After the MVP:**
 

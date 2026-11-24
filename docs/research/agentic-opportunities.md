@@ -30,13 +30,13 @@ as the lens.
 
 ## How the ask maps onto Permanent
 
-| Ask | Closest thing in Permanent today | Fit |
-|---|---|---|
-| "Collect all the pictures" | Local folders (Cowork / Claude Code), Google Drive connector | Good. Done on the Claude side. |
-| "Sort them into stories" | Sub-folders, each with a description, dates and a cover thumbnail | OK. No manual order, plain-text narrative only. |
-| "Get them added on the platform" | Presigned S3 upload + `record/registerRecord`, or SFTP/rclone | Works, but no member-facing auth for agents. |
-| "Curate the story for the public gallery page" | Copy the story folder into Public; edit the archive profile | OK. Publishing is a copy, not a link. |
-| Public Gallery "Featured" placement | `make-featured`, admin only, whole archive | Out of scope for agents. A staff decision. |
+| Ask                                            | Closest thing in Permanent today                                  | Fit                                             |
+| ---------------------------------------------- | ----------------------------------------------------------------- | ----------------------------------------------- |
+| "Collect all the pictures"                     | Local folders (Cowork / Claude Code), Google Drive connector      | Good. Done on the Claude side.                  |
+| "Sort them into stories"                       | Sub-folders, each with a description, dates and a cover thumbnail | OK. No manual order, plain-text narrative only. |
+| "Get them added on the platform"               | Presigned S3 upload + `record/registerRecord`, or SFTP/rclone     | Works, but no member-facing auth for agents.    |
+| "Curate the story for the public gallery page" | Copy the story folder into Public; edit the archive profile       | OK. Publishing is a copy, not a link.           |
+| Public Gallery "Featured" placement            | `make-featured`, admin only, whole archive                        | Out of scope for agents. A staff decision.      |
 
 ## Opportunities
 
@@ -45,40 +45,40 @@ given the current codebase.
 
 ### Available now (no Permanent changes)
 
-| # | Opportunity | Value | Difficulty | Notes |
-|---|---|---|---|---|
-| A1 | **Curation skill**: gather photos from local folders or Drive, drop duplicates and blurry shots, group into stories by EXIF time and place, draft titles, descriptions, alt text and dates, produce a reviewable manifest | High | Low | Pure Claude-side work. Needs Cowork or Claude Code for local files. EXIF date and GPS are re-extracted server-side on upload anyway. |
-| A2 | **Drive the web app through the browser**, as the existing `permanent-archive:manager` skill (tank repo) does | Medium | Low (exists) | Works today and is good enough for an internal demo. Slow, fragile, needs Claude for Chrome, and not something to ship to members. |
-| A3 | **Bulk upload through rclone/SFTP** (`sftp.permanent.org`) | Medium | Low | Puts bytes and folder trees in place. The password sits in `rclone.conf`, MFA users are excluded, there is no rename or metadata, and content type is forced to octet-stream. |
+| #   | Opportunity                                                                                                                                                                                                               | Value  | Difficulty   | Notes                                                                                                                                                                         |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A1  | **Curation skill**: gather photos from local folders or Drive, drop duplicates and blurry shots, group into stories by EXIF time and place, draft titles, descriptions, alt text and dates, produce a reviewable manifest | High   | Low          | Pure Claude-side work. Needs Cowork or Claude Code for local files. EXIF date and GPS are re-extracted server-side on upload anyway.                                          |
+| A2  | **Drive the web app through the browser**, as the existing `permanent-archive:manager` skill (tank repo) does                                                                                                             | Medium | Low (exists) | Works today and is good enough for an internal demo. Slow, fragile, needs Claude for Chrome, and not something to ship to members.                                            |
+| A3  | **Bulk upload through rclone/SFTP** (`sftp.permanent.org`)                                                                                                                                                                | Medium | Low          | Puts bytes and folder trees in place. The password sits in `rclone.conf`, MFA users are excluded, there is no rename or metadata, and content type is forced to octet-stream. |
 
 ### Unlocked by member-facing agent auth
 
 All of these depend on **B0**.
 
-| # | Opportunity | Value | Difficulty | Notes |
-|---|---|---|---|---|
-| B0 | **Member auth for agents**: a FusionAuth public client using auth-code + PKCE (loopback) or device code, with refresh tokens, accepted by both APIs | Critical (enabler) | Medium | Nothing like this exists. stela allow-lists FusionAuth app IDs, so a new app ID must be added. back-end checks only the issuer. **Interim workaround:** sign in the way the web app does (`/api/auth/login`), as described in [solution-shape.md](../solution-shape.md#interim-auth). |
-| B1 | **Browse**: list archives, folders and records | Medium | Low | stela `GET /archives`, `/folders`, `/records`. The SDK covers most of it. |
-| B2 | **Create the event and story folders** | High | Low | back-end `folder/post` (V2). Covered by the SDK. |
-| B3 | **Upload with processing wait** | High | Medium | Presigned POST plus `registerRecord` (in the SDK). Multipart is needed for video and large files (not in the SDK). Poll `status` and `thumbnailUrls` until processing finishes. No webhook exists. |
-| B4 | **Record metadata**: title, description, date (EDTF), location | High | Low | stela `PATCH /records/:id`. |
-| B5 | **Alt text and keywords** | Medium | Medium | back-end `record/update` (V2) for alt text, `tag/post` (V1) for keywords. These may null out fields that aren't sent, so read before writing. |
-| B6 | **Story presentation**: folder description, cover image, sort by date, view | High | Medium | Only possible through V1 `folder/update` and `folder/sort`. Cover and story views are API-only. The web app may not render the story views (unverified). |
-| B7 | **Publish a story**: copy the folder into Public, return the public URL | High | Medium | No publish endpoint; publishing means copy or move into the public root. Needs Manager or Owner. The copy diverges from Private afterwards. |
-| B8 | **Archive profile**: blurb, about text, banner | Medium | Medium | V1 `profile_item/*`. How milestones are stored is unverified. |
-| B9 | **Share link to the story**, for guests before or instead of going public | Medium | Low | stela `/share-links` (in the SDK). |
-| B10 | **Invite family as contributors** to an archive | Low–Med | Low | back-end `archive/share`. Useful for a shared celebration. |
+| #   | Opportunity                                                                                                                                         | Value              | Difficulty | Notes                                                                                                                                                                                                                                                                                 |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| B0  | **Member auth for agents**: a FusionAuth public client using auth-code + PKCE (loopback) or device code, with refresh tokens, accepted by both APIs | Critical (enabler) | Medium     | Nothing like this exists. stela allow-lists FusionAuth app IDs, so a new app ID must be added. back-end checks only the issuer. **Interim workaround:** sign in the way the web app does (`/api/auth/login`), as described in [solution-shape.md](../solution-shape.md#interim-auth). |
+| B1  | **Browse**: list archives, folders and records                                                                                                      | Medium             | Low        | stela `GET /archives`, `/folders`, `/records`. The SDK covers most of it.                                                                                                                                                                                                             |
+| B2  | **Create the event and story folders**                                                                                                              | High               | Low        | back-end `folder/post` (V2). Covered by the SDK.                                                                                                                                                                                                                                      |
+| B3  | **Upload with processing wait**                                                                                                                     | High               | Medium     | Presigned POST plus `registerRecord` (in the SDK). Multipart is needed for video and large files (not in the SDK). Poll `status` and `thumbnailUrls` until processing finishes. No webhook exists.                                                                                    |
+| B4  | **Record metadata**: title, description, date (EDTF), location                                                                                      | High               | Low        | stela `PATCH /records/:id`.                                                                                                                                                                                                                                                           |
+| B5  | **Alt text and keywords**                                                                                                                           | Medium             | Medium     | back-end `record/update` (V2) for alt text, `tag/post` (V1) for keywords. These may null out fields that aren't sent, so read before writing.                                                                                                                                         |
+| B6  | **Story presentation**: folder description, cover image, sort by date, view                                                                         | High               | Medium     | Only possible through V1 `folder/update` and `folder/sort`. Cover and story views are API-only. The web app may not render the story views (unverified).                                                                                                                              |
+| B7  | **Publish a story**: copy the folder into Public, return the public URL                                                                             | High               | Medium     | No publish endpoint; publishing means copy or move into the public root. Needs Manager or Owner. The copy diverges from Private afterwards.                                                                                                                                           |
+| B8  | **Archive profile**: blurb, about text, banner                                                                                                      | Medium             | Medium     | V1 `profile_item/*`. How milestones are stored is unverified.                                                                                                                                                                                                                         |
+| B9  | **Share link to the story**, for guests before or instead of going public                                                                           | Medium             | Low        | stela `/share-links` (in the SDK).                                                                                                                                                                                                                                                    |
+| B10 | **Invite family as contributors** to an archive                                                                                                     | Low–Med            | Low        | back-end `archive/share`. Useful for a shared celebration.                                                                                                                                                                                                                            |
 
 ### Product changes that would improve the experience
 
-| # | Opportunity | Value | Difficulty | Notes |
-|---|---|---|---|---|
-| C1 | **Manual ordering** in folders | Medium | Medium | `position` sort exists, but nothing sets positions (`UpdateFolderLinkVOPosition` has no callers). Workaround: order by display date. |
-| C2 | **Show story views in the web app** (`storyscroll`, `slideshow`, …) | High | Med–High | The constants exist in back-end and stela. The web app only offers List, Grid and Timeline. Biggest visual payoff for "a story". |
-| C3 | **Sub-folder cover picker in the UI** | Low | Low | Already settable through the API. |
-| C4 | **Rich-text story narrative** | Medium | Medium | Folder descriptions are plain text. |
-| C5 | **Remote MCP connector hosted by Permanent** | High (reach) | High | The only way to reach claude.ai chat and mobile users. Needs an OAuth server that meets Anthropic's connector rules. The upload story is weaker, because a remote server can't read the member's laptop. |
-| C6 | **Bring photos in from Google Photos or Drive** | Medium | Medium | Drive connector exists on the Claude side. Moving bytes from Drive to Permanent needs a bridge. |
+| #   | Opportunity                                                         | Value        | Difficulty | Notes                                                                                                                                                                                                    |
+| --- | ------------------------------------------------------------------- | ------------ | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| C1  | **Manual ordering** in folders                                      | Medium       | Medium     | `position` sort exists, but nothing sets positions (`UpdateFolderLinkVOPosition` has no callers). Workaround: order by display date.                                                                     |
+| C2  | **Show story views in the web app** (`storyscroll`, `slideshow`, …) | High         | Med–High   | The constants exist in back-end and stela. The web app only offers List, Grid and Timeline. Biggest visual payoff for "a story".                                                                         |
+| C3  | **Sub-folder cover picker in the UI**                               | Low          | Low        | Already settable through the API.                                                                                                                                                                        |
+| C4  | **Rich-text story narrative**                                       | Medium       | Medium     | Folder descriptions are plain text.                                                                                                                                                                      |
+| C5  | **Remote MCP connector hosted by Permanent**                        | High (reach) | High       | The only way to reach claude.ai chat and mobile users. Needs an OAuth server that meets Anthropic's connector rules. The upload story is weaker, because a remote server can't read the member's laptop. |
+| C6  | **Bring photos in from Google Photos or Drive**                     | Medium       | Medium     | Drive connector exists on the Claude side. Moving bytes from Drive to Permanent needs a bridge.                                                                                                          |
 
 ## Constraints that shape the design
 
