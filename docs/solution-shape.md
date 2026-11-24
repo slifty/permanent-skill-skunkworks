@@ -126,7 +126,10 @@ and no new FusionAuth client.
 3. If the account has MFA, the server calls `/api/auth/verify`. The pending
    MFA state lives in the PHP session, so the server keeps cookies between
    the login and verify calls.
-4. The server stores the token in the OS keychain.
+4. The server stores the token in the plugin's data folder, in a file only
+   the member's user account can read (`0600`). It is not in the OS
+   keychain, because that would need native modules the plugin bundle
+   can't ship.
 
 All of this sits behind a single auth module. When proper OAuth lands, only
 that module changes; no tool code does.

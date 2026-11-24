@@ -38142,12 +38142,721 @@ var EMPTY_COMPLETION_RESULT = {
   }
 };
 
+// src/auth/credentials.ts
+import { chmod, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { homedir } from "node:os";
+import { dirname, join } from "node:path";
+var OWNER_ONLY = 384;
+var OWNER_ONLY_DIRECTORY = 448;
+var storedCredentials = external_exports.object({
+  environment: external_exports.string(),
+  accessToken: external_exports.string(),
+  email: external_exports.string(),
+  name: external_exports.string().optional(),
+  savedAt: external_exports.string()
+});
+var parseJson = (contents) => {
+  try {
+    return JSON.parse(contents);
+  } catch (_error) {
+    return void 0;
+  }
+};
+var defaultDataDirectory = () => {
+  const {
+    env: { PERMANENT_DATA_DIR: fromPlugin }
+  } = process;
+  return fromPlugin === void 0 || fromPlugin.trim() === "" ? join(homedir(), ".permanent-claude") : fromPlugin;
+};
+var CredentialStore = class {
+  path;
+  constructor(dataDirectory, environment) {
+    this.path = join(dataDirectory, `credentials.${environment}.json`);
+  }
+  async read() {
+    const contents = await readFile(this.path, "utf8").catch(() => void 0);
+    if (contents === void 0) {
+      return void 0;
+    }
+    const parsed = storedCredentials.safeParse(parseJson(contents));
+    return parsed.success ? parsed.data : void 0;
+  }
+  async write(credentials) {
+    const directory = dirname(this.path);
+    await mkdir(directory, { recursive: true, mode: OWNER_ONLY_DIRECTORY });
+    await chmod(directory, OWNER_ONLY_DIRECTORY);
+    await writeFile(this.path, JSON.stringify(credentials), {
+      encoding: "utf8",
+      mode: OWNER_ONLY
+    });
+    await chmod(this.path, OWNER_ONLY);
+  }
+  async clear() {
+    await rm(this.path, { force: true });
+  }
+};
+
+// src/auth/interim-auth.ts
+import { setTimeout as delay } from "node:timers/promises";
+
+// src/auth/browser.ts
+import { spawn } from "node:child_process";
+var openCommand = (url2) => {
+  switch (process.platform) {
+    case "darwin":
+      return ["open", [url2]];
+    case "win32":
+      return ["cmd", ["/c", "start", '""', url2]];
+    default:
+      return ["xdg-open", [url2]];
+  }
+};
+var openInBrowser = (url2) => {
+  const [command, args] = openCommand(url2);
+  const child = spawn(command, args, { detached: true, stdio: "ignore" });
+  child.on("error", () => void 0);
+  child.unref();
+};
+
+// src/auth/sign-in-server.ts
+import { randomBytes } from "node:crypto";
+import { once } from "node:events";
+import { createServer } from "node:http";
+
+// src/permanent/legacy-api.ts
+var legacyResponse = external_exports.looseObject({
+  isSuccessful: external_exports.boolean(),
+  csrf: external_exports.unknown().optional(),
+  Results: external_exports.array(
+    external_exports.looseObject({
+      data: external_exports.array(external_exports.record(external_exports.string(), external_exports.unknown())).nullable().optional(),
+      message: external_exports.array(external_exports.string()).optional(),
+      status: external_exports.boolean().optional()
+    })
+  ).default([])
+});
+var LegacySession = class {
+  cookies = /* @__PURE__ */ new Map();
+  csrf = null;
+  requestHeaders() {
+    const cookie = [...this.cookies].map(([name, value]) => `${name}=${value}`).join("; ");
+    return cookie === "" ? {} : { Cookie: cookie };
+  }
+  requestCsrf() {
+    return this.csrf;
+  }
+  update(headers, body) {
+    for (const setCookie of headers.getSetCookie()) {
+      const [pair = ""] = setCookie.split(";");
+      const separator = pair.indexOf("=");
+      if (separator > 0) {
+        this.cookies.set(
+          pair.slice(0, separator).trim(),
+          pair.slice(separator + 1).trim()
+        );
+      }
+    }
+    const { csrf } = body;
+    if (csrf !== void 0) {
+      this.csrf = csrf;
+    }
+  }
+};
+var LegacyApiError = class extends Error {
+  messages;
+  constructor(endpoint, messages) {
+    super(
+      `Permanent rejected ${endpoint}: ${messages.length > 0 ? messages.join(", ") : "no reason given"}`
+    );
+    this.messages = messages;
+  }
+};
+var postLegacy = async ({
+  apiUrl,
+  endpoint,
+  data,
+  session,
+  token
+}) => {
+  const response = await fetch(`${apiUrl}${endpoint}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...token === void 0 ? {} : { Authorization: `Bearer ${token}` },
+      ...session?.requestHeaders()
+    },
+    body: JSON.stringify({
+      RequestVO: { csrf: session?.requestCsrf() ?? null, data }
+    })
+  });
+  const body = legacyResponse.parse(await response.json());
+  session?.update(response.headers, body);
+  return body;
+};
+var legacyMessages = (response) => response.Results.flatMap((result) => result.message ?? []);
+var findSimpleValue = (response, key) => {
+  for (const result of response.Results) {
+    for (const entry of result.data ?? []) {
+      for (const value of Object.values(entry)) {
+        const parsed = external_exports.object({ key: external_exports.string(), value: external_exports.string() }).safeParse(value);
+        if (parsed.success && parsed.data.key === key) {
+          return parsed.data.value;
+        }
+      }
+    }
+  }
+  return void 0;
+};
+var findValueObject = (response, name) => {
+  for (const result of response.Results) {
+    for (const entry of result.data ?? []) {
+      if (name in entry) {
+        return entry[name];
+      }
+    }
+  }
+  return void 0;
+};
+
+// src/auth/password-login.ts
+var MFA_REQUIRED = "warning.auth.mfaToken";
+var MFA_TOKEN_TYPE = "type.auth.mfaValidation";
+var accountVo = external_exports.looseObject({
+  primaryEmail: external_exports.string().optional(),
+  fullName: external_exports.string().nullable().optional()
+});
+var signedInFrom = (response, email3, endpoint) => {
+  const accessToken = findSimpleValue(response, "authToken");
+  if (!response.isSuccessful || accessToken === void 0) {
+    throw new LegacyApiError(endpoint, legacyMessages(response));
+  }
+  const account = accountVo.safeParse(findValueObject(response, "AccountVO"));
+  const name = account.success ? account.data.fullName : void 0;
+  return {
+    status: "signed-in",
+    accessToken,
+    email: account.success ? account.data.primaryEmail ?? email3 : email3,
+    ...name === void 0 || name === null ? {} : { name }
+  };
+};
+var logIn = async (apiUrl, email3, password) => {
+  const session = new LegacySession();
+  const response = await postLegacy({
+    apiUrl,
+    endpoint: "/auth/login",
+    data: [
+      {
+        AccountVO: {
+          primaryEmail: email3,
+          rememberMe: false,
+          keepLoggedIn: true
+        },
+        AccountPasswordVO: { password }
+      }
+    ],
+    session
+  });
+  if (!response.isSuccessful && legacyMessages(response).includes(MFA_REQUIRED)) {
+    return { status: "mfa-required", email: email3, session };
+  }
+  return signedInFrom(response, email3, "/auth/login");
+};
+var verifyMfa = async (apiUrl, pending, code) => {
+  const response = await postLegacy({
+    apiUrl,
+    endpoint: "/auth/verify",
+    data: [
+      {
+        AccountVO: { primaryEmail: pending.email },
+        AuthVO: { token: code.trim(), type: MFA_TOKEN_TYPE }
+      }
+    ],
+    session: pending.session
+  });
+  return signedInFrom(response, pending.email, "/auth/verify");
+};
+
+// src/auth/sign-in-page.ts
+var escapeHtml = (value) => value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
+var page = (title, body) => `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${escapeHtml(title)}</title>
+<style>
+:root { color-scheme: light dark; --bg: #f6f5f2; --card: #ffffff; --text: #1d1d1f; --muted: #5f5f66; --accent: #131b4a; --accent-text: #ffffff; --border: #d6d4cf; --error: #a4161a; }
+@media (prefers-color-scheme: dark) { :root { --bg: #15161a; --card: #202127; --text: #f2f2f4; --muted: #a8a8b3; --accent: #c9cff5; --accent-text: #131b4a; --border: #3a3b44; --error: #ff8a8f; } }
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 16px; background: var(--bg); color: var(--text); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+main { width: 100%; max-width: 420px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 32px 24px; }
+h1 { font-size: 1.4rem; margin: 0 0 8px; }
+p { color: var(--muted); margin: 0 0 20px; }
+label { display: block; font-weight: 600; margin: 16px 0 6px; }
+input { width: 100%; padding: 10px 12px; font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--border); border-radius: 8px; }
+button { margin-top: 24px; width: 100%; padding: 12px; font: inherit; font-weight: 600; color: var(--accent-text); background: var(--accent); border: 0; border-radius: 8px; cursor: pointer; }
+.error { color: var(--error); font-weight: 600; }
+.environment { font-size: 0.85rem; }
+</style>
+</head>
+<body><main>${body}</main></body>
+</html>`;
+var errorLine = (error62) => error62 === void 0 ? "" : `<p class="error" role="alert">${escapeHtml(error62)}</p>`;
+var credentialsPage = (environment, action, error62) => page(
+  "Sign in to Permanent",
+  `<h1>Sign in to Permanent</h1>
+<p>Claude is asking to work in your Permanent archive. Your password goes straight to Permanent; Claude never sees it.</p>
+<p class="environment">Environment: ${escapeHtml(environment)}</p>
+${errorLine(error62)}
+<form method="post" action="${escapeHtml(action)}">
+<label for="email">Email</label>
+<input id="email" name="email" type="email" autocomplete="username" required autofocus>
+<label for="password">Password</label>
+<input id="password" name="password" type="password" autocomplete="current-password" required>
+<button type="submit">Sign in</button>
+</form>`
+);
+var mfaPage = (action, error62) => page(
+  "Verify it's you",
+  `<h1>Verify it's you</h1>
+<p>Permanent sent you a verification code. Enter it to finish signing in.</p>
+${errorLine(error62)}
+<form method="post" action="${escapeHtml(action)}">
+<label for="code">Verification code</label>
+<input id="code" name="code" inputmode="numeric" autocomplete="one-time-code" required autofocus>
+<button type="submit">Verify</button>
+</form>`
+);
+var donePage = (email3) => page(
+  "Signed in",
+  `<h1>You're signed in</h1>
+<p>Signed in as ${escapeHtml(email3)}. You can close this tab and go back to Claude.</p>`
+);
+var expiredPage = () => page(
+  "Link expired",
+  `<h1>This sign-in link has expired</h1>
+<p>Go back to Claude and ask it to sign in to Permanent again.</p>`
+);
+
+// src/auth/sign-in-server.ts
+var LOOPBACK = "127.0.0.1";
+var MAX_BODY_BYTES = 16384;
+var NONCE_BYTES = 24;
+var HTTP_OK = 200;
+var HTTP_NOT_FOUND = 404;
+var HTTP_GONE = 410;
+var HTTP_TOO_LARGE = 413;
+var HTTP_SERVER_ERROR = 500;
+var FRIENDLY_ERRORS = {
+  "warning.signin.unknown": "That email and password didn't match. Please try again.",
+  "warning.auth.token_does_not_match": "That code didn't match. Please check it and try again.",
+  "warning.auth.token_expired": "That code has expired. Please sign in again."
+};
+var describeError = (error62) => {
+  if (error62 instanceof LegacyApiError) {
+    const known = error62.messages.map((message) => FRIENDLY_ERRORS[message]).find((message) => message !== void 0);
+    return known ?? "Permanent couldn't sign you in. Please try again.";
+  }
+  return "Couldn't reach Permanent. Check your connection and try again.";
+};
+var readForm = async (request) => {
+  const chunks = [];
+  let size = 0;
+  for await (const chunk of request) {
+    const piece = chunk;
+    const buffer = Buffer.isBuffer(piece) ? piece : Buffer.from(String(piece));
+    size += buffer.length;
+    if (size > MAX_BODY_BYTES) {
+      request.destroy();
+      return void 0;
+    }
+    chunks.push(buffer);
+  }
+  return new URLSearchParams(Buffer.concat(chunks).toString("utf8"));
+};
+var send = (response, status, html) => {
+  response.writeHead(status, {
+    "Content-Type": "text/html; charset=utf-8",
+    "Cache-Control": "no-store",
+    "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; form-action 'self'",
+    "Referrer-Policy": "no-referrer"
+  });
+  response.end(html);
+};
+var SignInServer = class {
+  completion = Promise.withResolvers();
+  options;
+  nonce = randomBytes(NONCE_BYTES).toString("base64url");
+  server;
+  pendingMfa = void 0;
+  expiry = void 0;
+  stopped = false;
+  constructor(options) {
+    this.options = options;
+    this.server = createServer((request, response) => {
+      this.handle(request, response).catch(() => {
+        if (response.headersSent) {
+          response.end();
+        } else {
+          send(response, HTTP_SERVER_ERROR, expiredPage());
+        }
+      });
+    });
+  }
+  get isStopped() {
+    return this.stopped;
+  }
+  get done() {
+    return this.completion.promise;
+  }
+  async start() {
+    this.server.listen(0, LOOPBACK);
+    await once(this.server, "listening");
+    this.expiry = setTimeout(() => {
+      this.stop();
+    }, this.options.lifetimeMilliseconds);
+    const address = this.server.address();
+    if (address === null || typeof address === "string") {
+      throw new Error("The sign-in page could not start");
+    }
+    return `http://${LOOPBACK}:${address.port}/${this.nonce}`;
+  }
+  stop(result) {
+    this.stopped = true;
+    clearTimeout(this.expiry);
+    this.server.close();
+    this.server.closeAllConnections();
+    this.completion.resolve(result);
+  }
+  path(action) {
+    return `/${this.nonce}/${action}`;
+  }
+  async handle(request, response) {
+    const { pathname } = new URL(request.url ?? "/", `http://${LOOPBACK}`);
+    if (!pathname.startsWith(`/${this.nonce}`)) {
+      send(response, HTTP_NOT_FOUND, expiredPage());
+      return;
+    }
+    if (request.method === "GET") {
+      send(
+        response,
+        HTTP_OK,
+        credentialsPage(this.options.environment, this.path("login"))
+      );
+      return;
+    }
+    const form = await readForm(request);
+    if (form === void 0) {
+      send(response, HTTP_TOO_LARGE, expiredPage());
+      return;
+    }
+    if (pathname === this.path("login")) {
+      await this.handleLogin(form, response);
+    } else if (pathname === this.path("verify")) {
+      await this.handleVerify(form, response);
+    } else {
+      send(response, HTTP_GONE, expiredPage());
+    }
+  }
+  async handleLogin(form, response) {
+    const email3 = form.get("email")?.trim() ?? "";
+    const password = form.get("password") ?? "";
+    try {
+      const result = await logIn(this.options.apiUrl, email3, password);
+      if (result.status === "mfa-required") {
+        this.pendingMfa = result;
+        send(response, HTTP_OK, mfaPage(this.path("verify")));
+        return;
+      }
+      await this.finish(result, response);
+    } catch (error62) {
+      send(
+        response,
+        HTTP_OK,
+        credentialsPage(
+          this.options.environment,
+          this.path("login"),
+          describeError(error62)
+        )
+      );
+    }
+  }
+  async handleVerify(form, response) {
+    const { pendingMfa: pending } = this;
+    if (pending === void 0) {
+      send(response, HTTP_GONE, expiredPage());
+      return;
+    }
+    try {
+      const result = await verifyMfa(
+        this.options.apiUrl,
+        pending,
+        form.get("code") ?? ""
+      );
+      await this.finish(result, response);
+    } catch (error62) {
+      send(
+        response,
+        HTTP_OK,
+        mfaPage(this.path("verify"), describeError(error62))
+      );
+    }
+  }
+  async finish(result, response) {
+    if (this.stopped) {
+      send(response, HTTP_GONE, expiredPage());
+      return;
+    }
+    const kept = await this.options.onSignedIn(result);
+    this.pendingMfa = void 0;
+    if (!kept) {
+      send(response, HTTP_GONE, expiredPage());
+      return;
+    }
+    response.once("finish", () => {
+      this.stop(result);
+    });
+    send(response, HTTP_OK, donePage(result.email));
+  }
+};
+
+// src/auth/token.ts
+var SECONDS_TO_MILLISECONDS = 1e3;
+var EXPIRY_MARGIN_MILLISECONDS = 6e4;
+var jwtPayload = external_exports.looseObject({ exp: external_exports.number().optional() });
+var tokenExpiry = (token) => {
+  const [, payload] = token.split(".");
+  if (payload === void 0) {
+    return void 0;
+  }
+  try {
+    const parsed = jwtPayload.safeParse(
+      JSON.parse(Buffer.from(payload, "base64url").toString("utf8"))
+    );
+    return parsed.success && parsed.data.exp !== void 0 ? new Date(parsed.data.exp * SECONDS_TO_MILLISECONDS) : void 0;
+  } catch (_error) {
+    return void 0;
+  }
+};
+var isTokenUsable = (token, now = /* @__PURE__ */ new Date()) => {
+  const expiry = tokenExpiry(token);
+  return expiry === void 0 || expiry.getTime() - EXPIRY_MARGIN_MILLISECONDS > now.getTime();
+};
+
+// src/auth/interim-auth.ts
+var SIGN_IN_LIFETIME_MILLISECONDS = 6e5;
+var NotSignedInError = class extends Error {
+  constructor() {
+    super(
+      "Not signed in to Permanent. Call the sign_in tool and ask the member to finish signing in in their browser."
+    );
+  }
+};
+var InterimAuth = class {
+  environment;
+  store;
+  openBrowser;
+  signInLifetimeMilliseconds;
+  active = void 0;
+  generation = 0;
+  credentialLock = Promise.resolve();
+  constructor({
+    environment,
+    store,
+    openBrowser = openInBrowser,
+    signInLifetimeMilliseconds = SIGN_IN_LIFETIME_MILLISECONDS
+  }) {
+    this.environment = environment;
+    this.store = store;
+    this.openBrowser = openBrowser;
+    this.signInLifetimeMilliseconds = signInLifetimeMilliseconds;
+  }
+  async getAccessToken() {
+    const credentials = await this.store.read();
+    if (credentials === void 0 || !isTokenUsable(credentials.accessToken)) {
+      throw new NotSignedInError();
+    }
+    return credentials.accessToken;
+  }
+  async status() {
+    const credentials = await this.store.read();
+    if (credentials === void 0 || !isTokenUsable(credentials.accessToken)) {
+      return { environment: this.environment.name, signedIn: false };
+    }
+    const expiry = tokenExpiry(credentials.accessToken);
+    return {
+      environment: this.environment.name,
+      signedIn: true,
+      email: credentials.email,
+      ...credentials.name === void 0 ? {} : { name: credentials.name },
+      ...expiry === void 0 ? {} : { expiresAt: expiry.toISOString() }
+    };
+  }
+  async startSignIn() {
+    this.active ??= this.launchSignIn();
+    const { url: url2 } = await this.active;
+    this.openBrowser(url2);
+    return url2;
+  }
+  async waitForSignIn(timeoutMilliseconds) {
+    const pending = (await this.active)?.server.done;
+    if (pending !== void 0) {
+      await Promise.race([
+        pending,
+        delay(timeoutMilliseconds, void 0, { ref: false })
+      ]);
+    }
+    return await this.status();
+  }
+  async signOut() {
+    await this.exclusively(async () => {
+      this.generation += 1;
+      (await this.active)?.server.stop();
+      await this.store.clear();
+    });
+  }
+  async launchSignIn() {
+    const { generation } = this;
+    const server = new SignInServer({
+      apiUrl: this.environment.apiUrl,
+      environment: this.environment.name,
+      lifetimeMilliseconds: this.signInLifetimeMilliseconds,
+      onSignedIn: async (signedIn) => await this.exclusively(async () => {
+        if (generation !== this.generation || server.isStopped) {
+          return false;
+        }
+        await this.store.write({
+          environment: this.environment.name,
+          accessToken: signedIn.accessToken,
+          email: signedIn.email,
+          ...signedIn.name === void 0 ? {} : { name: signedIn.name },
+          savedAt: (/* @__PURE__ */ new Date()).toISOString()
+        });
+        return true;
+      })
+    });
+    const launched = server.start().then((url2) => ({ server, url: url2 }));
+    launched.catch(() => {
+      this.active = void 0;
+    });
+    void server.done.then(async () => {
+      if (this.active !== void 0 && (await this.active).server === server) {
+        this.active = void 0;
+      }
+    });
+    return await launched;
+  }
+  async exclusively(work) {
+    const result = this.credentialLock.then(work);
+    this.credentialLock = result.catch(() => void 0);
+    return await result;
+  }
+};
+
+// src/permanent/environment.ts
+var ENVIRONMENTS = {
+  production: {
+    name: "production",
+    apiUrl: "https://app.permanent.org/api",
+    webUrl: "https://app.permanent.org"
+  },
+  staging: {
+    name: "staging",
+    apiUrl: "https://app.staging.permanent.org/api",
+    webUrl: "https://app.staging.permanent.org"
+  },
+  dev: {
+    name: "dev",
+    apiUrl: "https://app.dev.permanent.org/api",
+    webUrl: "https://app.dev.permanent.org"
+  }
+};
+var DEFAULT_ENVIRONMENT = "production";
+var resolveEnvironment = (name) => {
+  const trimmed = name?.trim() ?? "";
+  const isUnset = trimmed === "" || trimmed.startsWith("${");
+  const key = isUnset ? DEFAULT_ENVIRONMENT : trimmed.toLowerCase();
+  const { [key]: environment } = ENVIRONMENTS;
+  if (environment === void 0) {
+    throw new Error(
+      `Unknown Permanent environment "${key}". Use one of: ${Object.keys(ENVIRONMENTS).join(", ")}.`
+    );
+  }
+  return environment;
+};
+
+// src/tools/result.ts
+var JSON_INDENT = 2;
+var jsonResult = (value) => ({
+  content: [{ type: "text", text: JSON.stringify(value, null, JSON_INDENT) }]
+});
+
+// src/tools/account.ts
+var MAX_WAIT_SECONDS = 120;
+var MILLISECONDS_PER_SECOND = 1e3;
+var registerAccountTools = (server, auth) => {
+  server.registerTool(
+    "sign_in",
+    {
+      title: "Sign in to Permanent",
+      description: "Open a Permanent sign-in page in the member's browser on this computer. The member types their email and password (and a verification code, if their account uses one) into that page, not into the chat. Returns the page's link in case the browser didn't open. Afterwards, call check_sign_in to wait for them to finish.",
+      inputSchema: {
+        switchAccount: external_exports.boolean().default(false).describe("Sign in again even if already signed in")
+      },
+      annotations: { readOnlyHint: false, openWorldHint: true }
+    },
+    async ({ switchAccount }) => {
+      const current = await auth.status();
+      if (current.signedIn && !switchAccount) {
+        return jsonResult({ alreadySignedIn: true, ...current });
+      }
+      const url2 = await auth.startSignIn();
+      return jsonResult({
+        signInUrl: url2,
+        instructions: "A sign-in page should have opened in the member's browser. If it didn't, give them this link. It only works on this computer and expires in 10 minutes. Then call check_sign_in."
+      });
+    }
+  );
+  server.registerTool(
+    "check_sign_in",
+    {
+      title: "Check Permanent sign-in",
+      description: "Report whether the member is signed in to Permanent, and as whom. Optionally waits for a sign-in that is in progress to finish.",
+      inputSchema: {
+        waitSeconds: external_exports.number().min(0).max(MAX_WAIT_SECONDS).default(0).describe("How long to wait for an in-progress sign-in")
+      },
+      annotations: { readOnlyHint: true, openWorldHint: false }
+    },
+    async ({ waitSeconds }) => jsonResult(
+      await auth.waitForSignIn(waitSeconds * MILLISECONDS_PER_SECOND)
+    )
+  );
+  server.registerTool(
+    "sign_out",
+    {
+      title: "Sign out of Permanent",
+      description: "Forget the member's Permanent sign-in on this computer.",
+      inputSchema: {},
+      annotations: {
+        readOnlyHint: false,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: false
+      }
+    },
+    async () => {
+      await auth.signOut();
+      return jsonResult({ signedIn: false });
+    }
+  );
+};
+
 // src/tools/curation.ts
 import { isAbsolute as isAbsolute3 } from "node:path";
 
 // src/manifest/file.ts
-import { chmod, mkdir, readFile, writeFile } from "node:fs/promises";
-import { dirname, isAbsolute as isAbsolute2 } from "node:path";
+import { chmod as chmod2, mkdir as mkdir2, readFile as readFile2, writeFile as writeFile2 } from "node:fs/promises";
+import { dirname as dirname2, isAbsolute as isAbsolute2 } from "node:path";
 
 // src/manifest/schema.ts
 import { isAbsolute } from "node:path";
@@ -38271,8 +38980,8 @@ var storyManifest = external_exports.object({
 });
 
 // src/manifest/file.ts
-var JSON_INDENT = "	";
-var OWNER_ONLY = 384;
+var JSON_INDENT2 = "	";
+var OWNER_ONLY2 = 384;
 var requireAbsolute = (path) => {
   if (!isAbsolute2(path)) {
     throw new Error(`Use an absolute path, not "${path}"`);
@@ -38280,28 +38989,28 @@ var requireAbsolute = (path) => {
   return path;
 };
 var readManifest = async (path) => {
-  const contents = await readFile(requireAbsolute(path), "utf8");
+  const contents = await readFile2(requireAbsolute(path), "utf8");
   return storyManifest.parse(JSON.parse(contents));
 };
 var writeManifest = async (path, manifest) => {
   const fullPath = requireAbsolute(path);
   const validated = storyManifest.parse(manifest);
-  await mkdir(dirname(fullPath), { recursive: true });
-  await writeFile(
+  await mkdir2(dirname2(fullPath), { recursive: true });
+  await writeFile2(
     fullPath,
-    `${JSON.stringify(validated, null, JSON_INDENT)}
+    `${JSON.stringify(validated, null, JSON_INDENT2)}
 `,
-    { encoding: "utf8", mode: OWNER_ONLY }
+    { encoding: "utf8", mode: OWNER_ONLY2 }
   );
-  await chmod(fullPath, OWNER_ONLY);
+  await chmod2(fullPath, OWNER_ONLY2);
   return fullPath;
 };
 
 // src/photos/scan.ts
 import { createHash } from "node:crypto";
 import { createReadStream } from "node:fs";
-import { readFile as readFile2, readdir, stat } from "node:fs/promises";
-import { join, resolve } from "node:path";
+import { readFile as readFile3, readdir, stat } from "node:fs/promises";
+import { join as join2, resolve } from "node:path";
 import { pipeline } from "node:stream/promises";
 
 // src/concurrency.ts
@@ -38444,7 +39153,7 @@ var hashStream = async (path) => {
 };
 var hashBuffer = (contents) => createHash("sha256").update(contents).digest("hex");
 var readImage = async (path) => {
-  const contents = await readFile2(path);
+  const contents = await readFile3(path);
   return {
     sha256: hashBuffer(contents),
     metadata: await readPhotoMetadata(contents)
@@ -38465,7 +39174,7 @@ var findInDirectory = async (directory, recursive2) => {
   const visible = entries.filter((entry) => !entry.name.startsWith("."));
   const results = await Promise.all(
     visible.map(async (entry) => {
-      const entryPath = join(directory, entry.name);
+      const entryPath = join2(directory, entry.name);
       if (entry.isDirectory()) {
         return recursive2 ? await findInDirectory(entryPath, recursive2) : emptyFound();
       }
@@ -38564,12 +39273,6 @@ var scanMedia = async (paths, options) => {
   };
 };
 
-// src/tools/result.ts
-var JSON_INDENT2 = 2;
-var jsonResult = (value) => ({
-  content: [{ type: "text", text: JSON.stringify(value, null, JSON_INDENT2) }]
-});
-
 // src/tools/curation.ts
 var DEFAULT_GAP_MINUTES = 90;
 var registerCurationTools = (server) => {
@@ -38657,11 +39360,21 @@ var registerCurationTools = (server) => {
 // src/server.ts
 var SERVER_NAME = "permanent";
 var SERVER_VERSION = "0.1.0";
-var createServer = () => {
+var defaultDependencies = () => {
+  const environment = resolveEnvironment(process.env.PERMANENT_ENVIRONMENT);
+  return {
+    auth: new InterimAuth({
+      environment,
+      store: new CredentialStore(defaultDataDirectory(), environment.name)
+    })
+  };
+};
+var createServer2 = (dependencies = defaultDependencies()) => {
   const server = new McpServer({ name: SERVER_NAME, version: SERVER_VERSION });
   registerCurationTools(server);
+  registerAccountTools(server, dependencies.auth);
   return server;
 };
 
 // src/index.ts
-await createServer().connect(new StdioServerTransport());
+await createServer2().connect(new StdioServerTransport());

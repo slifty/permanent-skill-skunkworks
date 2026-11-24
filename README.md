@@ -27,6 +27,17 @@ Add `slifty/permanent-skill-skunkworks` as a plugin marketplace in Cowork's
 plugin settings, then install `permanent`. Cowork does not prompt for
 settings, so it always uses the default environment.
 
+## Signing in
+
+When Claude first needs your archive, it opens a Permanent sign-in page in
+your browser. The page is served by the plugin on your own computer, and
+your password goes from there straight to Permanent; Claude never sees it.
+The plugin keeps the resulting session token in its data folder, readable
+only by your user account. Ask Claude to sign out of Permanent to remove it.
+
+This is a stopgap for the prototype. See
+[Interim auth](docs/solution-shape.md#interim-auth).
+
 ## Layout
 
 ```

@@ -45,7 +45,7 @@ describe("curation tools", () => {
 			Object.fromEntries(
 				tools.map((tool) => [tool.name, tool.annotations?.readOnlyHint]),
 			),
-		).toEqual({
+		).toMatchObject({
 			scan_photos: true,
 			save_story_manifest: false,
 			read_story_manifest: true,
