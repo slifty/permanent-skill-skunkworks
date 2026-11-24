@@ -2241,10 +2241,10 @@ var require_resolve = __commonJS({
       }
       return count;
     }
-    function getFullPath(resolver, id4 = "", normalize) {
+    function getFullPath(resolver, id5 = "", normalize) {
       if (normalize !== false)
-        id4 = normalizeId(id4);
-      const p = resolver.parse(id4);
+        id5 = normalizeId(id5);
+      const p = resolver.parse(id5);
       return _getFullPath(resolver, p);
     }
     exports.getFullPath = getFullPath;
@@ -2254,13 +2254,13 @@ var require_resolve = __commonJS({
     }
     exports._getFullPath = _getFullPath;
     var TRAILING_SLASH_HASH = /#\/?$/;
-    function normalizeId(id4) {
-      return id4 ? id4.replace(TRAILING_SLASH_HASH, "") : "";
+    function normalizeId(id5) {
+      return id5 ? id5.replace(TRAILING_SLASH_HASH, "") : "";
     }
     exports.normalizeId = normalizeId;
-    function resolveUrl(resolver, baseId, id4) {
-      id4 = normalizeId(id4);
-      return resolver.resolve(baseId, id4);
+    function resolveUrl(resolver, baseId, id5) {
+      id5 = normalizeId(id5);
+      return resolver.resolve(baseId, id5);
     }
     exports.resolveUrl = resolveUrl;
     var ANCHOR = /^[a-z_][-a-z0-9._]*$/i;
@@ -3030,8 +3030,8 @@ var require_compile = __commonJS({
       if (Object.keys(root.schema).length > 0 && refPath === baseId) {
         return getJsonPointer.call(this, p, root);
       }
-      const id4 = (0, resolve_1.normalizeId)(refPath);
-      const schOrRef = this.refs[id4] || this.schemas[id4];
+      const id5 = (0, resolve_1.normalizeId)(refPath);
+      const schOrRef = this.refs[id5] || this.schemas[id5];
       if (typeof schOrRef == "string") {
         const sch = resolveSchema.call(this, root, schOrRef);
         if (typeof (sch === null || sch === void 0 ? void 0 : sch.schema) !== "object")
@@ -3042,7 +3042,7 @@ var require_compile = __commonJS({
         return;
       if (!schOrRef.validate)
         compileSchema.call(this, schOrRef);
-      if (id4 === (0, resolve_1.normalizeId)(ref)) {
+      if (id5 === (0, resolve_1.normalizeId)(ref)) {
         const { schema } = schOrRef;
         const { schemaId } = this.opts;
         const schId = schema[schemaId];
@@ -4525,15 +4525,15 @@ var require_core = __commonJS({
             this.addSchema(sch, void 0, _meta, _validateSchema);
           return this;
         }
-        let id4;
+        let id5;
         if (typeof schema === "object") {
           const { schemaId } = this.opts;
-          id4 = schema[schemaId];
-          if (id4 !== void 0 && typeof id4 != "string") {
+          id5 = schema[schemaId];
+          if (id5 !== void 0 && typeof id5 != "string") {
             throw new Error(`schema ${schemaId} must be string`);
           }
         }
-        key = (0, resolve_1.normalizeId)(key || id4);
+        key = (0, resolve_1.normalizeId)(key || id5);
         this._checkUnique(key);
         this.schemas[key] = this._addSchema(schema, _meta, key, _validateSchema, true);
         return this;
@@ -4612,11 +4612,11 @@ var require_core = __commonJS({
           case "object": {
             const cacheKey = schemaKeyRef;
             this._cache.delete(cacheKey);
-            let id4 = schemaKeyRef[this.opts.schemaId];
-            if (id4) {
-              id4 = (0, resolve_1.normalizeId)(id4);
-              delete this.schemas[id4];
-              delete this.refs[id4];
+            let id5 = schemaKeyRef[this.opts.schemaId];
+            if (id5) {
+              id5 = (0, resolve_1.normalizeId)(id5);
+              delete this.schemas[id5];
+              delete this.refs[id5];
             }
             return this;
           }
@@ -4723,10 +4723,10 @@ var require_core = __commonJS({
         }
       }
       _addSchema(schema, meta3, baseId, validateSchema = this.opts.validateSchema, addSchema = this.opts.addUsedSchema) {
-        let id4;
+        let id5;
         const { schemaId } = this.opts;
         if (typeof schema == "object") {
-          id4 = schema[schemaId];
+          id5 = schema[schemaId];
         } else {
           if (this.opts.jtd)
             throw new Error("schema must be object");
@@ -4736,7 +4736,7 @@ var require_core = __commonJS({
         let sch = this._cache.get(schema);
         if (sch !== void 0)
           return sch;
-        baseId = (0, resolve_1.normalizeId)(id4 || baseId);
+        baseId = (0, resolve_1.normalizeId)(id5 || baseId);
         const localRefs = resolve_1.getSchemaRefs.call(this, schema, baseId);
         sch = new compile_1.SchemaEnv({ schema, schemaId, meta: meta3, baseId, localRefs });
         this._cache.set(sch.schema, sch);
@@ -4749,9 +4749,9 @@ var require_core = __commonJS({
           this.validateSchema(schema, true);
         return sch;
       }
-      _checkUnique(id4) {
-        if (this.schemas[id4] || this.refs[id4]) {
-          throw new Error(`schema with key or id "${id4}" already exists`);
+      _checkUnique(id5) {
+        if (this.schemas[id5] || this.refs[id5]) {
+          throw new Error(`schema with key or id "${id5}" already exists`);
         }
       }
       _compileSchemaEnv(sch) {
@@ -12364,15 +12364,15 @@ var $ZodObjectJIT = /* @__PURE__ */ $constructor("$ZodObjectJIT", (inst, def) =>
     const syms = normalized.symbolKeys;
     const doc = new Doc(["payload", "ctx"], { shape, inst, memo: memo2, syms });
     const parseStr = (k) => `shape[${k}]._zod.run({ value: input[${k}], issues: [] }, ctx)`;
-    const prefixStr = (id4, k) => `
-          let ${id4}_ab = false;
-          for (let i = 0; i < ${id4}.issues.length; i++) {
-            const iss = ${id4}.issues[i];
+    const prefixStr = (id5, k) => `
+          let ${id5}_ab = false;
+          for (let i = 0; i < ${id5}.issues.length; i++) {
+            const iss = ${id5}.issues[i];
             iss.path = iss.path ? [${k}, ...iss.path] : [${k}];
             payload.issues.push(iss);
-            if (iss.continue !== true) ${id4}_ab = true;
+            if (iss.continue !== true) ${id5}_ab = true;
           }
-          if (${id4}_ab && ctx && ctx.abortEarly) {
+          if (${id5}_ab && ctx && ctx.abortEarly) {
             payload.value = newResult;
             return payload;
           }`;
@@ -12386,34 +12386,34 @@ var $ZodObjectJIT = /* @__PURE__ */ $constructor("$ZodObjectJIT", (inst, def) =>
     for (const key of normalized.allKeys) {
       if (key === "__proto__")
         continue;
-      const id4 = ids[key];
+      const id5 = ids[key];
       const k = typeof key === "symbol" ? `syms[${syms.indexOf(key)}]` : esc(key);
       const isPresent = `${k} in input`;
       const schema = shape[key];
       const optin = schema?._zod?.optin;
       const isOptionalIn = optin !== void 0;
       const isOptionalOut = schema?._zod?.optout === "optional";
-      doc.write(`const ${id4} = ${parseStr(k)};`);
+      doc.write(`const ${id5} = ${parseStr(k)};`);
       if (isOptionalIn && isOptionalOut) {
-        const assign = optin === "optional" ? `${id4}_present` : `${id4}.value !== undefined || ${id4}_present`;
+        const assign = optin === "optional" ? `${id5}_present` : `${id5}.value !== undefined || ${id5}_present`;
         doc.write(`
-        const ${id4}_present = ${isPresent};
-        if (!${id4}.issues.length || ${id4}_present) {
-          if (${id4}.issues.length) {${prefixStr(id4, k)}
+        const ${id5}_present = ${isPresent};
+        if (!${id5}.issues.length || ${id5}_present) {
+          if (${id5}.issues.length) {${prefixStr(id5, k)}
           }
 
           if (${assign}) {
-            newResult[${k}] = ${id4}.value;
+            newResult[${k}] = ${id5}.value;
           }
         }
 
       `);
       } else if (!isOptionalIn) {
         doc.write(`
-        const ${id4}_present = ${isPresent};
-        if (${id4}.issues.length) {${prefixStr(id4, k)}
+        const ${id5}_present = ${isPresent};
+        if (${id5}.issues.length) {${prefixStr(id5, k)}
         }
-        if (!${id4}_present && !${id4}.issues.length) {
+        if (!${id5}_present && !${id5}.issues.length) {
           payload.issues.push({
             code: "invalid_type",
             expected: "nonoptional",
@@ -12426,22 +12426,22 @@ var $ZodObjectJIT = /* @__PURE__ */ $constructor("$ZodObjectJIT", (inst, def) =>
           }
         }
 
-        if (${id4}_present) {
-          newResult[${k}] = ${id4}.value;
+        if (${id5}_present) {
+          newResult[${k}] = ${id5}.value;
         }
 
       `);
       } else {
         doc.write(`
-        if (${id4}.issues.length) {${prefixStr(id4, k)}
+        if (${id5}.issues.length) {${prefixStr(id5, k)}
         }
       `);
         if (optin === "defaulted") {
-          doc.write(`newResult[${k}] = ${id4}.value;`);
+          doc.write(`newResult[${k}] = ${id5}.value;`);
         } else {
           doc.write(`
-        if (${id4}.value !== undefined || ${isPresent}) {
-          newResult[${k}] = ${id4}.value;
+        if (${id5}.value !== undefined || ${isPresent}) {
+          newResult[${k}] = ${id5}.value;
         }
       `);
         }
@@ -24469,26 +24469,26 @@ function extractDefs(ctx, schema) {
     return;
   const idToSchema = /* @__PURE__ */ new Map();
   for (const entry of ctx.seen.entries()) {
-    const id4 = ctx.metadataRegistry.get(entry[0])?.id;
-    if (id4) {
-      const existing = idToSchema.get(id4);
+    const id5 = ctx.metadataRegistry.get(entry[0])?.id;
+    if (id5) {
+      const existing = idToSchema.get(id5);
       if (existing && existing !== entry[0]) {
-        throw new Error(`Duplicate schema id "${id4}" detected during JSON Schema conversion. Two different schemas cannot share the same id when converted together.`);
+        throw new Error(`Duplicate schema id "${id5}" detected during JSON Schema conversion. Two different schemas cannot share the same id when converted together.`);
       }
-      idToSchema.set(id4, entry[0]);
+      idToSchema.set(id5, entry[0]);
     }
   }
   const makeURI = (entry) => {
     const defsSegment = ctx.target === "draft-2020-12" ? "$defs" : "definitions";
     if (ctx.external) {
       const externalId = ctx.external.registry.get(entry[0])?.id;
-      const uriGenerator = ctx.external.uri ?? ((id5) => id5);
+      const uriGenerator = ctx.external.uri ?? ((id6) => id6);
       if (externalId) {
         return { ref: uriGenerator(externalId) };
       }
-      const id4 = entry[1].defId ?? entry[1].schema.id ?? `schema${ctx.counter++}`;
-      entry[1].defId = id4;
-      return { defId: id4, ref: `${uriGenerator("__shared")}#/${defsSegment}/${encodeJSONPointerSegment(id4)}` };
+      const id5 = entry[1].defId ?? entry[1].schema.id ?? `schema${ctx.counter++}`;
+      entry[1].defId = id5;
+      return { defId: id5, ref: `${uriGenerator("__shared")}#/${defsSegment}/${encodeJSONPointerSegment(id5)}` };
     }
     const uriPrefix = `#`;
     const defUriPrefix = `${uriPrefix}/${defsSegment}/`;
@@ -24536,8 +24536,8 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
         continue;
       }
     }
-    const id4 = ctx.metadataRegistry.get(entry[0])?.id;
-    if (id4) {
+    const id5 = ctx.metadataRegistry.get(entry[0])?.id;
+    if (id5) {
       extractToDef(entry);
       continue;
     }
@@ -24770,10 +24770,10 @@ function finalize(ctx, schema) {
   } else {
   }
   if (ctx.external?.uri) {
-    const id4 = ctx.external.registry.get(schema)?.id;
-    if (!id4)
+    const id5 = ctx.external.registry.get(schema)?.id;
+    if (!id5)
       throw new Error("Schema is missing an `id` property");
-    result.$id = ctx.external.uri(id4);
+    result.$id = ctx.external.uri(id5);
   }
   assignProps(result, root.defId ? root.schema : root.def ?? root.schema);
   const rootMetaId = ctx.metadataRegistry.get(schema)?.id;
@@ -25379,7 +25379,7 @@ function stringifyKeyNames(bySchema, json2, visited) {
   const values = json2.enum ?? (json2.const !== void 0 ? [json2.const] : void 0);
   if (!numericType && !values?.some((v) => typeof v === "number"))
     return json2;
-  const { minimum, maximum, exclusiveMinimum, exclusiveMaximum, multipleOf, format, id: id4, ...rest } = json2;
+  const { minimum, maximum, exclusiveMinimum, exclusiveMaximum, multipleOf, format, id: id5, ...rest } = json2;
   if (rest.enum)
     rest.enum = rest.enum.map((v) => typeof v === "number" ? String(v) : v);
   else if (typeof rest.const === "number")
@@ -36683,7 +36683,7 @@ var ExperimentalServerTasks = class {
       if (hasPreviousToolUse) {
         const toolUseIds = new Set(previousContent.filter((c) => c.type === "tool_use").map((c) => c.id));
         const toolResultIds = new Set(lastContent.filter((c) => c.type === "tool_result").map((c) => c.toolUseId));
-        if (toolUseIds.size !== toolResultIds.size || ![...toolUseIds].every((id4) => toolResultIds.has(id4))) {
+        if (toolUseIds.size !== toolResultIds.size || ![...toolUseIds].every((id5) => toolResultIds.has(id5))) {
           throw new Error("ids of tool_result blocks and tool_use blocks from previous message do not match");
         }
       }
@@ -37108,7 +37108,7 @@ var Server = class extends Protocol {
       if (hasPreviousToolUse) {
         const toolUseIds = new Set(previousContent.filter((c) => c.type === "tool_use").map((c) => c.id));
         const toolResultIds = new Set(lastContent.filter((c) => c.type === "tool_result").map((c) => c.toolUseId));
-        if (toolUseIds.size !== toolResultIds.size || ![...toolUseIds].every((id4) => toolResultIds.has(id4))) {
+        if (toolUseIds.size !== toolResultIds.size || ![...toolUseIds].every((id5) => toolResultIds.has(id5))) {
           throw new Error("ids of tool_result blocks and tool_use blocks from previous message do not match");
         }
       }
@@ -38865,6 +38865,140 @@ var resolveEnvironment = (name) => {
   return environment;
 };
 
+// src/permanent/publications.ts
+import { readFile as readFile2 } from "node:fs/promises";
+import { join as join3 } from "node:path";
+
+// src/files.ts
+import { randomBytes as randomBytes2 } from "node:crypto";
+import { mkdir as mkdir2, rename, rm as rm2, writeFile as writeFile2 } from "node:fs/promises";
+import { dirname as dirname2, join as join2 } from "node:path";
+var OWNER_ONLY2 = 384;
+var SUFFIX_BYTES = 6;
+var writeFileAtomically = async (path, contents) => {
+  await mkdir2(dirname2(path), { recursive: true });
+  const temporary = join2(
+    dirname2(path),
+    `.${randomBytes2(SUFFIX_BYTES).toString("hex")}.tmp`
+  );
+  try {
+    await writeFile2(temporary, contents, {
+      encoding: "utf8",
+      mode: OWNER_ONLY2
+    });
+    await rename(temporary, path);
+  } catch (error62) {
+    await rm2(temporary, { force: true });
+    throw error62;
+  }
+};
+
+// src/permanent/publications.ts
+var publication = external_exports.discriminatedUnion("state", [
+  external_exports.object({
+    state: external_exports.literal("copying"),
+    name: external_exports.string(),
+    existingPublicFolderIds: external_exports.array(external_exports.number()),
+    startedAt: external_exports.string()
+  }),
+  external_exports.object({ state: external_exports.literal("published"), publicFolderId: external_exports.number() })
+]);
+var publicationsFile = external_exports.record(external_exports.string(), publication);
+var PublicationStore = class {
+  path;
+  pending = Promise.resolve();
+  constructor(dataDirectory, environment) {
+    this.path = join3(dataDirectory, `publications.${environment}.json`);
+  }
+  async get(sourceFolderId) {
+    return (await this.read())[String(sourceFolderId)];
+  }
+  async set(sourceFolderId, value) {
+    const next = this.pending.then(async () => {
+      const entries = await this.read();
+      await writeFileAtomically(
+        this.path,
+        JSON.stringify({ ...entries, [String(sourceFolderId)]: value })
+      );
+    });
+    this.pending = next.catch(() => void 0);
+    await next;
+  }
+  async remove(sourceFolderId) {
+    const next = this.pending.then(async () => {
+      const { [String(sourceFolderId)]: _removed, ...rest } = await this.read();
+      await writeFileAtomically(this.path, JSON.stringify(rest));
+    });
+    this.pending = next.catch(() => void 0);
+    await next;
+  }
+  async read() {
+    const contents = await readFile2(this.path, "utf8").catch(
+      (error62) => {
+        if (error62 instanceof Error && "code" in error62 && error62.code === "ENOENT") {
+          return void 0;
+        }
+        throw error62;
+      }
+    );
+    if (contents === void 0) {
+      return {};
+    }
+    try {
+      return publicationsFile.parse(JSON.parse(contents));
+    } catch (error62) {
+      throw new Error(
+        `The record of published folders at ${this.path} can't be read, so publishing now could make a duplicate public copy. Move that file aside to start a fresh record, then try again.`,
+        { cause: error62 }
+      );
+    }
+  }
+};
+
+// src/stories/progress.ts
+import { createHash } from "node:crypto";
+import { readFile as readFile3 } from "node:fs/promises";
+import { join as join4 } from "node:path";
+var progressFile = external_exports.record(external_exports.string(), external_exports.string());
+var digestOf = (value) => createHash("sha256").update(JSON.stringify(value)).digest("hex");
+var parseProgress = (contents) => {
+  if (contents === void 0) {
+    return {};
+  }
+  try {
+    const parsed = progressFile.safeParse(JSON.parse(contents));
+    return parsed.success ? parsed.data : {};
+  } catch (_error) {
+    return {};
+  }
+};
+var StoryProgress = class {
+  path;
+  pending = Promise.resolve();
+  constructor(dataDirectory, environment) {
+    this.path = join4(dataDirectory, `story-progress.${environment}.json`);
+  }
+  async isApplied(key, digest) {
+    return (await this.read())[key] === digest;
+  }
+  async markApplied(key, digest) {
+    const next = this.pending.then(async () => {
+      const entries = await this.read();
+      await writeFileAtomically(
+        this.path,
+        JSON.stringify({ ...entries, [key]: digest })
+      );
+    });
+    this.pending = next.catch(() => void 0);
+    await next;
+  }
+  async read() {
+    return parseProgress(
+      await readFile3(this.path, "utf8").catch(() => void 0)
+    );
+  }
+};
+
 // src/tools/result.ts
 var JSON_INDENT = 2;
 var jsonResult = (value) => ({
@@ -38976,6 +39110,7 @@ var stripPrefix = (value, prefix) => {
 var summarizeFolder = (vo) => ({
   folderId: vo.folderId,
   folderLinkId: vo.folder_linkId,
+  archiveNbr: orUndefined(vo.archiveNbr),
   name: vo.displayName ?? "",
   kind: stripPrefix(vo.type, "type.folder.") ?? vo.type,
   date: orUndefined(vo.displayDT),
@@ -39123,78 +39258,15 @@ var registerArchiveTools = (server, client) => {
   );
 };
 
-// src/stories/progress.ts
-import { createHash } from "node:crypto";
-import { readFile as readFile2 } from "node:fs/promises";
-import { join as join3 } from "node:path";
-
-// src/files.ts
-import { randomBytes as randomBytes2 } from "node:crypto";
-import { mkdir as mkdir2, rename, rm as rm2, writeFile as writeFile2 } from "node:fs/promises";
-import { dirname as dirname2, join as join2 } from "node:path";
-var OWNER_ONLY2 = 384;
-var SUFFIX_BYTES = 6;
-var writeFileAtomically = async (path, contents) => {
-  await mkdir2(dirname2(path), { recursive: true });
-  const temporary = join2(
-    dirname2(path),
-    `.${randomBytes2(SUFFIX_BYTES).toString("hex")}.tmp`
-  );
-  try {
-    await writeFile2(temporary, contents, {
-      encoding: "utf8",
-      mode: OWNER_ONLY2
-    });
-    await rename(temporary, path);
-  } catch (error62) {
-    await rm2(temporary, { force: true });
-    throw error62;
-  }
-};
-
-// src/stories/progress.ts
-var progressFile = external_exports.record(external_exports.string(), external_exports.string());
-var digestOf = (value) => createHash("sha256").update(JSON.stringify(value)).digest("hex");
-var parseProgress = (contents) => {
-  if (contents === void 0) {
-    return {};
-  }
-  try {
-    const parsed = progressFile.safeParse(JSON.parse(contents));
-    return parsed.success ? parsed.data : {};
-  } catch (_error) {
-    return {};
-  }
-};
-var StoryProgress = class {
-  path;
-  pending = Promise.resolve();
-  constructor(dataDirectory, environment) {
-    this.path = join3(dataDirectory, `story-progress.${environment}.json`);
-  }
-  async isApplied(key, digest) {
-    return (await this.read())[key] === digest;
-  }
-  async markApplied(key, digest) {
-    const next = this.pending.then(async () => {
-      const entries = await this.read();
-      await writeFileAtomically(
-        this.path,
-        JSON.stringify({ ...entries, [key]: digest })
-      );
-    });
-    this.pending = next.catch(() => void 0);
-    await next;
-  }
-  async read() {
-    return parseProgress(
-      await readFile2(this.path, "utf8").catch(() => void 0)
-    );
-  }
-};
-
-// src/tools/story.ts
+// src/tools/curation.ts
 import { isAbsolute as isAbsolute3 } from "node:path";
+
+// src/manifest/file.ts
+import { chmod as chmod2, mkdir as mkdir3, readFile as readFile4, writeFile as writeFile3 } from "node:fs/promises";
+import { dirname as dirname3, isAbsolute as isAbsolute2 } from "node:path";
+
+// src/manifest/schema.ts
+import { isAbsolute } from "node:path";
 
 // src/dates/edtf.ts
 var DATE = new RegExp("^(?<year>\\d{4})(?:-(?<month>\\d{2})(?:-(?<day>\\d{2}))?)?(?<qualifier>[?~%])?$", "v");
@@ -39252,6 +39324,487 @@ var isInterval = (value) => {
   return !(startOpen && endOpen) && (startOpen || isDate(start)) && (endOpen || isDate(end));
 };
 var isSupportedEdtf = (value) => value.includes("/") ? isInterval(value) : isInstant(value);
+
+// src/manifest/schema.ts
+var MANIFEST_VERSION = 1;
+var MAX_LATITUDE = 90;
+var MAX_LONGITUDE = 180;
+var location = external_exports.object({
+  latitude: external_exports.number().min(-MAX_LATITUDE).max(MAX_LATITUDE).optional(),
+  longitude: external_exports.number().min(-MAX_LONGITUDE).max(MAX_LONGITUDE).optional(),
+  name: external_exports.string().optional().describe("Human-readable place, e.g. 'Grandma's backyard, Austin TX'")
+});
+var date5 = external_exports.string().refine(isSupportedEdtf, { error: "Not a supported EDTF date" }).describe(
+  "EDTF date: '2024-06-01', '2024-06-01T18:30:00', '2024-06', '2024~' or '2024-06-01/2024-06-02'"
+);
+var absolutePath = external_exports.string().refine(isAbsolute, { error: "Must be an absolute path" });
+var manifestItem = external_exports.object({
+  path: absolutePath.describe("Absolute path to the local file"),
+  title: external_exports.string().optional(),
+  description: external_exports.string().optional(),
+  altText: external_exports.string().optional().describe("What the image shows, for people using screen readers"),
+  date: date5.optional(),
+  location: location.optional(),
+  keywords: external_exports.array(external_exports.string()).optional()
+});
+var permanentFolderId = external_exports.number().int().positive().optional().describe(
+  "Filled in when the story is put on Permanent, so a renamed story keeps its folder. Leave it alone."
+);
+var manifestStory = external_exports.object({
+  title: external_exports.string().min(1),
+  description: external_exports.string().optional().describe("The story's narrative, shown with the folder on Permanent"),
+  cover: absolutePath.optional().describe("Path of the item to use as the story's cover image"),
+  items: external_exports.array(manifestItem).min(1),
+  permanentFolderId
+});
+var storyManifest = external_exports.object({
+  version: external_exports.literal(MANIFEST_VERSION),
+  event: external_exports.object({
+    title: external_exports.string().min(1),
+    description: external_exports.string().optional(),
+    date: date5.optional(),
+    location: location.optional(),
+    permanentFolderId
+  }),
+  stories: external_exports.array(manifestStory).min(1),
+  excluded: external_exports.array(external_exports.object({ path: absolutePath, reason: external_exports.string() })).optional().describe("Files deliberately left out, and why")
+}).superRefine((manifest, context) => {
+  const titles = /* @__PURE__ */ new Set();
+  manifest.stories.forEach((story, storyIndex) => {
+    const title = story.title.trim().toLowerCase();
+    if (titles.has(title)) {
+      context.addIssue({
+        code: "custom",
+        message: `More than one story is called "${story.title}"; give each story its own title`,
+        path: ["stories", storyIndex, "title"]
+      });
+    }
+    titles.add(title);
+  });
+  const seen = /* @__PURE__ */ new Set();
+  manifest.stories.forEach((story, storyIndex) => {
+    story.items.forEach((item, itemIndex) => {
+      if (seen.has(item.path)) {
+        context.addIssue({
+          code: "custom",
+          message: `${item.path} appears in more than one place`,
+          path: ["stories", storyIndex, "items", itemIndex, "path"]
+        });
+      }
+      seen.add(item.path);
+    });
+    if (story.cover !== void 0 && !story.items.some((item) => item.path === story.cover)) {
+      context.addIssue({
+        code: "custom",
+        message: `Cover ${story.cover} is not one of the story's items`,
+        path: ["stories", storyIndex, "cover"]
+      });
+    }
+  });
+});
+
+// src/manifest/file.ts
+var JSON_INDENT2 = "	";
+var OWNER_ONLY3 = 384;
+var requireAbsolute = (path) => {
+  if (!isAbsolute2(path)) {
+    throw new Error(`Use an absolute path, not "${path}"`);
+  }
+  return path;
+};
+var readManifest = async (path) => {
+  const contents = await readFile4(requireAbsolute(path), "utf8");
+  return storyManifest.parse(JSON.parse(contents));
+};
+var writeManifest = async (path, manifest) => {
+  const fullPath = requireAbsolute(path);
+  const validated = storyManifest.parse(manifest);
+  await mkdir3(dirname3(fullPath), { recursive: true });
+  await writeFile3(
+    fullPath,
+    `${JSON.stringify(validated, null, JSON_INDENT2)}
+`,
+    { encoding: "utf8", mode: OWNER_ONLY3 }
+  );
+  await chmod2(fullPath, OWNER_ONLY3);
+  return fullPath;
+};
+
+// src/photos/scan.ts
+import { createHash as createHash2 } from "node:crypto";
+import { createReadStream } from "node:fs";
+import { readFile as readFile5, readdir, stat } from "node:fs/promises";
+import { join as join5, resolve } from "node:path";
+import { pipeline } from "node:stream/promises";
+
+// src/concurrency.ts
+var mapWithConcurrency = async (inputs, limit, transform2) => {
+  const results = new Array(inputs.length);
+  const pending = inputs.entries();
+  const work = async () => {
+    const next = pending.next();
+    if (next.done === true) {
+      return;
+    }
+    const {
+      value: [index, input2]
+    } = next;
+    results[index] = await transform2(input2);
+    await work();
+  };
+  const workerCount = Math.min(limit, inputs.length);
+  await Promise.all(Array.from({ length: workerCount }, work));
+  return results;
+};
+var runInOrder = async (inputs, step) => await inputs.reduce(
+  async (previous, input2) => await previous && await step(input2),
+  Promise.resolve(true)
+);
+
+// src/photos/exif.ts
+var import_exifr = __toESM(require_full_umd(), 1);
+var EXIF_DATE_PATTERN = new RegExp("^(?<year>\\d{4}):(?<month>\\d{2}):(?<day>\\d{2}) (?<time>\\d{2}:\\d{2}:\\d{2})$", "v");
+var EXIF_FIELDS = [
+  "DateTimeOriginal",
+  "CreateDate",
+  "OffsetTimeOriginal",
+  "Make",
+  "Model",
+  "ExifImageWidth",
+  "ExifImageHeight",
+  "GPSLatitude",
+  "GPSLatitudeRef",
+  "GPSLongitude",
+  "GPSLongitudeRef"
+];
+var asString = (value) => typeof value === "string" && value.trim() !== "" ? value.trim() : void 0;
+var asNumber = (value) => typeof value === "number" && Number.isFinite(value) ? value : void 0;
+var isRecord = (value) => typeof value === "object" && value !== null;
+var exifDateToIso = (exifDate, offset) => {
+  const groups = EXIF_DATE_PATTERN.exec(exifDate)?.groups;
+  if (groups === void 0) {
+    return void 0;
+  }
+  const { year, month, day, time: time3 } = groups;
+  const withOffset = `${year}-${month}-${day}T${time3}${offset ?? ""}`;
+  if (isEdtfDateTime(withOffset)) {
+    return withOffset;
+  }
+  const local = `${year}-${month}-${day}T${time3}`;
+  return isEdtfDateTime(local) ? local : void 0;
+};
+var describeCamera = (make, model) => {
+  if (make === void 0 || model === void 0) {
+    return model ?? make;
+  }
+  return model.startsWith(make) ? model : `${make} ${model}`;
+};
+var readTakenAt = (raw) => {
+  const exifDate = asString(raw.DateTimeOriginal) ?? asString(raw.CreateDate);
+  const takenAt = exifDate === void 0 ? void 0 : exifDateToIso(exifDate, asString(raw.OffsetTimeOriginal));
+  return takenAt === void 0 ? {} : { takenAt };
+};
+var readLocation = (raw) => {
+  const latitude = asNumber(raw.latitude);
+  const longitude = asNumber(raw.longitude);
+  return latitude === void 0 || longitude === void 0 ? {} : { latitude, longitude };
+};
+var readCamera = (raw) => {
+  const camera = describeCamera(asString(raw.Make), asString(raw.Model));
+  return camera === void 0 ? {} : { camera };
+};
+var readDimensions = (raw) => {
+  const width = asNumber(raw.ExifImageWidth);
+  const height = asNumber(raw.ExifImageHeight);
+  return width === void 0 || height === void 0 ? {} : { width, height };
+};
+var parseExif = async (contents) => await import_exifr.default.parse(contents, { pick: EXIF_FIELDS, gps: true, reviveValues: false }).catch(() => void 0);
+var readPhotoMetadata = async (contents) => {
+  const raw = await parseExif(contents);
+  if (!isRecord(raw)) {
+    return {};
+  }
+  return {
+    ...readTakenAt(raw),
+    ...readLocation(raw),
+    ...readCamera(raw),
+    ...readDimensions(raw)
+  };
+};
+
+// src/photos/media.ts
+import { extname } from "node:path";
+var IMAGE_EXTENSIONS = /* @__PURE__ */ new Set([
+  ".jpg",
+  ".jpeg",
+  ".png",
+  ".heic",
+  ".heif",
+  ".tif",
+  ".tiff",
+  ".webp",
+  ".gif",
+  ".avif"
+]);
+var VIDEO_EXTENSIONS = /* @__PURE__ */ new Set([".mp4", ".mov", ".m4v", ".avi", ".mkv"]);
+var CONTENT_TYPES = {
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".png": "image/png",
+  ".heic": "image/heic",
+  ".heif": "image/heif",
+  ".tif": "image/tiff",
+  ".tiff": "image/tiff",
+  ".webp": "image/webp",
+  ".gif": "image/gif",
+  ".avif": "image/avif",
+  ".mp4": "video/mp4",
+  ".mov": "video/quicktime",
+  ".m4v": "video/x-m4v",
+  ".avi": "video/x-msvideo",
+  ".mkv": "video/x-matroska"
+};
+var getContentType = (path) => CONTENT_TYPES[extname(path).toLowerCase()] ?? "application/octet-stream";
+var getMediaKind = (path) => {
+  const extension = extname(path).toLowerCase();
+  if (IMAGE_EXTENSIONS.has(extension)) {
+    return "image";
+  }
+  if (VIDEO_EXTENSIONS.has(extension)) {
+    return "video";
+  }
+  return void 0;
+};
+
+// src/photos/scan.ts
+var MILLISECONDS_PER_MINUTE = 6e4;
+var SCAN_CONCURRENCY = 8;
+var ZONED_ISO_DATE = new RegExp("(?:Z|[+\\-]\\d{2}:\\d{2})$", "v");
+var emptyFound = () => ({
+  media: [],
+  unsupported: [],
+  missing: [],
+  unreadable: []
+});
+var mergeFound = (results) => ({
+  media: results.flatMap((result) => result.media),
+  unsupported: results.flatMap((result) => result.unsupported),
+  missing: results.flatMap((result) => result.missing),
+  unreadable: results.flatMap((result) => result.unreadable)
+});
+var hashStream = async (path) => {
+  const hash2 = createHash2("sha256");
+  await pipeline(createReadStream(path), hash2);
+  return hash2.digest("hex");
+};
+var hashBuffer = (contents) => createHash2("sha256").update(contents).digest("hex");
+var readImage = async (path) => {
+  const contents = await readFile5(path);
+  return {
+    sha256: hashBuffer(contents),
+    metadata: await readPhotoMetadata(contents)
+  };
+};
+var readVideo = async (path) => ({
+  sha256: await hashStream(path),
+  metadata: {}
+});
+var classifyFile = (path) => getMediaKind(path) === void 0 ? { ...emptyFound(), unsupported: [path] } : { ...emptyFound(), media: [path] };
+var findInDirectory = async (directory, recursive2) => {
+  const entries = await readdir(directory, { withFileTypes: true }).catch(
+    () => void 0
+  );
+  if (entries === void 0) {
+    return { ...emptyFound(), unreadable: [directory] };
+  }
+  const visible = entries.filter((entry) => !entry.name.startsWith("."));
+  const results = await Promise.all(
+    visible.map(async (entry) => {
+      const entryPath = join5(directory, entry.name);
+      if (entry.isDirectory()) {
+        return recursive2 ? await findInDirectory(entryPath, recursive2) : emptyFound();
+      }
+      return entry.isFile() ? classifyFile(entryPath) : emptyFound();
+    })
+  );
+  return mergeFound(results);
+};
+var findFiles = async (rawPath, recursive2) => {
+  const path = resolve(rawPath);
+  const stats = await stat(path).catch(() => void 0);
+  if (stats === void 0) {
+    return { ...emptyFound(), missing: [path] };
+  }
+  return stats.isDirectory() ? await findInDirectory(path, recursive2) : classifyFile(path);
+};
+var scanFile = async (path) => {
+  const kind = getMediaKind(path) ?? "image";
+  const [stats, { sha256, metadata }] = await Promise.all([
+    stat(path),
+    kind === "image" ? readImage(path) : readVideo(path)
+  ]);
+  return {
+    path,
+    kind,
+    bytes: stats.size,
+    sha256,
+    ...metadata,
+    takenAt: metadata.takenAt ?? stats.mtime.toISOString(),
+    takenAtSource: metadata.takenAt === void 0 ? "file" : "exif"
+  };
+};
+var toTimestamp = (isoDate) => Date.parse(ZONED_ISO_DATE.test(isoDate) ? isoDate : `${isoDate}Z`);
+var compareByTakenAt = (a, b) => {
+  const difference = toTimestamp(a.takenAt) - toTimestamp(b.takenAt);
+  return difference === 0 ? a.path.localeCompare(b.path) : difference;
+};
+var markDuplicates = (items) => {
+  const firstByHash = /* @__PURE__ */ new Map();
+  for (const item of items) {
+    const original = firstByHash.get(item.sha256);
+    if (original === void 0) {
+      firstByHash.set(item.sha256, item.path);
+    } else {
+      item.duplicateOf = original;
+    }
+  }
+  return items.filter((item) => item.duplicateOf !== void 0).length;
+};
+var suggestGroups = (sortedItems, gapMinutes) => {
+  const gap = gapMinutes * MILLISECONDS_PER_MINUTE;
+  const groups = [];
+  let current = void 0;
+  let previousTimestamp = 0;
+  for (const { duplicateOf, takenAt, path } of sortedItems) {
+    if (duplicateOf !== void 0) {
+      continue;
+    }
+    const timestamp = toTimestamp(takenAt);
+    if (current === void 0 || timestamp - previousTimestamp >= gap) {
+      current = { start: takenAt, end: takenAt, paths: [path] };
+      groups.push(current);
+    } else {
+      current.paths.push(path);
+      current.end = takenAt;
+    }
+    previousTimestamp = timestamp;
+  }
+  return groups;
+};
+var scanMedia = async (paths, options) => {
+  const found = mergeFound(
+    await Promise.all(
+      paths.map(async (path) => await findFiles(path, options.recursive))
+    )
+  );
+  const uniqueMedia = [...new Set(found.media)];
+  const scanned = await mapWithConcurrency(
+    uniqueMedia,
+    SCAN_CONCURRENCY,
+    async (path) => await scanFile(path).catch(() => path)
+  );
+  const items = scanned.filter((entry) => typeof entry !== "string");
+  items.sort(compareByTakenAt);
+  const duplicates = markDuplicates(items);
+  return {
+    items,
+    groups: suggestGroups(items, options.gapMinutes),
+    duplicates,
+    unsupported: found.unsupported,
+    missing: found.missing,
+    unreadable: [
+      ...found.unreadable,
+      ...scanned.filter((entry) => typeof entry === "string")
+    ]
+  };
+};
+
+// src/tools/curation.ts
+var DEFAULT_GAP_MINUTES = 90;
+var registerCurationTools = (server) => {
+  server.registerTool(
+    "scan_photos",
+    {
+      title: "Scan photos",
+      description: "Scan local files or folders for photos and videos. Returns each file's date (from EXIF when present, otherwise the file's modified time), GPS location, camera and size, marks exact duplicates, and suggests groups of items taken close together in time. Does not upload anything.",
+      inputSchema: {
+        paths: external_exports.array(
+          external_exports.string().refine(isAbsolute3, {
+            error: "Use an absolute path on this computer"
+          })
+        ).min(1).describe("Absolute paths of files or folders on this computer"),
+        recursive: external_exports.boolean().default(true).describe("Also scan sub-folders"),
+        gapMinutes: external_exports.number().positive().default(DEFAULT_GAP_MINUTES).describe(
+          "Start a new suggested group when this many minutes pass between items"
+        )
+      },
+      annotations: { readOnlyHint: true, openWorldHint: false }
+    },
+    async ({ paths, recursive: recursive2, gapMinutes }) => {
+      const result = await scanMedia(paths, { recursive: recursive2, gapMinutes });
+      return jsonResult({
+        summary: {
+          files: result.items.length,
+          duplicates: result.duplicates,
+          withoutExifDate: result.items.filter(
+            (item) => item.takenAtSource === "file"
+          ).length,
+          suggestedGroups: result.groups.length
+        },
+        items: result.items.map(({ sha256: _sha256, ...item }) => item),
+        groups: result.groups,
+        unsupported: result.unsupported,
+        missing: result.missing,
+        unreadable: result.unreadable
+      });
+    }
+  );
+  server.registerTool(
+    "save_story_manifest",
+    {
+      title: "Save story manifest",
+      description: "Validate a story manifest (the event, its stories, and the items and metadata in each) and save it as JSON on this computer, replacing any existing file at that path. The manifest is what gets uploaded to Permanent later, so save it before asking the member to review it.",
+      inputSchema: {
+        path: external_exports.string().describe(
+          "Where to save the manifest, e.g. <photo folder>/story-manifest.json"
+        ),
+        manifest: storyManifest
+      },
+      annotations: {
+        readOnlyHint: false,
+        destructiveHint: true,
+        idempotentHint: true,
+        openWorldHint: false
+      }
+    },
+    async ({ path, manifest }) => {
+      const savedPath = await writeManifest(path, manifest);
+      return jsonResult({
+        savedPath,
+        stories: manifest.stories.length,
+        items: manifest.stories.reduce(
+          (total, story) => total + story.items.length,
+          0
+        )
+      });
+    }
+  );
+  server.registerTool(
+    "read_story_manifest",
+    {
+      title: "Read story manifest",
+      description: "Read and validate a story manifest saved on this computer, including any edits the member made to the file.",
+      inputSchema: {
+        path: external_exports.string().describe("Path of the manifest JSON file")
+      },
+      annotations: { readOnlyHint: true, openWorldHint: false }
+    },
+    async ({ path }) => jsonResult(await readManifest(path))
+  );
+};
+
+// src/tools/share.ts
+import { setTimeout as delay2 } from "node:timers/promises";
 
 // src/permanent/metadata.ts
 var SORT_BY_DATE = "sort.display_date_asc";
@@ -39357,146 +39910,278 @@ var updateFolder = async (client, archive, details) => {
   });
 };
 
-// src/concurrency.ts
-var mapWithConcurrency = async (inputs, limit, transform2) => {
-  const results = new Array(inputs.length);
-  const pending = inputs.entries();
-  const work = async () => {
-    const next = pending.next();
-    if (next.done === true) {
-      return;
-    }
-    const {
-      value: [index, input2]
-    } = next;
-    results[index] = await transform2(input2);
-    await work();
-  };
-  const workerCount = Math.min(limit, inputs.length);
-  await Promise.all(Array.from({ length: workerCount }, work));
-  return results;
+// src/permanent/sharing.ts
+var ACCESS_RESTRICTIONS = {
+  anyone_with_link: "none",
+  permanent_account: "account"
 };
-var runInOrder = async (inputs, step) => await inputs.reduce(
-  async (previous, input2) => await previous && await step(input2),
-  Promise.resolve(true)
-);
-
-// src/manifest/file.ts
-import { chmod as chmod2, mkdir as mkdir3, readFile as readFile3, writeFile as writeFile3 } from "node:fs/promises";
-import { dirname as dirname3, isAbsolute as isAbsolute2 } from "node:path";
-
-// src/manifest/schema.ts
-import { isAbsolute } from "node:path";
-var MANIFEST_VERSION = 1;
-var MAX_LATITUDE = 90;
-var MAX_LONGITUDE = 180;
-var location = external_exports.object({
-  latitude: external_exports.number().min(-MAX_LATITUDE).max(MAX_LATITUDE).optional(),
-  longitude: external_exports.number().min(-MAX_LONGITUDE).max(MAX_LONGITUDE).optional(),
-  name: external_exports.string().optional().describe("Human-readable place, e.g. 'Grandma's backyard, Austin TX'")
+var shareLink = external_exports.looseObject({
+  id: external_exports.coerce.string(),
+  token: external_exports.string(),
+  accessRestrictions: external_exports.string(),
+  expirationTimestamp: external_exports.string().nullish()
 });
-var date5 = external_exports.string().refine(isSupportedEdtf, { error: "Not a supported EDTF date" }).describe(
-  "EDTF date: '2024-06-01', '2024-06-01T18:30:00', '2024-06', '2024~' or '2024-06-01/2024-06-02'"
-);
-var absolutePath = external_exports.string().refine(isAbsolute, { error: "Must be an absolute path" });
-var manifestItem = external_exports.object({
-  path: absolutePath.describe("Absolute path to the local file"),
-  title: external_exports.string().optional(),
-  description: external_exports.string().optional(),
-  altText: external_exports.string().optional().describe("What the image shows, for people using screen readers"),
-  date: date5.optional(),
-  location: location.optional(),
-  keywords: external_exports.array(external_exports.string()).optional()
-});
-var permanentFolderId = external_exports.number().int().positive().optional().describe(
-  "Filled in when the story is put on Permanent, so a renamed story keeps its folder. Leave it alone."
-);
-var manifestStory = external_exports.object({
-  title: external_exports.string().min(1),
-  description: external_exports.string().optional().describe("The story's narrative, shown with the folder on Permanent"),
-  cover: absolutePath.optional().describe("Path of the item to use as the story's cover image"),
-  items: external_exports.array(manifestItem).min(1),
-  permanentFolderId
-});
-var storyManifest = external_exports.object({
-  version: external_exports.literal(MANIFEST_VERSION),
-  event: external_exports.object({
-    title: external_exports.string().min(1),
-    description: external_exports.string().optional(),
-    date: date5.optional(),
-    location: location.optional(),
-    permanentFolderId
-  }),
-  stories: external_exports.array(manifestStory).min(1),
-  excluded: external_exports.array(external_exports.object({ path: absolutePath, reason: external_exports.string() })).optional().describe("Files deliberately left out, and why")
-}).superRefine((manifest, context) => {
-  const titles = /* @__PURE__ */ new Set();
-  manifest.stories.forEach((story, storyIndex) => {
-    const title = story.title.trim().toLowerCase();
-    if (titles.has(title)) {
-      context.addIssue({
-        code: "custom",
-        message: `More than one story is called "${story.title}"; give each story its own title`,
-        path: ["stories", storyIndex, "title"]
-      });
-    }
-    titles.add(title);
+var PUBLISHING_ROLES = /* @__PURE__ */ new Set(["owner", "manager"]);
+var shareUrl = (environment, token) => `${environment.webUrl}/share/${token}`;
+var publicFolderUrl = (environment, archive, folder) => `${environment.webUrl}/p/archive/${archive.archiveNbr}/${folder.archiveNbr ?? ""}/${folder.folderLinkId}`;
+var findOrCreateShareLink = async (client, folderId, access) => {
+  const { [access]: restriction } = ACCESS_RESTRICTIONS;
+  const { items } = await client.stela({
+    path: `/folders/${folderId}/share_links`,
+    schema: external_exports.object({ items: external_exports.array(shareLink) })
   });
-  const seen = /* @__PURE__ */ new Set();
-  manifest.stories.forEach((story, storyIndex) => {
-    story.items.forEach((item, itemIndex) => {
-      if (seen.has(item.path)) {
-        context.addIssue({
-          code: "custom",
-          message: `${item.path} appears in more than one place`,
-          path: ["stories", storyIndex, "items", itemIndex, "path"]
-        });
-      }
-      seen.add(item.path);
-    });
-    if (story.cover !== void 0 && !story.items.some((item) => item.path === story.cover)) {
-      context.addIssue({
-        code: "custom",
-        message: `Cover ${story.cover} is not one of the story's items`,
-        path: ["stories", storyIndex, "cover"]
-      });
-    }
-  });
-});
-
-// src/manifest/file.ts
-var JSON_INDENT2 = "	";
-var OWNER_ONLY3 = 384;
-var requireAbsolute = (path) => {
-  if (!isAbsolute2(path)) {
-    throw new Error(`Use an absolute path, not "${path}"`);
-  }
-  return path;
-};
-var readManifest = async (path) => {
-  const contents = await readFile3(requireAbsolute(path), "utf8");
-  return storyManifest.parse(JSON.parse(contents));
-};
-var writeManifest = async (path, manifest) => {
-  const fullPath = requireAbsolute(path);
-  const validated = storyManifest.parse(manifest);
-  await mkdir3(dirname3(fullPath), { recursive: true });
-  await writeFile3(
-    fullPath,
-    `${JSON.stringify(validated, null, JSON_INDENT2)}
-`,
-    { encoding: "utf8", mode: OWNER_ONLY3 }
+  const existing = items.find(
+    (link) => link.accessRestrictions === restriction && (link.expirationTimestamp ?? void 0) === void 0
   );
-  await chmod2(fullPath, OWNER_ONLY3);
-  return fullPath;
+  if (existing !== void 0) {
+    return { created: false, token: existing.token };
+  }
+  const { data } = await client.stela({
+    path: "/share-links",
+    method: "POST",
+    body: {
+      itemId: String(folderId),
+      itemType: "folder",
+      accessRestrictions: restriction
+    },
+    schema: external_exports.object({ data: shareLink })
+  });
+  return { created: true, token: data.token };
 };
+var findPublicRoot = async (client, archiveId) => {
+  const roots = await getArchiveRoots(client, archiveId);
+  const publicRoot = roots.folders.find(
+    (folder) => folder.kind === "root.public"
+  );
+  if (publicRoot === void 0) {
+    throw new Error("This archive has no Public folder.");
+  }
+  return await getFolderContents(client, archiveId, publicRoot.folderId);
+};
+var assertCanPublish = (archive) => {
+  if (!PUBLISHING_ROLES.has(archive.role ?? "")) {
+    throw new Error(
+      `Publishing needs the owner or manager role in "${archive.name}"; the member is ${archive.role ?? "not a member"}.`
+    );
+  }
+};
+var copyFolderTo = async (client, archive, folder, destination) => {
+  await inArchive(client, archive, async () => {
+    await client.legacy("/folder/copy", [
+      {
+        FolderVO: {
+          folderId: folder.folderId,
+          folder_linkId: folder.folderLinkId,
+          archiveNbr: folder.archiveNbr
+        },
+        FolderDestVO: { folder_linkId: destination.folderLinkId }
+      }
+    ]);
+  });
+};
+
+// src/keyed-lock.ts
+var KeyedLock = class {
+  tails = /* @__PURE__ */ new Map();
+  async run(key, work) {
+    const previous = this.tails.get(key) ?? Promise.resolve();
+    const result = previous.then(work);
+    const settled = result.catch(() => void 0);
+    this.tails.set(key, settled);
+    void settled.then(() => {
+      if (this.tails.get(key) === settled) {
+        this.tails.delete(key);
+      }
+    });
+    return await result;
+  }
+};
+
+// src/tools/share.ts
+var id2 = external_exports.number().int().positive();
+var PUBLISH_WAIT_MILLISECONDS = 2e4;
+var PUBLISH_POLL_MILLISECONDS = 2e3;
+var COPY_GIVE_UP_MILLISECONDS = 18e5;
+var findNewCopy = (publicRoot, copying) => findFolderNamed(
+  {
+    ...publicRoot,
+    folders: publicRoot.folders.filter(
+      (candidate) => !copying.existingPublicFolderIds.includes(candidate.folderId)
+    )
+  },
+  copying.name
+);
+var waitForPublicCopy = async (wait) => {
+  const copy = findNewCopy(
+    await findPublicRoot(wait.client, wait.archiveId),
+    wait.copying
+  );
+  if (copy !== void 0 || Date.now() + wait.pollMilliseconds > wait.deadline) {
+    return copy;
+  }
+  await delay2(wait.pollMilliseconds);
+  return await waitForPublicCopy(wait);
+};
+var isAbandoned = (copying) => Date.now() - Date.parse(copying.startedAt) > COPY_GIVE_UP_MILLISECONDS;
+var STILL_COPYING = {
+  published: false,
+  stillCopying: true,
+  instructions: "Permanent is still copying the folder. Call publish_folder again in a minute to get the public link."
+};
+var registerShareTools = (server, {
+  client,
+  environment,
+  publications,
+  publishPollMilliseconds,
+  publishWaitMilliseconds
+}) => {
+  const locks = new KeyedLock();
+  const earlierPublication = async (archive, publicRoot, folderId) => {
+    const known = await publications.get(folderId);
+    if (known?.state === "published") {
+      const copy2 = publicRoot.folders.find(
+        (candidate) => candidate.folderId === known.publicFolderId
+      );
+      return copy2 === void 0 ? void 0 : {
+        alreadyPublic: true,
+        url: publicFolderUrl(environment, archive, copy2)
+      };
+    }
+    if (known?.state !== "copying" || isAbandoned(known)) {
+      return void 0;
+    }
+    const copy = findNewCopy(publicRoot, known);
+    if (copy === void 0) {
+      return STILL_COPYING;
+    }
+    await publications.set(folderId, {
+      state: "published",
+      publicFolderId: copy.folderId
+    });
+    return {
+      published: true,
+      url: publicFolderUrl(environment, archive, copy)
+    };
+  };
+  const publish = async (archiveId, folderId) => {
+    const archive = await findArchive(client, archiveId);
+    assertCanPublish(archive);
+    const folder = await getFolderContents(client, archiveId, folderId);
+    if (folder.kind.includes("public")) {
+      return {
+        alreadyPublic: true,
+        url: publicFolderUrl(environment, archive, folder)
+      };
+    }
+    const publicRoot = await findPublicRoot(client, archiveId);
+    const earlier = await earlierPublication(archive, publicRoot, folderId);
+    if (earlier !== void 0) {
+      return earlier;
+    }
+    const copying = {
+      state: "copying",
+      name: folder.name,
+      existingPublicFolderIds: publicRoot.folders.map(
+        (candidate) => candidate.folderId
+      ),
+      startedAt: (/* @__PURE__ */ new Date()).toISOString()
+    };
+    await publications.set(folderId, copying);
+    try {
+      await copyFolderTo(client, archive, folder, publicRoot);
+    } catch (error62) {
+      await publications.remove(folderId);
+      throw error62;
+    }
+    const copy = await waitForPublicCopy({
+      client,
+      archiveId,
+      copying,
+      deadline: Date.now() + (publishWaitMilliseconds ?? PUBLISH_WAIT_MILLISECONDS),
+      pollMilliseconds: publishPollMilliseconds ?? PUBLISH_POLL_MILLISECONDS
+    });
+    if (copy === void 0) {
+      return STILL_COPYING;
+    }
+    await publications.set(folderId, {
+      state: "published",
+      publicFolderId: copy.folderId
+    });
+    return {
+      published: true,
+      url: publicFolderUrl(environment, archive, copy)
+    };
+  };
+  server.registerTool(
+    "share_folder",
+    {
+      title: "Share a Permanent folder",
+      description: "Get a link to a folder that the member can send to people. The folder stays private; only people with the link can see it. Reuses an existing link with the same access if there is one. Ask the member who should be able to open it before choosing `access`.",
+      inputSchema: {
+        archiveId: id2,
+        folderId: id2,
+        access: external_exports.enum(["anyone_with_link", "permanent_account"]).describe(
+          "anyone_with_link: anyone who has the link can view. permanent_account: they must sign in to Permanent first."
+        )
+      },
+      annotations: {
+        readOnlyHint: false,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: true
+      }
+    },
+    async ({ archiveId, folderId, access }) => {
+      const folder = await getFolderContents(client, archiveId, folderId);
+      const { created, token } = await locks.run(
+        `share:${folderId}:${access}`,
+        async () => await findOrCreateShareLink(client, folderId, access)
+      );
+      return jsonResult({
+        folder: folder.name,
+        access,
+        created,
+        url: shareUrl(environment, token)
+      });
+    }
+  );
+  server.registerTool(
+    "publish_folder",
+    {
+      title: "Publish a folder to Permanent's Public space",
+      description: "Make a public copy of a folder in the archive's Public space, where anyone on the internet can see it and it appears on the archive's public page. Only call this after the member has explicitly agreed to make it public. The public copy does not follow later edits to the original. Needs the owner or manager role.",
+      inputSchema: {
+        archiveId: id2,
+        folderId: id2,
+        memberAgreedToPublish: external_exports.literal(true).describe(
+          "Set only after the member has explicitly said yes to making this folder public"
+        )
+      },
+      annotations: {
+        readOnlyHint: false,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: true
+      }
+    },
+    async ({ archiveId, folderId }) => jsonResult(
+      await locks.run(
+        `publish:${folderId}`,
+        async () => await publish(archiveId, folderId)
+      )
+    )
+  );
+};
+
+// src/tools/story.ts
+import { isAbsolute as isAbsolute4 } from "node:path";
 
 // src/uploads/upload-files.ts
-import { createHash as createHash2 } from "node:crypto";
-import { createReadStream } from "node:fs";
-import { stat } from "node:fs/promises";
+import { createHash as createHash3 } from "node:crypto";
+import { createReadStream as createReadStream2 } from "node:fs";
+import { stat as stat2 } from "node:fs/promises";
 import { basename, extname as extname2 } from "node:path";
-import { pipeline } from "node:stream/promises";
+import { pipeline as pipeline2 } from "node:stream/promises";
 
 // src/permanent/upload.ts
 import { openAsBlob } from "node:fs";
@@ -39596,57 +40281,13 @@ var uploadRecord = async (client, file2) => {
   });
 };
 
-// src/photos/media.ts
-import { extname } from "node:path";
-var IMAGE_EXTENSIONS = /* @__PURE__ */ new Set([
-  ".jpg",
-  ".jpeg",
-  ".png",
-  ".heic",
-  ".heif",
-  ".tif",
-  ".tiff",
-  ".webp",
-  ".gif",
-  ".avif"
-]);
-var VIDEO_EXTENSIONS = /* @__PURE__ */ new Set([".mp4", ".mov", ".m4v", ".avi", ".mkv"]);
-var CONTENT_TYPES = {
-  ".jpg": "image/jpeg",
-  ".jpeg": "image/jpeg",
-  ".png": "image/png",
-  ".heic": "image/heic",
-  ".heif": "image/heif",
-  ".tif": "image/tiff",
-  ".tiff": "image/tiff",
-  ".webp": "image/webp",
-  ".gif": "image/gif",
-  ".avif": "image/avif",
-  ".mp4": "video/mp4",
-  ".mov": "video/quicktime",
-  ".m4v": "video/x-m4v",
-  ".avi": "video/x-msvideo",
-  ".mkv": "video/x-matroska"
-};
-var getContentType = (path) => CONTENT_TYPES[extname(path).toLowerCase()] ?? "application/octet-stream";
-var getMediaKind = (path) => {
-  const extension = extname(path).toLowerCase();
-  if (IMAGE_EXTENSIONS.has(extension)) {
-    return "image";
-  }
-  if (VIDEO_EXTENSIONS.has(extension)) {
-    return "video";
-  }
-  return void 0;
-};
-
 // src/uploads/upload-files.ts
 var HASH_CONCURRENCY = 4;
 var UPLOAD_CONCURRENCY = 3;
 var DUPLICATE_NAME = "already exists in this location";
 var hashFile = async (path) => {
-  const hash2 = createHash2("sha256");
-  await pipeline(createReadStream(path), hash2);
+  const hash2 = createHash3("sha256");
+  await pipeline2(createReadStream2(path), hash2);
   return hash2.digest("hex");
 };
 var describe3 = (error62) => error62 instanceof Error ? error62.message : String(error62);
@@ -39690,7 +40331,7 @@ var prepare = async (request, report, names) => {
     HASH_CONCURRENCY,
     async (path) => {
       try {
-        const stats = await stat(path);
+        const stats = await stat2(path);
         if (!stats.isFile()) {
           return { path, error: "Not a file" };
         }
@@ -39739,7 +40380,7 @@ var prepare = async (request, report, names) => {
 var CHANGED_WHILE_UPLOADING = "The file changed while it was being uploaded. Try again once it has stopped changing.";
 var NOT_REMEMBERED = "Uploaded, but this computer couldn't record it, so uploading it to this folder again would make a copy.";
 var isUnchanged = async (file2) => {
-  const now = await stat(file2.path).catch(() => void 0);
+  const now = await stat2(file2.path).catch(() => void 0);
   return now?.size === file2.size && now.mtimeMs === file2.modifiedMs;
 };
 var recordUpload = async (request, file2, recordId) => {
@@ -40033,7 +40674,7 @@ var applyStoryManifest = async (request) => {
 var APPLY_BUDGET_MILLISECONDS = 1e5;
 var MAX_LATITUDE2 = 90;
 var MAX_LONGITUDE2 = 180;
-var id2 = external_exports.number().int().positive();
+var id3 = external_exports.number().int().positive();
 var place = external_exports.object({
   name: external_exports.string().optional(),
   latitude: external_exports.number().min(-MAX_LATITUDE2).max(MAX_LATITUDE2).optional(),
@@ -40046,11 +40687,11 @@ var registerStoryTools = (server, { client, ledger, progress, applyBudgetMillise
       title: "Put a story manifest on Permanent",
       description: "Put an approved story manifest on Permanent: creates a folder for the event inside parentFolderId and a folder per story inside it, uploads each story's files, sets titles, descriptions, dates, locations, alt text and keywords, then sets each story's narrative, cover and date order. Safe to call again: finished work is skipped, and edits made to the manifest since the last call are applied. Works for a limited time per call; if `done` is false, call again.",
       inputSchema: {
-        archiveId: id2,
-        parentFolderId: id2.describe(
+        archiveId: id3,
+        parentFolderId: id3.describe(
           "Where the event folder goes, normally the archive's My Files folder"
         ),
-        manifestPath: external_exports.string().refine(isAbsolute3, {
+        manifestPath: external_exports.string().refine(isAbsolute4, {
           error: "Use an absolute path on this computer"
         }),
         allowPublic: external_exports.boolean().default(false)
@@ -40081,8 +40722,8 @@ var registerStoryTools = (server, { client, ledger, progress, applyBudgetMillise
       title: "Describe a Permanent file",
       description: "Set a file's title, description, date (EDTF), location, alt text and keywords on Permanent. Only the fields you pass change. Keywords are added, not replaced.",
       inputSchema: {
-        archiveId: id2,
-        recordId: id2,
+        archiveId: id3,
+        recordId: id3,
         title: external_exports.string().min(1).optional(),
         description: external_exports.string().optional(),
         date: external_exports.string().refine(isSupportedEdtf, { error: "Not a supported EDTF date" }).optional(),
@@ -40119,10 +40760,10 @@ var registerStoryTools = (server, { client, ledger, progress, applyBudgetMillise
       title: "Present a Permanent folder",
       description: "Set a folder's description (the story's narrative) and cover image, and sort it by date so items appear in the order of their dates.",
       inputSchema: {
-        archiveId: id2,
-        folderId: id2,
+        archiveId: id3,
+        folderId: id3,
         description: external_exports.string().optional(),
-        coverRecordId: id2.optional().describe("A file in this folder to use as its cover"),
+        coverRecordId: id3.optional().describe("A file in this folder to use as its cover"),
         sortByDate: external_exports.boolean().default(true)
       },
       annotations: {
@@ -40152,8 +40793,8 @@ var registerStoryTools = (server, { client, ledger, progress, applyBudgetMillise
 };
 
 // src/tools/upload.ts
-import { isAbsolute as isAbsolute4 } from "node:path";
-import { setTimeout as delay2 } from "node:timers/promises";
+import { isAbsolute as isAbsolute5 } from "node:path";
+import { setTimeout as delay3 } from "node:timers/promises";
 
 // src/permanent/records.ts
 var READY = "status.generic.ok";
@@ -40198,7 +40839,7 @@ var MAX_FILES_PER_CALL = 200;
 var MAX_WAIT_SECONDS2 = 120;
 var POLL_INTERVAL_MILLISECONDS = 3e3;
 var MILLISECONDS_PER_SECOND2 = 1e3;
-var id3 = external_exports.number().int().positive();
+var id4 = external_exports.number().int().positive();
 var waitForProcessing = async (client, recordIds, deadline, pollMilliseconds) => {
   const records = await getRecordProcessing(client, recordIds);
   const stillProcessing = records.some(
@@ -40207,7 +40848,7 @@ var waitForProcessing = async (client, recordIds, deadline, pollMilliseconds) =>
   if (!stillProcessing || Date.now() + pollMilliseconds > deadline) {
     return records;
   }
-  await delay2(pollMilliseconds);
+  await delay3(pollMilliseconds);
   return await waitForProcessing(client, recordIds, deadline, pollMilliseconds);
 };
 var registerUploadTools = (server, client, ledger, options = {}) => {
@@ -40217,10 +40858,10 @@ var registerUploadTools = (server, client, ledger, options = {}) => {
       title: "Upload files to Permanent",
       description: "Upload local files into a Permanent folder. Safe to call again with the same files: anything already uploaded to that folder is skipped. Works for a limited time per call, so if `remaining` is not empty, call again with those paths. A file whose name is already used by a different file in the folder is reported under `conflicts` and not uploaded. Refuses public folders unless allowPublic is set after the member agreed.",
       inputSchema: {
-        archiveId: id3,
-        folderId: id3,
+        archiveId: id4,
+        folderId: id4,
         paths: external_exports.array(
-          external_exports.string().refine(isAbsolute4, {
+          external_exports.string().refine(isAbsolute5, {
             error: "Use an absolute path on this computer"
           })
         ).min(1).max(MAX_FILES_PER_CALL),
@@ -40251,7 +40892,7 @@ var registerUploadTools = (server, client, ledger, options = {}) => {
       title: "Check Permanent processing",
       description: "Check whether Permanent has finished processing uploaded files (thumbnails and previews). Optionally waits until they are all ready or failed.",
       inputSchema: {
-        recordIds: external_exports.array(id3).min(1).max(MAX_FILES_PER_CALL),
+        recordIds: external_exports.array(id4).min(1).max(MAX_FILES_PER_CALL),
         waitSeconds: external_exports.number().min(0).max(MAX_WAIT_SECONDS2).default(0)
       },
       annotations: { readOnlyHint: true, openWorldHint: true }
@@ -40274,8 +40915,8 @@ var registerUploadTools = (server, client, ledger, options = {}) => {
 };
 
 // src/uploads/ledger.ts
-import { readFile as readFile4 } from "node:fs/promises";
-import { join as join4 } from "node:path";
+import { readFile as readFile6 } from "node:fs/promises";
+import { join as join6 } from "node:path";
 var ledgerEntry = external_exports.object({
   folderId: external_exports.number(),
   sha256: external_exports.string(),
@@ -40304,7 +40945,7 @@ var UploadLedger = class {
   pending = Promise.resolve();
   folderLocks = /* @__PURE__ */ new Map();
   constructor(dataDirectory, environment) {
-    this.path = join4(dataDirectory, `uploads.${environment}.json`);
+    this.path = join6(dataDirectory, `uploads.${environment}.json`);
   }
   async forFolder(folderId) {
     const entries = await this.read();
@@ -40336,7 +40977,7 @@ var UploadLedger = class {
     await next;
   }
   async read() {
-    const contents = await readFile4(this.path, "utf8").catch(
+    const contents = await readFile6(this.path, "utf8").catch(
       (error62) => {
         if (error62 instanceof Error && "code" in error62 && error62.code === "ENOENT") {
           return void 0;
@@ -40346,314 +40987,6 @@ var UploadLedger = class {
     );
     return contents === void 0 ? [] : parseLedger(this.path, contents);
   }
-};
-
-// src/tools/curation.ts
-import { isAbsolute as isAbsolute5 } from "node:path";
-
-// src/photos/scan.ts
-import { createHash as createHash3 } from "node:crypto";
-import { createReadStream as createReadStream2 } from "node:fs";
-import { readFile as readFile5, readdir, stat as stat2 } from "node:fs/promises";
-import { join as join5, resolve } from "node:path";
-import { pipeline as pipeline2 } from "node:stream/promises";
-
-// src/photos/exif.ts
-var import_exifr = __toESM(require_full_umd(), 1);
-var EXIF_DATE_PATTERN = new RegExp("^(?<year>\\d{4}):(?<month>\\d{2}):(?<day>\\d{2}) (?<time>\\d{2}:\\d{2}:\\d{2})$", "v");
-var EXIF_FIELDS = [
-  "DateTimeOriginal",
-  "CreateDate",
-  "OffsetTimeOriginal",
-  "Make",
-  "Model",
-  "ExifImageWidth",
-  "ExifImageHeight",
-  "GPSLatitude",
-  "GPSLatitudeRef",
-  "GPSLongitude",
-  "GPSLongitudeRef"
-];
-var asString = (value) => typeof value === "string" && value.trim() !== "" ? value.trim() : void 0;
-var asNumber = (value) => typeof value === "number" && Number.isFinite(value) ? value : void 0;
-var isRecord = (value) => typeof value === "object" && value !== null;
-var exifDateToIso = (exifDate, offset) => {
-  const groups = EXIF_DATE_PATTERN.exec(exifDate)?.groups;
-  if (groups === void 0) {
-    return void 0;
-  }
-  const { year, month, day, time: time3 } = groups;
-  const withOffset = `${year}-${month}-${day}T${time3}${offset ?? ""}`;
-  if (isEdtfDateTime(withOffset)) {
-    return withOffset;
-  }
-  const local = `${year}-${month}-${day}T${time3}`;
-  return isEdtfDateTime(local) ? local : void 0;
-};
-var describeCamera = (make, model) => {
-  if (make === void 0 || model === void 0) {
-    return model ?? make;
-  }
-  return model.startsWith(make) ? model : `${make} ${model}`;
-};
-var readTakenAt = (raw) => {
-  const exifDate = asString(raw.DateTimeOriginal) ?? asString(raw.CreateDate);
-  const takenAt = exifDate === void 0 ? void 0 : exifDateToIso(exifDate, asString(raw.OffsetTimeOriginal));
-  return takenAt === void 0 ? {} : { takenAt };
-};
-var readLocation = (raw) => {
-  const latitude = asNumber(raw.latitude);
-  const longitude = asNumber(raw.longitude);
-  return latitude === void 0 || longitude === void 0 ? {} : { latitude, longitude };
-};
-var readCamera = (raw) => {
-  const camera = describeCamera(asString(raw.Make), asString(raw.Model));
-  return camera === void 0 ? {} : { camera };
-};
-var readDimensions = (raw) => {
-  const width = asNumber(raw.ExifImageWidth);
-  const height = asNumber(raw.ExifImageHeight);
-  return width === void 0 || height === void 0 ? {} : { width, height };
-};
-var parseExif = async (contents) => await import_exifr.default.parse(contents, { pick: EXIF_FIELDS, gps: true, reviveValues: false }).catch(() => void 0);
-var readPhotoMetadata = async (contents) => {
-  const raw = await parseExif(contents);
-  if (!isRecord(raw)) {
-    return {};
-  }
-  return {
-    ...readTakenAt(raw),
-    ...readLocation(raw),
-    ...readCamera(raw),
-    ...readDimensions(raw)
-  };
-};
-
-// src/photos/scan.ts
-var MILLISECONDS_PER_MINUTE = 6e4;
-var SCAN_CONCURRENCY = 8;
-var ZONED_ISO_DATE = new RegExp("(?:Z|[+\\-]\\d{2}:\\d{2})$", "v");
-var emptyFound = () => ({
-  media: [],
-  unsupported: [],
-  missing: [],
-  unreadable: []
-});
-var mergeFound = (results) => ({
-  media: results.flatMap((result) => result.media),
-  unsupported: results.flatMap((result) => result.unsupported),
-  missing: results.flatMap((result) => result.missing),
-  unreadable: results.flatMap((result) => result.unreadable)
-});
-var hashStream = async (path) => {
-  const hash2 = createHash3("sha256");
-  await pipeline2(createReadStream2(path), hash2);
-  return hash2.digest("hex");
-};
-var hashBuffer = (contents) => createHash3("sha256").update(contents).digest("hex");
-var readImage = async (path) => {
-  const contents = await readFile5(path);
-  return {
-    sha256: hashBuffer(contents),
-    metadata: await readPhotoMetadata(contents)
-  };
-};
-var readVideo = async (path) => ({
-  sha256: await hashStream(path),
-  metadata: {}
-});
-var classifyFile = (path) => getMediaKind(path) === void 0 ? { ...emptyFound(), unsupported: [path] } : { ...emptyFound(), media: [path] };
-var findInDirectory = async (directory, recursive2) => {
-  const entries = await readdir(directory, { withFileTypes: true }).catch(
-    () => void 0
-  );
-  if (entries === void 0) {
-    return { ...emptyFound(), unreadable: [directory] };
-  }
-  const visible = entries.filter((entry) => !entry.name.startsWith("."));
-  const results = await Promise.all(
-    visible.map(async (entry) => {
-      const entryPath = join5(directory, entry.name);
-      if (entry.isDirectory()) {
-        return recursive2 ? await findInDirectory(entryPath, recursive2) : emptyFound();
-      }
-      return entry.isFile() ? classifyFile(entryPath) : emptyFound();
-    })
-  );
-  return mergeFound(results);
-};
-var findFiles = async (rawPath, recursive2) => {
-  const path = resolve(rawPath);
-  const stats = await stat2(path).catch(() => void 0);
-  if (stats === void 0) {
-    return { ...emptyFound(), missing: [path] };
-  }
-  return stats.isDirectory() ? await findInDirectory(path, recursive2) : classifyFile(path);
-};
-var scanFile = async (path) => {
-  const kind = getMediaKind(path) ?? "image";
-  const [stats, { sha256, metadata }] = await Promise.all([
-    stat2(path),
-    kind === "image" ? readImage(path) : readVideo(path)
-  ]);
-  return {
-    path,
-    kind,
-    bytes: stats.size,
-    sha256,
-    ...metadata,
-    takenAt: metadata.takenAt ?? stats.mtime.toISOString(),
-    takenAtSource: metadata.takenAt === void 0 ? "file" : "exif"
-  };
-};
-var toTimestamp = (isoDate) => Date.parse(ZONED_ISO_DATE.test(isoDate) ? isoDate : `${isoDate}Z`);
-var compareByTakenAt = (a, b) => {
-  const difference = toTimestamp(a.takenAt) - toTimestamp(b.takenAt);
-  return difference === 0 ? a.path.localeCompare(b.path) : difference;
-};
-var markDuplicates = (items) => {
-  const firstByHash = /* @__PURE__ */ new Map();
-  for (const item of items) {
-    const original = firstByHash.get(item.sha256);
-    if (original === void 0) {
-      firstByHash.set(item.sha256, item.path);
-    } else {
-      item.duplicateOf = original;
-    }
-  }
-  return items.filter((item) => item.duplicateOf !== void 0).length;
-};
-var suggestGroups = (sortedItems, gapMinutes) => {
-  const gap = gapMinutes * MILLISECONDS_PER_MINUTE;
-  const groups = [];
-  let current = void 0;
-  let previousTimestamp = 0;
-  for (const { duplicateOf, takenAt, path } of sortedItems) {
-    if (duplicateOf !== void 0) {
-      continue;
-    }
-    const timestamp = toTimestamp(takenAt);
-    if (current === void 0 || timestamp - previousTimestamp >= gap) {
-      current = { start: takenAt, end: takenAt, paths: [path] };
-      groups.push(current);
-    } else {
-      current.paths.push(path);
-      current.end = takenAt;
-    }
-    previousTimestamp = timestamp;
-  }
-  return groups;
-};
-var scanMedia = async (paths, options) => {
-  const found = mergeFound(
-    await Promise.all(
-      paths.map(async (path) => await findFiles(path, options.recursive))
-    )
-  );
-  const uniqueMedia = [...new Set(found.media)];
-  const scanned = await mapWithConcurrency(
-    uniqueMedia,
-    SCAN_CONCURRENCY,
-    async (path) => await scanFile(path).catch(() => path)
-  );
-  const items = scanned.filter((entry) => typeof entry !== "string");
-  items.sort(compareByTakenAt);
-  const duplicates = markDuplicates(items);
-  return {
-    items,
-    groups: suggestGroups(items, options.gapMinutes),
-    duplicates,
-    unsupported: found.unsupported,
-    missing: found.missing,
-    unreadable: [
-      ...found.unreadable,
-      ...scanned.filter((entry) => typeof entry === "string")
-    ]
-  };
-};
-
-// src/tools/curation.ts
-var DEFAULT_GAP_MINUTES = 90;
-var registerCurationTools = (server) => {
-  server.registerTool(
-    "scan_photos",
-    {
-      title: "Scan photos",
-      description: "Scan local files or folders for photos and videos. Returns each file's date (from EXIF when present, otherwise the file's modified time), GPS location, camera and size, marks exact duplicates, and suggests groups of items taken close together in time. Does not upload anything.",
-      inputSchema: {
-        paths: external_exports.array(
-          external_exports.string().refine(isAbsolute5, {
-            error: "Use an absolute path on this computer"
-          })
-        ).min(1).describe("Absolute paths of files or folders on this computer"),
-        recursive: external_exports.boolean().default(true).describe("Also scan sub-folders"),
-        gapMinutes: external_exports.number().positive().default(DEFAULT_GAP_MINUTES).describe(
-          "Start a new suggested group when this many minutes pass between items"
-        )
-      },
-      annotations: { readOnlyHint: true, openWorldHint: false }
-    },
-    async ({ paths, recursive: recursive2, gapMinutes }) => {
-      const result = await scanMedia(paths, { recursive: recursive2, gapMinutes });
-      return jsonResult({
-        summary: {
-          files: result.items.length,
-          duplicates: result.duplicates,
-          withoutExifDate: result.items.filter(
-            (item) => item.takenAtSource === "file"
-          ).length,
-          suggestedGroups: result.groups.length
-        },
-        items: result.items.map(({ sha256: _sha256, ...item }) => item),
-        groups: result.groups,
-        unsupported: result.unsupported,
-        missing: result.missing,
-        unreadable: result.unreadable
-      });
-    }
-  );
-  server.registerTool(
-    "save_story_manifest",
-    {
-      title: "Save story manifest",
-      description: "Validate a story manifest (the event, its stories, and the items and metadata in each) and save it as JSON on this computer, replacing any existing file at that path. The manifest is what gets uploaded to Permanent later, so save it before asking the member to review it.",
-      inputSchema: {
-        path: external_exports.string().describe(
-          "Where to save the manifest, e.g. <photo folder>/story-manifest.json"
-        ),
-        manifest: storyManifest
-      },
-      annotations: {
-        readOnlyHint: false,
-        destructiveHint: true,
-        idempotentHint: true,
-        openWorldHint: false
-      }
-    },
-    async ({ path, manifest }) => {
-      const savedPath = await writeManifest(path, manifest);
-      return jsonResult({
-        savedPath,
-        stories: manifest.stories.length,
-        items: manifest.stories.reduce(
-          (total, story) => total + story.items.length,
-          0
-        )
-      });
-    }
-  );
-  server.registerTool(
-    "read_story_manifest",
-    {
-      title: "Read story manifest",
-      description: "Read and validate a story manifest saved on this computer, including any edits the member made to the file.",
-      inputSchema: {
-        path: external_exports.string().describe("Path of the manifest JSON file")
-      },
-      annotations: { readOnlyHint: true, openWorldHint: false }
-    },
-    async ({ path }) => jsonResult(await readManifest(path))
-  );
 };
 
 // src/server.ts
@@ -40667,10 +41000,12 @@ var defaultDependencies = () => {
     store: new CredentialStore(dataDirectory, environment.name)
   });
   return {
+    environment,
     auth,
     client: new PermanentClient(environment, auth),
     ledger: new UploadLedger(dataDirectory, environment.name),
-    progress: new StoryProgress(dataDirectory, environment.name)
+    progress: new StoryProgress(dataDirectory, environment.name),
+    publications: new PublicationStore(dataDirectory, environment.name)
   };
 };
 var createServer2 = (dependencies = defaultDependencies()) => {
@@ -40685,6 +41020,7 @@ var createServer2 = (dependencies = defaultDependencies()) => {
     dependencies.uploadOptions
   );
   registerStoryTools(server, dependencies);
+  registerShareTools(server, dependencies);
   return server;
 };
 

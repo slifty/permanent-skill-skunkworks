@@ -14,6 +14,7 @@ export interface ArchiveSummary {
 export interface FolderSummary {
 	folderId: number;
 	folderLinkId: number;
+	archiveNbr?: string | undefined;
 	name: string;
 	kind: string;
 	date?: string | undefined;
@@ -59,6 +60,7 @@ const stripPrefix = (
 const summarizeFolder = (vo: FolderVo): FolderSummary => ({
 	folderId: vo.folderId,
 	folderLinkId: vo.folder_linkId,
+	archiveNbr: orUndefined(vo.archiveNbr),
 	name: vo.displayName ?? "",
 	kind: stripPrefix(vo.type, "type.folder.") ?? vo.type,
 	date: orUndefined(vo.displayDT),

@@ -7,6 +7,7 @@ import type {
 
 export interface FakeFolder {
 	folderId: number;
+	archiveNbr: string;
 	folder_linkId: number;
 	parentFolderId: number | undefined;
 	displayName: string;
@@ -64,11 +65,25 @@ const legacyFail = (message: string): FakeReply =>
 		Results: [{ data: null, message: [message], status: false }],
 	});
 
+export interface FakeShareLink {
+	id: string;
+	folderId: number;
+	token: string;
+	accessRestrictions: string;
+}
+
 export class FakeArchive {
+	public readonly shareLinks: FakeShareLink[] = [];
+	public copyDelayPolls = 0;
 	public readonly folders = new Map<number, FakeFolder>();
 	public readonly records = new Map<number, FakeRecord>();
 	public readonly pendingUploads = new Map<string, number>();
 	public currentArchiveNbr: string | undefined = undefined;
+	private pendingCopies: Array<{ polls: number; finish: () => void }> = [];
+
+	public get queuedCopies(): number {
+		return this.pendingCopies.length;
+	}
 	private nextId = 100;
 
 	public constructor() {
@@ -107,9 +122,10 @@ export class FakeArchive {
 		const { routes } = fake;
 		routes.set("GET /api/archive/getAllArchives", () => ok([ARCHIVE]));
 		routes.set("GET /api/folder/getRoot", () => ok(this.folderVo(1)));
-		routes.set("GET /api/folder/getWithChildren", ({ query }) =>
-			ok(this.folderVo(Number(query.get("folderId")))),
-		);
+		routes.set("GET /api/folder/getWithChildren", ({ query }) => {
+			this.settleCopies();
+			return ok(this.folderVo(Number(query.get("folderId"))));
+		});
 		routes.set("POST /api/folder/post", ({ body }) => this.createFolder(body));
 		routes.set("POST /api/record/getPresignedUrl", () => {
 			const key = `upload-${this.allocate()}`;
@@ -174,6 +190,32 @@ export class FakeArchive {
 		routes.set("POST /api/folder/sort", ({ body }) =>
 			this.legacyInArchive(() => this.sortFolder(body)),
 		);
+		routes.set("GET /api/v2/folders/*", ({ path }) => {
+			const folderId = Number(path.split("/").at(-2));
+			return ok({
+				items: this.shareLinks.filter((link) => link.folderId === folderId),
+			});
+		});
+		routes.set("POST /api/v2/share-links", ({ body }) => {
+			const request = z
+				.object({
+					itemId: z.string(),
+					itemType: z.literal("folder"),
+					accessRestrictions: z.enum(["none", "account"]),
+				})
+				.parse(body);
+			const link: FakeShareLink = {
+				id: String(this.allocate()),
+				folderId: Number(request.itemId),
+				token: `token-${this.shareLinks.length + 1}`,
+				accessRestrictions: request.accessRestrictions,
+			};
+			this.shareLinks.push(link);
+			return { status: 201, body: { data: link } };
+		});
+		routes.set("POST /api/folder/copy", ({ body }) =>
+			this.legacyInArchive(() => this.copyFolder(body)),
+		);
 	}
 
 	private allocate(): number {
@@ -186,6 +228,7 @@ export class FakeArchive {
 			Pick<FakeFolder, "folderId" | "displayName" | "type">,
 	): FakeFolder {
 		const complete: FakeFolder = {
+			archiveNbr: `0a1b-f${folder.folderId}`,
 			folder_linkId: folder.folderId + 1000,
 			parentFolderId: undefined,
 			description: null,
@@ -376,6 +419,45 @@ export class FakeArchive {
 			}
 		}
 		return legacyOk();
+	}
+
+	private copyFolder(body: unknown): FakeReply {
+		const {
+			RequestVO: {
+				data: [entry],
+			},
+		} = legacyData.parse(body);
+		const source = this.folders.get(Number(entry?.FolderVO?.folderId));
+		const destination = [...this.folders.values()].find(
+			(folder) => folder.folder_linkId === entry?.FolderDestVO?.folder_linkId,
+		);
+		if (source === undefined || destination === undefined) {
+			return legacyFail("error.folder.not_found");
+		}
+		const finishCopy = (): void => {
+			const folderId = this.allocate();
+			this.addFolder({
+				...source,
+				folderId,
+				archiveNbr: `0a1b-f${folderId}`,
+				folder_linkId: folderId + 1000,
+				parentFolderId: destination.folderId,
+				type: "type.folder.public",
+			});
+		};
+		this.pendingCopies.push({ polls: this.copyDelayPolls, finish: finishCopy });
+		this.settleCopies();
+		return legacyOk();
+	}
+
+	private settleCopies(): void {
+		const ready = this.pendingCopies.filter((copy) => copy.polls === 0);
+		this.pendingCopies = this.pendingCopies
+			.filter((copy) => copy.polls > 0)
+			.map((copy) => ({ ...copy, polls: copy.polls - 1 }));
+		ready.forEach((copy) => {
+			copy.finish();
+		});
 	}
 
 	private sortFolder(body: unknown): FakeReply {

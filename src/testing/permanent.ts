@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { CredentialStore } from "../auth/credentials.ts";
 import { InterimAuth } from "../auth/interim-auth.ts";
 import { PermanentClient } from "../permanent/api.ts";
+import { PublicationStore } from "../permanent/publications.ts";
 import { StoryProgress } from "../stories/progress.ts";
 import { UploadLedger } from "../uploads/ledger.ts";
 import { fakeToken, startFakePermanent } from "./fake-permanent.ts";
@@ -54,11 +55,14 @@ export const startTestPermanent = async (
 	return {
 		fake,
 		token,
+		environment,
 		auth,
 		client: new PermanentClient(environment, auth),
 		ledger: new UploadLedger(dataDirectory, "test"),
 		progress: new StoryProgress(dataDirectory, "test"),
+		publications: new PublicationStore(dataDirectory, "test"),
 		uploadOptions: { pollIntervalMilliseconds: 10 },
+		publishPollMilliseconds: 10,
 		signIn: async () => {
 			const url = await auth.startSignIn();
 			await submitForm(`${url}/login`, {

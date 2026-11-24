@@ -102,7 +102,7 @@ export const setRecordAltText = async (
 	});
 };
 
-const inArchive = async (
+export const inArchive = async (
 	client: PermanentClient,
 	archive: ArchiveRef,
 	work: () => Promise<void>,
