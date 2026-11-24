@@ -24,6 +24,10 @@ export default defineConfig([
 			},
 		},
 		rules: {
+			"@typescript-eslint/no-magic-numbers": [
+				"error",
+				{ ignore: [0, 1], ignoreEnums: true },
+			],
 			"@typescript-eslint/no-unused-vars": [
 				"error",
 				{
@@ -35,7 +39,7 @@ export default defineConfig([
 		},
 	},
 	{
-		files: ["**/*.test.ts"],
+		files: ["**/*.test.ts", "src/testing/**/*.ts"],
 		rules: {
 			"max-lines": "off",
 			"@typescript-eslint/no-magic-numbers": "off",
