@@ -21,7 +21,7 @@ export class PermanentApiError extends Error {
 	}
 }
 
-type QueryValue = string | number | boolean;
+type QueryValue = string | number | boolean | Array<string | number>;
 
 export interface ApiRequest<Schema extends z.ZodType> {
 	path: string;
@@ -37,7 +37,11 @@ const withQuery = (
 ): string => {
 	const params = new URLSearchParams();
 	for (const [key, value] of Object.entries(query)) {
-		if (value !== undefined) {
+		if (Array.isArray(value)) {
+			value.forEach((item) => {
+				params.append(`${key}[]`, String(item));
+			});
+		} else if (value !== undefined) {
 			params.set(key, String(value));
 		}
 	}
