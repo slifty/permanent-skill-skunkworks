@@ -64,6 +64,35 @@ first. Never upload photos the member hasn't approved.
    manifest, or asks you to change a title or description, update the
    manifest and call `apply_story_manifest` again. Only what changed is
    updated.
+9. **Share it.** Ask the member who they want to see the story.
+
+## Sharing a story
+
+Everything above stays private: only the archive's members can see it.
+There are two ways to show it to others. Offer the link first.
+
+- **A share link** (`share_folder`): the folder stays private, and only
+  people with the link can see it. Share the event folder to share every
+  story, or one story folder to share just that one. Ask who it's for:
+  - `anyone_with_link`: guests can open it without an account. Tell the
+    member that anyone the link is forwarded to can see it.
+  - `permanent_account`: people must sign in to Permanent first.
+
+  Give the member the URL to send. Calling it again returns the same link.
+
+- **Publishing** (`publish_folder`): a copy goes into the archive's Public
+  space. Anyone on the internet can find it, and it appears on the
+  archive's public page. Only do this when the member asks for it to be
+  public. Before publishing, say plainly:
+  - Anyone on the internet will be able to see these photos and their
+    descriptions.
+  - The public copy won't change when the private story is edited later.
+  - It needs the owner or manager role.
+
+  Then wait for an explicit yes, and only then pass
+  `memberAgreedToPublish: true`. Check the descriptions and alt text
+  first for anything private, such as addresses, children's full names or
+  health details.
 
 ## Small changes
 
