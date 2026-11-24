@@ -4,7 +4,9 @@ An internal prototype of a Claude plugin that helps a Permanent.org member
 gather photos for an event, curate them into stories, and put them on
 Permanent.
 
-The research and plan live in [docs/](docs/solution-shape.md).
+The research and plan live in [docs/](docs/solution-shape.md). To show
+it to someone, follow the [demo script](docs/demo.md), which also explains
+how to rehearse against a fake Permanent on your own computer.
 
 ## Install
 
@@ -53,6 +55,8 @@ Claude installs a plugin by copying it, without running a build. That is
 why the MCP server is bundled into one committed file.
 
 ## Develop
+
+Development needs Node.js 22.6 or later.
 
 ```
 npm ci

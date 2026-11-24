@@ -39,7 +39,7 @@ export default defineConfig([
 		},
 	},
 	{
-		files: ["**/*.test.ts", "src/testing/**/*.ts"],
+		files: ["**/*.test.ts", "src/testing/**/*.ts", "src/demo/**/*.ts"],
 		rules: {
 			"max-lines": "off",
 			"@typescript-eslint/no-magic-numbers": "off",

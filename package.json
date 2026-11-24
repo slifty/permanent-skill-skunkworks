@@ -5,10 +5,12 @@
 	"description": "Claude plugin for curating and archiving stories on Permanent.org",
 	"type": "module",
 	"engines": {
-		"node": ">=22.0"
+		"node": ">=22.6"
 	},
 	"scripts": {
 		"build": "node scripts/build.mjs",
+		"demo:fake-permanent": "node --experimental-strip-types src/demo/fake-server.ts",
+		"demo:sample-photos": "node --experimental-strip-types src/demo/sample-photos.ts",
 		"check:bundle": "npm run build && node scripts/check-bundle.mjs",
 		"lint": "npm run lint:eslint && npm run lint:prettier && npm run lint:tsc",
 		"lint:eslint": "eslint --max-warnings 0 .",
@@ -31,6 +33,7 @@
 		"eslint-config-love": "^158.0.0",
 		"eslint-config-prettier": "^10.1.8",
 		"globals": "^17.14.0",
+		"jpeg-js": "^0.4.4",
 		"prettier": "^3.10.1",
 		"typescript": "~6.0.3",
 		"typescript-eslint": "^8.74.0",

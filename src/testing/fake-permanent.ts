@@ -190,6 +190,7 @@ const findRoute = (
 export const startFakePermanent = async (
 	account: FakeAccount,
 	token = fakeToken(),
+	port = 0,
 ): Promise<FakePermanent> => {
 	const requests: FakePermanent["requests"] = [];
 	const routes = new Map<string, FakeRoute>();
@@ -233,7 +234,7 @@ export const startFakePermanent = async (
 			);
 		})();
 	});
-	server.listen(0, "127.0.0.1");
+	server.listen(port, "127.0.0.1");
 	await once(server, "listening");
 	const address = server.address();
 	if (address === null || typeof address === "string") {
