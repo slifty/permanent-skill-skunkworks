@@ -1,0 +1,56 @@
+# Permanent plugin for Claude (prototype)
+
+An internal prototype of a Claude plugin that helps a Permanent.org member
+gather photos for an event, curate them into stories, and put them on
+Permanent.
+
+The research and plan live in [docs/](docs/solution-shape.md).
+
+## Install
+
+You need [Node.js](https://nodejs.org/) 22 or later on your `PATH`. The
+plugin's local MCP server runs with it.
+
+### Claude Code
+
+```
+/plugin marketplace add slifty/permanent-skill-skunkworks
+/plugin install permanent@permanent-skunkworks
+```
+
+The plugin asks which Permanent environment to use (`production`,
+`staging` or `dev`). The default is `production`.
+
+### Cowork
+
+Add `slifty/permanent-skill-skunkworks` as a plugin marketplace in Cowork's
+plugin settings, then install `permanent`. Cowork does not prompt for
+settings, so it always uses the default environment.
+
+## Layout
+
+```
+.claude-plugin/marketplace.json     this repo is its own marketplace
+plugins/permanent/                  the plugin Claude installs
+  .claude-plugin/plugin.json        manifest, MCP server, user settings
+  skills/                           curation and workflow skills
+  server/index.js                   bundled MCP server (generated, committed)
+src/                                MCP server source (TypeScript)
+```
+
+Claude installs a plugin by copying it, without running a build. That is
+why the MCP server is bundled into one committed file.
+
+## Develop
+
+```
+npm ci
+npm run build     # rebuild plugins/permanent/server/index.js
+npm run lint
+npm test
+```
+
+Commit the rebuilt bundle together with the source change. CI fails if
+they drift apart.
+
+To try local changes in Claude Code, run `claude --plugin-dir ./plugins/permanent`.

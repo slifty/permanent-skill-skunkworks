@@ -1,0 +1,38 @@
+{
+	"name": "permanent-claude-plugin",
+	"version": "0.1.0",
+	"private": true,
+	"description": "Claude plugin for curating and archiving stories on Permanent.org",
+	"type": "module",
+	"engines": {
+		"node": ">=22.0"
+	},
+	"scripts": {
+		"build": "node scripts/build.mjs",
+		"check:bundle": "npm run build && node scripts/check-bundle.mjs",
+		"lint": "npm run lint:eslint && npm run lint:prettier && npm run lint:tsc",
+		"lint:eslint": "eslint --max-warnings 0 .",
+		"lint:prettier": "prettier . --check",
+		"lint:tsc": "tsc --noEmit",
+		"format": "prettier --write . && eslint . --fix",
+		"test": "vitest run"
+	},
+	"dependencies": {
+		"@modelcontextprotocol/sdk": "^1.32.2",
+		"zod": "^4.6.7"
+	},
+	"devDependencies": {
+		"@eslint/js": "^10.0.1",
+		"@tsconfig/node22": "^22.0.7",
+		"@types/node": "^22.20.5",
+		"esbuild": "^0.28.2",
+		"eslint": "^10.15.0",
+		"eslint-config-love": "^158.0.0",
+		"eslint-config-prettier": "^10.1.8",
+		"globals": "^17.14.0",
+		"prettier": "^3.10.1",
+		"typescript": "~6.0.3",
+		"typescript-eslint": "^8.74.0",
+		"vitest": "^5.1.1"
+	}
+}

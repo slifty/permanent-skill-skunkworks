@@ -1,0 +1,12 @@
+{
+	"name": "permanent-skunkworks",
+	"owner": { "name": "Permanent.org", "url": "https://www.permanent.org" },
+	"description": "Prototype Claude plugins for Permanent.org",
+	"plugins": [
+		{
+			"name": "permanent",
+			"source": "./plugins/permanent",
+			"description": "Curate photos into stories and put them on Permanent.org"
+		}
+	]
+}

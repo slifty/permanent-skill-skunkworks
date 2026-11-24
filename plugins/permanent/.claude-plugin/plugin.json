@@ -1,0 +1,27 @@
+{
+	"name": "permanent",
+	"displayName": "Permanent",
+	"version": "0.1.0",
+	"description": "Curate photos into stories and put them on Permanent.org",
+	"author": { "name": "Permanent.org", "url": "https://www.permanent.org" },
+	"homepage": "https://github.com/slifty/permanent-skill-skunkworks",
+	"repository": "https://github.com/slifty/permanent-skill-skunkworks",
+	"mcpServers": {
+		"permanent": {
+			"command": "node",
+			"args": ["${CLAUDE_PLUGIN_ROOT}/server/index.js"],
+			"env": {
+				"PERMANENT_ENVIRONMENT": "${user_config.environment}",
+				"PERMANENT_DATA_DIR": "${CLAUDE_PLUGIN_DATA}"
+			}
+		}
+	},
+	"userConfig": {
+		"environment": {
+			"type": "string",
+			"title": "Permanent environment",
+			"description": "Which Permanent environment to use: production, staging or dev",
+			"default": "production"
+		}
+	}
+}
