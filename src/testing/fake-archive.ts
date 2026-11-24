@@ -137,9 +137,12 @@ export class FakeArchive {
 		routes.set("PATCH /api/v2/records/*", (request) =>
 			this.patchRecord(request),
 		);
-		routes.set("GET /api/v2/records", ({ query }) =>
-			ok(
-				query.getAll("recordIds[]").map((recordId) => {
+		routes.set("GET /api/v2/records", ({ query }) => {
+			if (query.get("pageSize") === null) {
+				return { status: 400, body: { error: '"pageSize" is required' } };
+			}
+			return ok({
+				items: query.getAll("recordIds[]").map((recordId) => {
 					const record = this.records.get(Number(recordId));
 					return {
 						recordId,
@@ -147,8 +150,9 @@ export class FakeArchive {
 						status: record?.status ?? "status.generic.error",
 					};
 				}),
-			),
-		);
+				pagination: { totalPages: 1 },
+			});
+		});
 		routes.set("POST /api/archive/change", ({ body }) => {
 			const {
 				RequestVO: {

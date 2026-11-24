@@ -40174,11 +40174,15 @@ var stateOf = (status) => {
   return FAILED.has(status) ? "failed" : "processing";
 };
 var getRecordProcessing = async (client, recordIds) => {
-  const records = await client.stela({
+  const response = await client.stela({
     path: "/records",
-    query: { recordIds },
-    schema: external_exports.array(stelaRecord)
+    query: { recordIds, pageSize: recordIds.length },
+    schema: external_exports.union([
+      external_exports.array(stelaRecord),
+      external_exports.object({ items: external_exports.array(stelaRecord) })
+    ])
   });
+  const records = Array.isArray(response) ? response : response.items;
   return records.map((record2) => ({
     recordId: record2.recordId,
     name: record2.displayName ?? void 0,

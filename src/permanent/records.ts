@@ -35,11 +35,15 @@ export const getRecordProcessing = async (
 	client: PermanentClient,
 	recordIds: number[],
 ): Promise<RecordProcessing[]> => {
-	const records = await client.stela({
+	const response = await client.stela({
 		path: "/records",
-		query: { recordIds },
-		schema: z.array(stelaRecord),
+		query: { recordIds, pageSize: recordIds.length },
+		schema: z.union([
+			z.array(stelaRecord),
+			z.object({ items: z.array(stelaRecord) }),
+		]),
 	});
+	const records = Array.isArray(response) ? response : response.items;
 	return records.map((record) => ({
 		recordId: record.recordId,
 		name: record.displayName ?? undefined,

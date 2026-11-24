@@ -358,21 +358,25 @@ describe("check_processing", () => {
 		test.fake.routes.set("GET /api/v2/records", ({ query }) => {
 			polls += 1;
 			expect(query.getAll("recordIds[]")).toEqual(["501", "502"]);
+			expect(query.get("pageSize")).toBe("2");
 			return {
-				body: [
-					{
-						recordId: "501",
-						displayName: "a",
-						status: "status.generic.ok",
-						thumbUrl200: "https://thumb/a",
-					},
-					{
-						recordId: "502",
-						displayName: "b",
-						status:
-							polls < 3 ? "status.record.processing" : "status.generic.ok",
-					},
-				],
+				body: {
+					items: [
+						{
+							recordId: "501",
+							displayName: "a",
+							status: "status.generic.ok",
+							thumbUrl200: "https://thumb/a",
+						},
+						{
+							recordId: "502",
+							displayName: "b",
+							status:
+								polls < 3 ? "status.record.processing" : "status.generic.ok",
+						},
+					],
+					pagination: { totalPages: 1 },
+				},
 			};
 		});
 		const client = await connectClient(test);
@@ -388,5 +392,21 @@ describe("check_processing", () => {
 			failed: 0,
 		});
 		expect(polls).toBe(3);
+	});
+
+	it("also reads the older unpaged response", async () => {
+		const test = await startTestPermanent();
+		permanent = test;
+		await test.signIn();
+		test.fake.routes.set("GET /api/v2/records", () => ({
+			body: [{ recordId: "501", status: "status.generic.ok" }],
+		}));
+		const client = await connectClient(test);
+
+		const outcome = await callTool(client, "check_processing", {
+			recordIds: [501],
+		});
+
+		expect(outcome.json()).toMatchObject({ ready: 1 });
 	});
 });
