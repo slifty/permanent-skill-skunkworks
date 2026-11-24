@@ -1,7 +1,9 @@
 import { z } from "zod";
 import {
-	createFolder,
+	findFolderNamed,
+	findOrCreateFolder,
 	getArchiveRoots,
+	isPublicKind,
 	getFolderContents,
 	listArchives,
 } from "../permanent/folders.ts";
@@ -10,12 +12,6 @@ import type { PermanentClient } from "../permanent/api.ts";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
 const id = z.number().int().positive();
-
-const isPublic = (kind: string): boolean =>
-	kind === "public" || kind === "root.public";
-
-const sameName = (a: string, b: string): boolean =>
-	a.trim().localeCompare(b.trim(), undefined, { sensitivity: "accent" }) === 0;
 
 export const registerArchiveTools = (
 	server: McpServer,
@@ -77,21 +73,16 @@ export const registerArchiveTools = (
 		},
 		async ({ archiveId, parentFolderId, name, allowPublic }) => {
 			const parent = await getFolderContents(client, archiveId, parentFolderId);
-			const existing = parent.folders.find((folder) =>
-				sameName(folder.name, name),
-			);
+			const existing = findFolderNamed(parent, name);
 			if (existing !== undefined) {
 				return jsonResult({ created: false, folder: existing });
 			}
-			if (isPublic(parent.kind) && !allowPublic) {
+			if (isPublicKind(parent.kind) && !allowPublic) {
 				throw new Error(
 					`"${parent.name}" is public: anything created there is visible to everyone. Create the folder in My Files instead, or ask the member before passing allowPublic.`,
 				);
 			}
-			return jsonResult({
-				created: true,
-				folder: await createFolder(client, parentFolderId, name),
-			});
+			return jsonResult(await findOrCreateFolder(client, parent, name));
 		},
 	);
 };

@@ -14,6 +14,7 @@ export interface FakeAccount {
 }
 
 export interface FakeRequest {
+	path: string;
 	query: URLSearchParams;
 	body: unknown;
 	raw: Buffer;
@@ -176,6 +177,16 @@ const checkApiContract = (
 	return undefined;
 };
 
+const findRoute = (
+	routes: Map<string, FakeRoute>,
+	key: string,
+): FakeRoute | undefined =>
+	routes.get(key) ??
+	[...routes.entries()].find(
+		([pattern]) =>
+			pattern.endsWith("/*") && key.startsWith(pattern.slice(0, -1)),
+	)?.[1];
+
 export const startFakePermanent = async (
 	account: FakeAccount,
 	token = fakeToken(),
@@ -205,7 +216,7 @@ export const startFakePermanent = async (
 				replyJson(response, contractError);
 				return;
 			}
-			const route = routes.get(`${request.method} ${url.pathname}`);
+			const route = findRoute(routes, `${request.method} ${url.pathname}`);
 			if (route === undefined) {
 				replyJson(response, { status: 404, body: { error: "not found" } });
 				return;
@@ -213,6 +224,7 @@ export const startFakePermanent = async (
 			replyJson(
 				response,
 				route({
+					path: url.pathname,
 					query: url.searchParams,
 					body,
 					raw,

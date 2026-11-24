@@ -13,6 +13,7 @@ export interface ArchiveSummary {
 
 export interface FolderSummary {
 	folderId: number;
+	folderLinkId: number;
 	name: string;
 	kind: string;
 	date?: string | undefined;
@@ -21,6 +22,7 @@ export interface FolderSummary {
 
 export interface RecordSummary {
 	recordId: number;
+	archiveNbr?: string | undefined;
 	name: string;
 	fileName?: string | undefined;
 	kind: string;
@@ -56,6 +58,7 @@ const stripPrefix = (
 
 const summarizeFolder = (vo: FolderVo): FolderSummary => ({
 	folderId: vo.folderId,
+	folderLinkId: vo.folder_linkId,
 	name: vo.displayName ?? "",
 	kind: stripPrefix(vo.type, "type.folder.") ?? vo.type,
 	date: orUndefined(vo.displayDT),
@@ -64,6 +67,7 @@ const summarizeFolder = (vo: FolderVo): FolderSummary => ({
 
 const summarizeRecord = (vo: z.infer<typeof recordVo>): RecordSummary => ({
 	recordId: vo.recordId,
+	archiveNbr: orUndefined(vo.archiveNbr),
 	name: vo.displayName ?? vo.uploadFileName ?? "",
 	fileName: orUndefined(vo.uploadFileName),
 	kind: stripPrefix(vo.type, "type.record.") ?? vo.type,
@@ -141,3 +145,45 @@ export const createFolder = async (
 			schema: folderVo,
 		}),
 	);
+
+const sameName = (a: string, b: string): boolean =>
+	a.trim().localeCompare(b.trim(), undefined, { sensitivity: "accent" }) === 0;
+
+export const isPublicKind = (kind: string): boolean =>
+	kind === "public" || kind === "root.public";
+
+export const findFolderNamed = (
+	parent: FolderContents,
+	name: string,
+): FolderSummary | undefined =>
+	parent.folders.find((folder) => sameName(folder.name, name));
+
+export const findOrCreateFolder = async (
+	client: PermanentClient,
+	parent: FolderContents,
+	name: string,
+): Promise<{ created: boolean; folder: FolderSummary }> => {
+	const existing = findFolderNamed(parent, name);
+	if (existing !== undefined) {
+		return { created: false, folder: existing };
+	}
+	return {
+		created: true,
+		folder: await createFolder(client, parent.folderId, name),
+	};
+};
+
+export const findArchive = async (
+	client: PermanentClient,
+	archiveId: number,
+): Promise<ArchiveSummary> => {
+	const archive = (await listArchives(client)).find(
+		(candidate) => candidate.archiveId === archiveId,
+	);
+	if (archive === undefined) {
+		throw new Error(
+			`Archive ${archiveId} is not one of the member's archives. Call list_archives to see them.`,
+		);
+	}
+	return archive;
+};

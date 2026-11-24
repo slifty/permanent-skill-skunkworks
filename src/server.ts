@@ -5,6 +5,8 @@ import { PermanentClient } from "./permanent/api.ts";
 import { resolveEnvironment } from "./permanent/environment.ts";
 import { registerAccountTools } from "./tools/account.ts";
 import { registerArchiveTools } from "./tools/archive.ts";
+import { StoryProgress } from "./stories/progress.ts";
+import { registerStoryTools } from "./tools/story.ts";
 import { registerUploadTools } from "./tools/upload.ts";
 import { UploadLedger } from "./uploads/ledger.ts";
 import type { UploadToolOptions } from "./tools/upload.ts";
@@ -17,7 +19,9 @@ export interface ServerDependencies {
 	auth: InterimAuth;
 	client: PermanentClient;
 	ledger: UploadLedger;
+	progress: StoryProgress;
 	uploadOptions?: UploadToolOptions;
+	applyBudgetMilliseconds?: number;
 }
 
 export const defaultDependencies = (): ServerDependencies => {
@@ -31,6 +35,7 @@ export const defaultDependencies = (): ServerDependencies => {
 		auth,
 		client: new PermanentClient(environment, auth),
 		ledger: new UploadLedger(dataDirectory, environment.name),
+		progress: new StoryProgress(dataDirectory, environment.name),
 	};
 };
 
@@ -47,5 +52,6 @@ export const createServer = (
 		dependencies.ledger,
 		dependencies.uploadOptions,
 	);
+	registerStoryTools(server, dependencies);
 	return server;
 };

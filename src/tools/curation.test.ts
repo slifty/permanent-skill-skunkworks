@@ -106,6 +106,27 @@ describe("curation tools", () => {
 		expect(outcome.text).toContain("is not one of the story's items");
 	});
 
+	it("rejects two stories with the same title", async () => {
+		const { client, root, photo } = await setUp();
+		const second = join(root, "second.jpg");
+		await writeFile(second, buildJpeg());
+
+		const outcome = await callTool(client, "save_story_manifest", {
+			path: join(root, "story-manifest.json"),
+			manifest: {
+				version: 1,
+				event: { title: "Party" },
+				stories: [
+					{ title: "Cake", items: [{ path: photo }] },
+					{ title: " cake ", items: [{ path: second }] },
+				],
+			},
+		});
+
+		expect(outcome.isError).toBe(true);
+		expect(outcome.text).toContain("give each story its own title");
+	});
+
 	it("rejects dates that are not EDTF and relative paths", async () => {
 		const { client, root, photo } = await setUp();
 

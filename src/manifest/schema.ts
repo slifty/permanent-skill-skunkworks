@@ -40,6 +40,15 @@ export const manifestItem = z.object({
 	keywords: z.array(z.string()).optional(),
 });
 
+const permanentFolderId = z
+	.number()
+	.int()
+	.positive()
+	.optional()
+	.describe(
+		"Filled in when the story is put on Permanent, so a renamed story keeps its folder. Leave it alone.",
+	);
+
 export const manifestStory = z.object({
 	title: z.string().min(1),
 	description: z
@@ -50,6 +59,7 @@ export const manifestStory = z.object({
 		.optional()
 		.describe("Path of the item to use as the story's cover image"),
 	items: z.array(manifestItem).min(1),
+	permanentFolderId,
 });
 
 export const storyManifest = z
@@ -60,6 +70,7 @@ export const storyManifest = z
 			description: z.string().optional(),
 			date: date.optional(),
 			location: location.optional(),
+			permanentFolderId,
 		}),
 		stories: z.array(manifestStory).min(1),
 		excluded: z
@@ -68,6 +79,18 @@ export const storyManifest = z
 			.describe("Files deliberately left out, and why"),
 	})
 	.superRefine((manifest, context) => {
+		const titles = new Set<string>();
+		manifest.stories.forEach((story, storyIndex) => {
+			const title = story.title.trim().toLowerCase();
+			if (titles.has(title)) {
+				context.addIssue({
+					code: "custom",
+					message: `More than one story is called "${story.title}"; give each story its own title`,
+					path: ["stories", storyIndex, "title"],
+				});
+			}
+			titles.add(title);
+		});
 		const seen = new Set<string>();
 		manifest.stories.forEach((story, storyIndex) => {
 			story.items.forEach((item, itemIndex) => {

@@ -5,7 +5,7 @@ import { basename, extname } from "node:path";
 import { pipeline } from "node:stream/promises";
 import { mapWithConcurrency } from "../concurrency.ts";
 import { PermanentApiError } from "../permanent/api.ts";
-import { getFolderContents } from "../permanent/folders.ts";
+import { getFolderContents, isPublicKind } from "../permanent/folders.ts";
 import { uploadRecord } from "../permanent/upload.ts";
 import { getContentType } from "../photos/media.ts";
 import type { PermanentClient } from "../permanent/api.ts";
@@ -70,9 +70,6 @@ const emptyReport = (): UploadReport => ({
 	failed: [],
 	remaining: [],
 });
-
-const isPublicKind = (kind: string): boolean =>
-	kind === "public" || kind === "root.public";
 
 class NameAllocator {
 	private readonly onPermanent: Set<string>;

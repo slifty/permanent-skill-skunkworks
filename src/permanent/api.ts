@@ -1,4 +1,6 @@
 import { NotSignedInError } from "../auth/interim-auth.ts";
+import { LegacyApiError, legacyMessages, postLegacy } from "./legacy-api.ts";
+import type { LegacyResponse } from "./legacy-api.ts";
 import type { PermanentEnvironment } from "./environment.ts";
 import type { z } from "zod";
 
@@ -52,6 +54,7 @@ const withQuery = (
 export class PermanentClient {
 	private readonly environment: PermanentEnvironment;
 	private readonly tokens: TokenSource;
+	private sessionLock: Promise<unknown> = Promise.resolve();
 
 	public constructor(environment: PermanentEnvironment, tokens: TokenSource) {
 		this.environment = environment;
@@ -62,6 +65,30 @@ export class PermanentClient {
 		request: ApiRequest<Schema>,
 	): Promise<z.infer<Schema>> {
 		return await this.send(this.environment.apiUrl, request);
+	}
+
+	public async withSessionLock<Result>(
+		work: () => Promise<Result>,
+	): Promise<Result> {
+		const result = this.sessionLock.then(work);
+		this.sessionLock = result.catch(() => undefined);
+		return await result;
+	}
+
+	public async legacy(
+		endpoint: string,
+		data: Array<Record<string, unknown>>,
+	): Promise<LegacyResponse> {
+		const response = await postLegacy({
+			apiUrl: this.environment.apiUrl,
+			endpoint,
+			data,
+			token: await this.tokens.getAccessToken(),
+		});
+		if (!response.isSuccessful) {
+			throw new LegacyApiError(endpoint, legacyMessages(response));
+		}
+		return response;
 	}
 
 	public async stela<Schema extends z.ZodType>(

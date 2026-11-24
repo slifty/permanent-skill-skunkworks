@@ -20,3 +20,12 @@ export const mapWithConcurrency = async <Input, Output>(
 	await Promise.all(Array.from({ length: workerCount }, work));
 	return results;
 };
+
+export const runInOrder = async <Input>(
+	inputs: readonly Input[],
+	step: (input: Input) => Promise<boolean>,
+): Promise<boolean> =>
+	await inputs.reduce<Promise<boolean>>(
+		async (previous, input) => (await previous) && (await step(input)),
+		Promise.resolve(true),
+	);
