@@ -44,11 +44,17 @@ const stateOf = (
 		: "processing";
 };
 
-export const getRecordProcessing = async (
+const STELA_MAX_ARRAY_ITEMS = 20;
+
+const inBatches = <Item>(items: Item[], size: number): Item[][] =>
+	Array.from({ length: Math.ceil(items.length / size) }, (_, index) =>
+		items.slice(index * size, (index + 1) * size),
+	);
+
+const fetchRecords = async (
 	client: PermanentClient,
 	recordIds: number[],
-	now = Date.now(),
-): Promise<RecordProcessing[]> => {
+): Promise<Array<z.infer<typeof stelaRecord>>> => {
 	const response = await client.stela({
 		path: "/records",
 		query: { recordIds, pageSize: recordIds.length },
@@ -57,8 +63,20 @@ export const getRecordProcessing = async (
 			z.object({ items: z.array(stelaRecord) }),
 		]),
 	});
-	const records = Array.isArray(response) ? response : response.items;
-	return records.map((record) => ({
+	return Array.isArray(response) ? response : response.items;
+};
+
+export const getRecordProcessing = async (
+	client: PermanentClient,
+	recordIds: number[],
+	now = Date.now(),
+): Promise<RecordProcessing[]> => {
+	const batches = await Promise.all(
+		inBatches(recordIds, STELA_MAX_ARRAY_ITEMS).map(
+			async (batch) => await fetchRecords(client, batch),
+		),
+	);
+	return batches.flat().map((record) => ({
 		recordId: record.recordId,
 		name: record.displayName ?? undefined,
 		state: stateOf(record.status, record.createdAt, now),

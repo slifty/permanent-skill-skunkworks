@@ -157,6 +157,9 @@ export class FakeArchive {
 			if (query.get("pageSize") === null) {
 				return { status: 400, body: { error: '"pageSize" is required' } };
 			}
+			if (query.getAll("recordIds[]").length > 20) {
+				return { status: 400, body: { error: '"recordIds" must be an array' } };
+			}
 			return ok({
 				items: query.getAll("recordIds[]").map((recordId) => {
 					const record = this.records.get(Number(recordId));

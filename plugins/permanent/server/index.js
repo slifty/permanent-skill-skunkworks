@@ -40867,7 +40867,12 @@ var stateOf = (status, createdAt, now) => {
   const created = Date.parse(createdAt ?? "");
   return Number.isFinite(created) && now - created > STUCK_AFTER_MILLISECONDS ? "stuck" : "processing";
 };
-var getRecordProcessing = async (client, recordIds, now = Date.now()) => {
+var STELA_MAX_ARRAY_ITEMS = 20;
+var inBatches = (items, size) => Array.from(
+  { length: Math.ceil(items.length / size) },
+  (_, index) => items.slice(index * size, (index + 1) * size)
+);
+var fetchRecords = async (client, recordIds) => {
   const response = await client.stela({
     path: "/records",
     query: { recordIds, pageSize: recordIds.length },
@@ -40876,8 +40881,15 @@ var getRecordProcessing = async (client, recordIds, now = Date.now()) => {
       external_exports.object({ items: external_exports.array(stelaRecord) })
     ])
   });
-  const records = Array.isArray(response) ? response : response.items;
-  return records.map((record2) => ({
+  return Array.isArray(response) ? response : response.items;
+};
+var getRecordProcessing = async (client, recordIds, now = Date.now()) => {
+  const batches = await Promise.all(
+    inBatches(recordIds, STELA_MAX_ARRAY_ITEMS).map(
+      async (batch) => await fetchRecords(client, batch)
+    )
+  );
+  return batches.flat().map((record2) => ({
     recordId: record2.recordId,
     name: record2.displayName ?? void 0,
     state: stateOf(record2.status, record2.createdAt, now),
@@ -41045,7 +41057,7 @@ var UploadLedger = class {
 
 // src/server.ts
 var SERVER_NAME = "permanent";
-var SERVER_VERSION = "0.1.2";
+var SERVER_VERSION = "0.1.3";
 var defaultDependencies = () => {
   const environment = environmentFromSettings(process.env);
   const dataDirectory = defaultDataDirectory();

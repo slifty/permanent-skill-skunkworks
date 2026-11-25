@@ -468,6 +468,33 @@ describe("check_processing", () => {
 		expect(Date.now() - started).toBeLessThan(1000);
 	});
 
+	const readyRecord = (recordId: string): object => ({
+		recordId,
+		status: "status.generic.ok",
+	});
+
+	it("checks more than 20 files by asking in batches", async () => {
+		const test = await startTestPermanent();
+		permanent = test;
+		await test.signIn();
+		const batchSizes: number[] = [];
+		test.fake.routes.set("GET /api/v2/records", ({ query }) => {
+			const ids = query.getAll("recordIds[]");
+			batchSizes.push(ids.length);
+			if (ids.length > 20) {
+				return { status: 400, body: { error: '"recordIds" must be an array' } };
+			}
+			return { body: { items: ids.map(readyRecord) } };
+		});
+		const client = await connectClient(test);
+		const recordIds = Array.from({ length: 45 }, (_, index) => 1000 + index);
+
+		const outcome = await callTool(client, "check_processing", { recordIds });
+
+		expect(outcome.json()).toMatchObject({ ready: 45 });
+		expect(batchSizes.sort((a, b) => b - a)).toEqual([20, 20, 5]);
+	});
+
 	it("also reads the older unpaged response", async () => {
 		const test = await startTestPermanent();
 		permanent = test;
