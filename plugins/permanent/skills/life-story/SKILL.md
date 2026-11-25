@@ -43,6 +43,12 @@ places at once: albums, boxes of letters, phones, relatives.
      written on them. When the member gives an approximate date, use
      EDTF uncertainty: `1962~` for "about 1962". Don't date a photo from
      how it looks. If there's nothing to go on, leave the date out.
+     Permanent has no "unknown" date. An item without one shows the day it
+     was uploaded, and the date order puts it last. Uncertain dates are stored
+     as plain dates too: `1962~` shows as 1 January 1962. So before saving,
+     tell the member which items have no date and let them choose: an
+     approximate date they agree to (such as the start of its chapter, marked
+     `~`), or no date, knowing it will show the upload date.
    - Each chapter's narrative tells that part of the life, from what the
      member has told you and what the material shows.
 5. **Save the manifest.** Call `save_story_manifest`. The life is the

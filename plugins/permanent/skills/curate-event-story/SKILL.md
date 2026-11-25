@@ -48,7 +48,11 @@ until the member has reviewed it.
    - **alt text**: what the image shows, for someone who can't see it.
    - a **date**, in EDTF: `2024-06-01T18:30:00` when the camera date is
      reliable, `2024-06-01` or `2024-06` when it is not, `2024-06-01~` when
-     it is approximate.
+     it is approximate. On Permanent, a photo without a date shows
+     the day it was uploaded and sorts last. If a photo has no camera
+     date, ask the member when it was taken. If they don't know, offer
+     the event's date marked `~`, or leave the date out once they know
+     it will show the upload date.
    - a **location**: a place name when the member told you the place. Exact
      GPS coordinates can reveal someone's home, so ask the member before
      keeping them. If they haven't said yes, leave `latitude` and

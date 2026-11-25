@@ -44,6 +44,12 @@ text fits.
    on the page, `1952-03~` for "about March 1952", `1952?` when you're
    inferring the year. If there's nothing to go on, leave the date out
    rather than guess.
+   Permanent has no "unknown" date. An item without one shows the day it
+   was uploaded, and the date order puts it last. Uncertain dates are stored
+   as plain dates too: `1962~` shows as 1 January 1962. So before saving,
+   tell the member which items have no date and let them choose: an
+   approximate date they agree to (such as the date of related documents,
+   marked `~`), or no date, knowing it will show the upload date.
 6. **Check for sensitive details.** Before anything goes on Permanent,
    look for ID or account numbers, addresses of living people, medical,
    legal or financial details, and anything said about living people that
