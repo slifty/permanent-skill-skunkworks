@@ -2241,10 +2241,10 @@ var require_resolve = __commonJS({
       }
       return count;
     }
-    function getFullPath(resolver, id6 = "", normalize) {
+    function getFullPath(resolver, id7 = "", normalize) {
       if (normalize !== false)
-        id6 = normalizeId(id6);
-      const p = resolver.parse(id6);
+        id7 = normalizeId(id7);
+      const p = resolver.parse(id7);
       return _getFullPath(resolver, p);
     }
     exports.getFullPath = getFullPath;
@@ -2254,13 +2254,13 @@ var require_resolve = __commonJS({
     }
     exports._getFullPath = _getFullPath;
     var TRAILING_SLASH_HASH = /#\/?$/;
-    function normalizeId(id6) {
-      return id6 ? id6.replace(TRAILING_SLASH_HASH, "") : "";
+    function normalizeId(id7) {
+      return id7 ? id7.replace(TRAILING_SLASH_HASH, "") : "";
     }
     exports.normalizeId = normalizeId;
-    function resolveUrl(resolver, baseId, id6) {
-      id6 = normalizeId(id6);
-      return resolver.resolve(baseId, id6);
+    function resolveUrl(resolver, baseId, id7) {
+      id7 = normalizeId(id7);
+      return resolver.resolve(baseId, id7);
     }
     exports.resolveUrl = resolveUrl;
     var ANCHOR = /^[a-z_][-a-z0-9._]*$/i;
@@ -3030,8 +3030,8 @@ var require_compile = __commonJS({
       if (Object.keys(root.schema).length > 0 && refPath === baseId) {
         return getJsonPointer.call(this, p, root);
       }
-      const id6 = (0, resolve_1.normalizeId)(refPath);
-      const schOrRef = this.refs[id6] || this.schemas[id6];
+      const id7 = (0, resolve_1.normalizeId)(refPath);
+      const schOrRef = this.refs[id7] || this.schemas[id7];
       if (typeof schOrRef == "string") {
         const sch = resolveSchema.call(this, root, schOrRef);
         if (typeof (sch === null || sch === void 0 ? void 0 : sch.schema) !== "object")
@@ -3042,7 +3042,7 @@ var require_compile = __commonJS({
         return;
       if (!schOrRef.validate)
         compileSchema.call(this, schOrRef);
-      if (id6 === (0, resolve_1.normalizeId)(ref)) {
+      if (id7 === (0, resolve_1.normalizeId)(ref)) {
         const { schema } = schOrRef;
         const { schemaId } = this.opts;
         const schId = schema[schemaId];
@@ -4525,15 +4525,15 @@ var require_core = __commonJS({
             this.addSchema(sch, void 0, _meta, _validateSchema);
           return this;
         }
-        let id6;
+        let id7;
         if (typeof schema === "object") {
           const { schemaId } = this.opts;
-          id6 = schema[schemaId];
-          if (id6 !== void 0 && typeof id6 != "string") {
+          id7 = schema[schemaId];
+          if (id7 !== void 0 && typeof id7 != "string") {
             throw new Error(`schema ${schemaId} must be string`);
           }
         }
-        key = (0, resolve_1.normalizeId)(key || id6);
+        key = (0, resolve_1.normalizeId)(key || id7);
         this._checkUnique(key);
         this.schemas[key] = this._addSchema(schema, _meta, key, _validateSchema, true);
         return this;
@@ -4612,11 +4612,11 @@ var require_core = __commonJS({
           case "object": {
             const cacheKey = schemaKeyRef;
             this._cache.delete(cacheKey);
-            let id6 = schemaKeyRef[this.opts.schemaId];
-            if (id6) {
-              id6 = (0, resolve_1.normalizeId)(id6);
-              delete this.schemas[id6];
-              delete this.refs[id6];
+            let id7 = schemaKeyRef[this.opts.schemaId];
+            if (id7) {
+              id7 = (0, resolve_1.normalizeId)(id7);
+              delete this.schemas[id7];
+              delete this.refs[id7];
             }
             return this;
           }
@@ -4723,10 +4723,10 @@ var require_core = __commonJS({
         }
       }
       _addSchema(schema, meta3, baseId, validateSchema = this.opts.validateSchema, addSchema = this.opts.addUsedSchema) {
-        let id6;
+        let id7;
         const { schemaId } = this.opts;
         if (typeof schema == "object") {
-          id6 = schema[schemaId];
+          id7 = schema[schemaId];
         } else {
           if (this.opts.jtd)
             throw new Error("schema must be object");
@@ -4736,7 +4736,7 @@ var require_core = __commonJS({
         let sch = this._cache.get(schema);
         if (sch !== void 0)
           return sch;
-        baseId = (0, resolve_1.normalizeId)(id6 || baseId);
+        baseId = (0, resolve_1.normalizeId)(id7 || baseId);
         const localRefs = resolve_1.getSchemaRefs.call(this, schema, baseId);
         sch = new compile_1.SchemaEnv({ schema, schemaId, meta: meta3, baseId, localRefs });
         this._cache.set(sch.schema, sch);
@@ -4749,9 +4749,9 @@ var require_core = __commonJS({
           this.validateSchema(schema, true);
         return sch;
       }
-      _checkUnique(id6) {
-        if (this.schemas[id6] || this.refs[id6]) {
-          throw new Error(`schema with key or id "${id6}" already exists`);
+      _checkUnique(id7) {
+        if (this.schemas[id7] || this.refs[id7]) {
+          throw new Error(`schema with key or id "${id7}" already exists`);
         }
       }
       _compileSchemaEnv(sch) {
@@ -7027,8 +7027,8 @@ var require_formats = __commonJS({
         return false;
       const year = +matches[1];
       const month = +matches[2];
-      const day = +matches[3];
-      return month >= 1 && month <= 12 && day >= 1 && day <= (month === 2 && isLeapYear(year) ? 29 : DAYS[month]);
+      const day2 = +matches[3];
+      return month >= 1 && month <= 12 && day2 >= 1 && day2 <= (month === 2 && isLeapYear(year) ? 29 : DAYS[month]);
     }
     function compareDate(d1, d2) {
       if (!(d1 && d2))
@@ -12364,15 +12364,15 @@ var $ZodObjectJIT = /* @__PURE__ */ $constructor("$ZodObjectJIT", (inst, def) =>
     const syms = normalized.symbolKeys;
     const doc = new Doc(["payload", "ctx"], { shape, inst, memo: memo2, syms });
     const parseStr = (k) => `shape[${k}]._zod.run({ value: input[${k}], issues: [] }, ctx)`;
-    const prefixStr = (id6, k) => `
-          let ${id6}_ab = false;
-          for (let i = 0; i < ${id6}.issues.length; i++) {
-            const iss = ${id6}.issues[i];
+    const prefixStr = (id7, k) => `
+          let ${id7}_ab = false;
+          for (let i = 0; i < ${id7}.issues.length; i++) {
+            const iss = ${id7}.issues[i];
             iss.path = iss.path ? [${k}, ...iss.path] : [${k}];
             payload.issues.push(iss);
-            if (iss.continue !== true) ${id6}_ab = true;
+            if (iss.continue !== true) ${id7}_ab = true;
           }
-          if (${id6}_ab && ctx && ctx.abortEarly) {
+          if (${id7}_ab && ctx && ctx.abortEarly) {
             payload.value = newResult;
             return payload;
           }`;
@@ -12386,34 +12386,34 @@ var $ZodObjectJIT = /* @__PURE__ */ $constructor("$ZodObjectJIT", (inst, def) =>
     for (const key of normalized.allKeys) {
       if (key === "__proto__")
         continue;
-      const id6 = ids[key];
+      const id7 = ids[key];
       const k = typeof key === "symbol" ? `syms[${syms.indexOf(key)}]` : esc(key);
       const isPresent = `${k} in input`;
       const schema = shape[key];
       const optin = schema?._zod?.optin;
       const isOptionalIn = optin !== void 0;
       const isOptionalOut = schema?._zod?.optout === "optional";
-      doc.write(`const ${id6} = ${parseStr(k)};`);
+      doc.write(`const ${id7} = ${parseStr(k)};`);
       if (isOptionalIn && isOptionalOut) {
-        const assign = optin === "optional" ? `${id6}_present` : `${id6}.value !== undefined || ${id6}_present`;
+        const assign = optin === "optional" ? `${id7}_present` : `${id7}.value !== undefined || ${id7}_present`;
         doc.write(`
-        const ${id6}_present = ${isPresent};
-        if (!${id6}.issues.length || ${id6}_present) {
-          if (${id6}.issues.length) {${prefixStr(id6, k)}
+        const ${id7}_present = ${isPresent};
+        if (!${id7}.issues.length || ${id7}_present) {
+          if (${id7}.issues.length) {${prefixStr(id7, k)}
           }
 
           if (${assign}) {
-            newResult[${k}] = ${id6}.value;
+            newResult[${k}] = ${id7}.value;
           }
         }
 
       `);
       } else if (!isOptionalIn) {
         doc.write(`
-        const ${id6}_present = ${isPresent};
-        if (${id6}.issues.length) {${prefixStr(id6, k)}
+        const ${id7}_present = ${isPresent};
+        if (${id7}.issues.length) {${prefixStr(id7, k)}
         }
-        if (!${id6}_present && !${id6}.issues.length) {
+        if (!${id7}_present && !${id7}.issues.length) {
           payload.issues.push({
             code: "invalid_type",
             expected: "nonoptional",
@@ -12426,22 +12426,22 @@ var $ZodObjectJIT = /* @__PURE__ */ $constructor("$ZodObjectJIT", (inst, def) =>
           }
         }
 
-        if (${id6}_present) {
-          newResult[${k}] = ${id6}.value;
+        if (${id7}_present) {
+          newResult[${k}] = ${id7}.value;
         }
 
       `);
       } else {
         doc.write(`
-        if (${id6}.issues.length) {${prefixStr(id6, k)}
+        if (${id7}.issues.length) {${prefixStr(id7, k)}
         }
       `);
         if (optin === "defaulted") {
-          doc.write(`newResult[${k}] = ${id6}.value;`);
+          doc.write(`newResult[${k}] = ${id7}.value;`);
         } else {
           doc.write(`
-        if (${id6}.value !== undefined || ${isPresent}) {
-          newResult[${k}] = ${id6}.value;
+        if (${id7}.value !== undefined || ${isPresent}) {
+          newResult[${k}] = ${id7}.value;
         }
       `);
         }
@@ -24469,26 +24469,26 @@ function extractDefs(ctx, schema) {
     return;
   const idToSchema = /* @__PURE__ */ new Map();
   for (const entry of ctx.seen.entries()) {
-    const id6 = ctx.metadataRegistry.get(entry[0])?.id;
-    if (id6) {
-      const existing = idToSchema.get(id6);
+    const id7 = ctx.metadataRegistry.get(entry[0])?.id;
+    if (id7) {
+      const existing = idToSchema.get(id7);
       if (existing && existing !== entry[0]) {
-        throw new Error(`Duplicate schema id "${id6}" detected during JSON Schema conversion. Two different schemas cannot share the same id when converted together.`);
+        throw new Error(`Duplicate schema id "${id7}" detected during JSON Schema conversion. Two different schemas cannot share the same id when converted together.`);
       }
-      idToSchema.set(id6, entry[0]);
+      idToSchema.set(id7, entry[0]);
     }
   }
   const makeURI = (entry) => {
     const defsSegment = ctx.target === "draft-2020-12" ? "$defs" : "definitions";
     if (ctx.external) {
       const externalId = ctx.external.registry.get(entry[0])?.id;
-      const uriGenerator = ctx.external.uri ?? ((id7) => id7);
+      const uriGenerator = ctx.external.uri ?? ((id8) => id8);
       if (externalId) {
         return { ref: uriGenerator(externalId) };
       }
-      const id6 = entry[1].defId ?? entry[1].schema.id ?? `schema${ctx.counter++}`;
-      entry[1].defId = id6;
-      return { defId: id6, ref: `${uriGenerator("__shared")}#/${defsSegment}/${encodeJSONPointerSegment(id6)}` };
+      const id7 = entry[1].defId ?? entry[1].schema.id ?? `schema${ctx.counter++}`;
+      entry[1].defId = id7;
+      return { defId: id7, ref: `${uriGenerator("__shared")}#/${defsSegment}/${encodeJSONPointerSegment(id7)}` };
     }
     const uriPrefix = `#`;
     const defUriPrefix = `${uriPrefix}/${defsSegment}/`;
@@ -24536,8 +24536,8 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
         continue;
       }
     }
-    const id6 = ctx.metadataRegistry.get(entry[0])?.id;
-    if (id6) {
+    const id7 = ctx.metadataRegistry.get(entry[0])?.id;
+    if (id7) {
       extractToDef(entry);
       continue;
     }
@@ -24770,10 +24770,10 @@ function finalize(ctx, schema) {
   } else {
   }
   if (ctx.external?.uri) {
-    const id6 = ctx.external.registry.get(schema)?.id;
-    if (!id6)
+    const id7 = ctx.external.registry.get(schema)?.id;
+    if (!id7)
       throw new Error("Schema is missing an `id` property");
-    result.$id = ctx.external.uri(id6);
+    result.$id = ctx.external.uri(id7);
   }
   assignProps(result, root.defId ? root.schema : root.def ?? root.schema);
   const rootMetaId = ctx.metadataRegistry.get(schema)?.id;
@@ -25379,7 +25379,7 @@ function stringifyKeyNames(bySchema, json2, visited) {
   const values = json2.enum ?? (json2.const !== void 0 ? [json2.const] : void 0);
   if (!numericType && !values?.some((v) => typeof v === "number"))
     return json2;
-  const { minimum, maximum, exclusiveMinimum, exclusiveMaximum, multipleOf, format, id: id6, ...rest } = json2;
+  const { minimum, maximum, exclusiveMinimum, exclusiveMaximum, multipleOf, format, id: id7, ...rest } = json2;
   if (rest.enum)
     rest.enum = rest.enum.map((v) => typeof v === "number" ? String(v) : v);
   else if (typeof rest.const === "number")
@@ -36683,7 +36683,7 @@ var ExperimentalServerTasks = class {
       if (hasPreviousToolUse) {
         const toolUseIds = new Set(previousContent.filter((c) => c.type === "tool_use").map((c) => c.id));
         const toolResultIds = new Set(lastContent.filter((c) => c.type === "tool_result").map((c) => c.toolUseId));
-        if (toolUseIds.size !== toolResultIds.size || ![...toolUseIds].every((id6) => toolResultIds.has(id6))) {
+        if (toolUseIds.size !== toolResultIds.size || ![...toolUseIds].every((id7) => toolResultIds.has(id7))) {
           throw new Error("ids of tool_result blocks and tool_use blocks from previous message do not match");
         }
       }
@@ -37108,7 +37108,7 @@ var Server = class extends Protocol {
       if (hasPreviousToolUse) {
         const toolUseIds = new Set(previousContent.filter((c) => c.type === "tool_use").map((c) => c.id));
         const toolResultIds = new Set(lastContent.filter((c) => c.type === "tool_result").map((c) => c.toolUseId));
-        if (toolUseIds.size !== toolResultIds.size || ![...toolUseIds].every((id6) => toolResultIds.has(id6))) {
+        if (toolUseIds.size !== toolResultIds.size || ![...toolUseIds].every((id7) => toolResultIds.has(id7))) {
           throw new Error("ids of tool_result blocks and tool_use blocks from previous message do not match");
         }
       }
@@ -38886,9 +38886,9 @@ var environmentFromSettings = (settings) => {
     return resolveEnvironment(settings.PERMANENT_ENVIRONMENT);
   }
   const apiUrl = withoutTrailingSlash(rawApiUrl);
-  const id6 = createHash("sha256").update(apiUrl).digest("hex").slice(0, CUSTOM_ID_LENGTH);
+  const id7 = createHash("sha256").update(apiUrl).digest("hex").slice(0, CUSTOM_ID_LENGTH);
   return {
-    name: `custom-${id6}`,
+    name: `custom-${id7}`,
     apiUrl,
     stelaUrl: isSet(rawStelaUrl) ? withoutTrailingSlash(rawStelaUrl) : `${apiUrl}/v2`,
     webUrl: isSet(rawWebUrl) ? withoutTrailingSlash(rawWebUrl) : webUrlFor(apiUrl)
@@ -39229,11 +39229,11 @@ var summarizeRecord = (vo) => ({
 var uniqueBy = (items, key) => {
   const seen = /* @__PURE__ */ new Set();
   return items.filter((item) => {
-    const id6 = key(item);
-    if (seen.has(id6)) {
+    const id7 = key(item);
+    if (seen.has(id7)) {
       return false;
     }
-    seen.add(id6);
+    seen.add(id7);
     return true;
   });
 };
@@ -39395,10 +39395,10 @@ var MAX_MONTH = 12;
 var MAX_HOUR = 23;
 var MAX_MINUTE = 59;
 var MAX_ZONE_HOUR = 14;
-var isCalendarDate = (year, month, day) => {
+var isCalendarDate = (year, month, day2) => {
   const date6 = /* @__PURE__ */ new Date(0);
-  date6.setUTCFullYear(year, month - 1, day);
-  return date6.getUTCFullYear() === year && date6.getUTCMonth() === month - 1 && date6.getUTCDate() === day;
+  date6.setUTCFullYear(year, month - 1, day2);
+  return date6.getUTCFullYear() === year && date6.getUTCMonth() === month - 1 && date6.getUTCDate() === day2;
 };
 var inRange = (value, max) => value === void 0 || Number(value) <= max;
 var isDate = (value) => {
@@ -39406,14 +39406,14 @@ var isDate = (value) => {
   if (groups === void 0) {
     return false;
   }
-  const { year = "", month, day } = groups;
+  const { year = "", month, day: day2 } = groups;
   if (month === void 0) {
     return true;
   }
   if (Number(month) < 1 || Number(month) > MAX_MONTH) {
     return false;
   }
-  return day === void 0 || isCalendarDate(Number(year), Number(month), Number(day));
+  return day2 === void 0 || isCalendarDate(Number(year), Number(month), Number(day2));
 };
 var isTimeOfDay = ({
   hour,
@@ -39427,8 +39427,8 @@ var isEdtfDateTime = (value) => {
   if (groups === void 0) {
     return false;
   }
-  const { year = "", month = "", day = "" } = groups;
-  return isCalendarDate(Number(year), Number(month), Number(day)) && isTimeOfDay(groups);
+  const { year = "", month = "", day: day2 = "" } = groups;
+  return isCalendarDate(Number(year), Number(month), Number(day2)) && isTimeOfDay(groups);
 };
 var isInstant = (value) => isDate(value) || isEdtfDateTime(value);
 var isInterval = (value) => {
@@ -39626,12 +39626,12 @@ var exifDateToIso = (exifDate, offset) => {
   if (groups === void 0) {
     return void 0;
   }
-  const { year, month, day, time: time3 } = groups;
-  const withOffset = `${year}-${month}-${day}T${time3}${offset ?? ""}`;
+  const { year, month, day: day2, time: time3 } = groups;
+  const withOffset = `${year}-${month}-${day2}T${time3}${offset ?? ""}`;
   if (isEdtfDateTime(withOffset)) {
     return withOffset;
   }
-  const local = `${year}-${month}-${day}T${time3}`;
+  const local = `${year}-${month}-${day2}T${time3}`;
   return isEdtfDateTime(local) ? local : void 0;
 };
 var describeCamera = (make, model) => {
@@ -40391,6 +40391,205 @@ var registerDescribeTools = (server, { client, progress, applyBudgetMilliseconds
   );
 };
 
+// src/permanent/profile.ts
+var BLURB_MAX_LENGTH = 200;
+var MILESTONE_TITLE_MAX_LENGTH = 140;
+var MILESTONE_DESCRIPTION_MAX_LENGTH = 200;
+var BLURB = "profile.blurb";
+var ABOUT = "profile.description";
+var MILESTONE = "profile.milestone";
+var PROFILE_EDITING_ROLES = /* @__PURE__ */ new Set(["owner", "manager"]);
+var NO_PROFILE_ITEMS = "error.profile_item.lookup";
+var profileItemVo = external_exports.looseObject({
+  profile_itemId: external_exports.number(),
+  fieldNameUI: external_exports.string(),
+  string1: external_exports.string().nullish(),
+  string2: external_exports.string().nullish(),
+  textData1: external_exports.string().nullish(),
+  day1: external_exports.string().nullish(),
+  day2: external_exports.string().nullish(),
+  publicDT: external_exports.string().nullish()
+});
+var textOf = (value) => value === null || value === void 0 || value.trim() === "" ? void 0 : value;
+var sameTitle = (a, b) => a.trim().toLowerCase() === (b ?? "").trim().toLowerCase();
+var itemsIn = (response) => response.Results.flatMap((result) => result.data ?? []).flatMap((entry) => {
+  const parsed = profileItemVo.safeParse(entry.Profile_itemVO);
+  return parsed.success ? [parsed.data] : [];
+});
+var readItems = async (client, archive) => {
+  try {
+    return itemsIn(
+      await client.legacy("/profile_item/getAllByArchiveId", [
+        { Profile_itemVO: { archiveId: archive.archiveId } }
+      ])
+    );
+  } catch (error62) {
+    if (error62 instanceof LegacyApiError && error62.messages.includes(NO_PROFILE_ITEMS)) {
+      return [];
+    }
+    throw error62;
+  }
+};
+var milestoneOf = (item) => ({
+  title: item.string1 ?? "",
+  date: textOf(item.day1),
+  endDate: textOf(item.day2),
+  description: textOf(item.string2)
+});
+var isPublicItem = (item) => textOf(item.publicDT) !== void 0;
+var labelOf = (item) => {
+  if (item.fieldNameUI === BLURB) {
+    return "blurb";
+  }
+  if (item.fieldNameUI === ABOUT) {
+    return "about";
+  }
+  return item.fieldNameUI === MILESTONE ? `milestone: ${item.string1 ?? ""}` : item.fieldNameUI.replace(new RegExp("^profile\\.", "v"), "");
+};
+var profileOf = (items) => {
+  const first = (field) => items.find((item) => item.fieldNameUI === field);
+  return {
+    blurb: textOf(first(BLURB)?.string1),
+    about: textOf(first(ABOUT)?.textData1),
+    milestones: items.filter((item) => item.fieldNameUI === MILESTONE).map(milestoneOf),
+    isPublic: items.some(isPublicItem),
+    publicFields: items.filter(isPublicItem).map(labelOf)
+  };
+};
+var readArchiveProfile = async (client, archive) => profileOf(await readItems(client, archive));
+var assertCanEditProfile = (archive) => {
+  if (!PROFILE_EDITING_ROLES.has(archive.role ?? "")) {
+    throw new Error(
+      `Editing the profile needs the owner or manager role in "${archive.name}"; the member is ${archive.role ?? "not a member"}.`
+    );
+  }
+};
+var definedFields = (fields) => Object.fromEntries(
+  Object.entries(fields).filter(
+    (entry) => entry[1] !== void 0
+  )
+);
+var needsSaving = ({ existing, fields }) => existing === void 0 || Object.entries(fields).some(
+  ([name, value]) => (existing[name] ?? "") !== value
+);
+var plannedItems = (items, changes) => {
+  const first = (field) => items.find((item) => item.fieldNameUI === field);
+  return [
+    ...changes.blurb === void 0 ? [] : [
+      {
+        label: "blurb",
+        existing: first(BLURB),
+        fields: { string1: changes.blurb },
+        fieldNameUI: BLURB,
+        type: "type.widget.string"
+      }
+    ],
+    ...changes.about === void 0 ? [] : [
+      {
+        label: "about",
+        existing: first(ABOUT),
+        fields: { textData1: changes.about },
+        fieldNameUI: ABOUT,
+        type: "type.widget.description"
+      }
+    ],
+    ...(changes.milestones ?? []).map((milestone2) => ({
+      label: `milestone: ${milestone2.title}`,
+      existing: items.find(
+        (item) => item.fieldNameUI === MILESTONE && sameTitle(milestone2.title, item.string1)
+      ),
+      fields: definedFields({
+        string1: milestone2.title,
+        day1: milestone2.date,
+        day2: milestone2.endDate,
+        string2: milestone2.description
+      }),
+      fieldNameUI: MILESTONE,
+      type: "type.widget.locn"
+    }))
+  ];
+};
+var voFor = (archive, planned) => planned.existing === void 0 ? {
+  archiveId: archive.archiveId,
+  fieldNameUI: planned.fieldNameUI,
+  type: planned.type,
+  ...planned.fields
+} : {
+  profile_itemId: planned.existing.profile_itemId,
+  archiveId: archive.archiveId,
+  fieldNameUI: planned.fieldNameUI,
+  ...planned.fields
+};
+var updateArchiveProfile = async (client, archive, changes) => {
+  assertCanEditProfile(archive);
+  let toSave = [];
+  let planned = [];
+  await inArchive(client, archive, async () => {
+    planned = plannedItems(await readItems(client, archive), changes);
+    toSave = planned.filter(needsSaving);
+    if (toSave.length > 0) {
+      await client.legacy(
+        "/profile_item/safeAddUpdate",
+        toSave.map((item) => ({ Profile_itemVO: voFor(archive, item) }))
+      );
+    }
+  });
+  return {
+    updated: toSave.map((item) => item.label),
+    unchanged: planned.filter((item) => !toSave.includes(item)).map((item) => item.label)
+  };
+};
+
+// src/tools/profile.ts
+var id3 = external_exports.number().int().positive();
+var day = external_exports.iso.date().describe("A full date, YYYY-MM-DD. Leave it out if the day isn't known.");
+var milestone = external_exports.object({
+  title: external_exports.string().trim().min(1).max(MILESTONE_TITLE_MAX_LENGTH),
+  date: day.optional(),
+  endDate: day.optional(),
+  description: external_exports.string().trim().max(MILESTONE_DESCRIPTION_MAX_LENGTH).optional()
+});
+var registerProfileTools = (server, client) => {
+  server.registerTool(
+    "get_archive_profile",
+    {
+      title: "Read an archive's profile",
+      description: "Read an archive's profile: the short blurb, the longer 'about' text and its milestones. isPublic says whether any of it is shown on the archive's public profile page, and publicFields lists which parts are. Changing a public field changes what everyone sees.",
+      inputSchema: { archiveId: id3 },
+      annotations: { readOnlyHint: true, openWorldHint: true }
+    },
+    async ({ archiveId }) => jsonResult(
+      await readArchiveProfile(client, await findArchive(client, archiveId))
+    )
+  );
+  server.registerTool(
+    "set_archive_profile",
+    {
+      title: "Set an archive's profile",
+      description: "Set an archive's blurb, 'about' text and milestones. Only the fields passed are changed. A milestone with the same title as an existing one updates it; others are added. Nothing is removed. New items are private until the member makes the profile public in Permanent. Needs the owner or manager role. Only call after the member has approved the exact text.",
+      inputSchema: {
+        archiveId: id3,
+        blurb: external_exports.string().trim().min(1).max(BLURB_MAX_LENGTH).optional(),
+        about: external_exports.string().trim().min(1).optional(),
+        milestones: external_exports.array(milestone).optional()
+      },
+      annotations: {
+        readOnlyHint: false,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: true
+      }
+    },
+    async ({ archiveId, ...changes }) => jsonResult(
+      await updateArchiveProfile(
+        client,
+        await findArchive(client, archiveId),
+        changes
+      )
+    )
+  );
+};
+
 // src/tools/share.ts
 import { setTimeout as delay2 } from "node:timers/promises";
 
@@ -40482,7 +40681,7 @@ var KeyedLock = class {
 };
 
 // src/tools/share.ts
-var id3 = external_exports.number().int().positive();
+var id4 = external_exports.number().int().positive();
 var PUBLISH_WAIT_MILLISECONDS = 2e4;
 var PUBLISH_POLL_MILLISECONDS = 2e3;
 var COPY_GIVE_UP_MILLISECONDS = 18e5;
@@ -40606,8 +40805,8 @@ var registerShareTools = (server, {
       title: "Share a Permanent folder",
       description: "Get a link to a folder that the member can send to people. The folder stays private; only people with the link can see it. Reuses an existing link with the same access if there is one. Ask the member who should be able to open it before choosing `access`.",
       inputSchema: {
-        archiveId: id3,
-        folderId: id3,
+        archiveId: id4,
+        folderId: id4,
         access: external_exports.enum(["anyone_with_link", "permanent_account"]).describe(
           "anyone_with_link: anyone who has the link can view. permanent_account: they must sign in to Permanent first."
         )
@@ -40640,8 +40839,8 @@ var registerShareTools = (server, {
       title: "Publish a folder to Permanent's Public space",
       description: "Make a public copy of a folder in the archive's Public space, where anyone on the internet can see it and it appears on the archive's public page. Only call this after the member has explicitly agreed to make it public. The public copy does not follow later edits to the original. Needs the owner or manager role.",
       inputSchema: {
-        archiveId: id3,
-        folderId: id3,
+        archiveId: id4,
+        folderId: id4,
         memberAgreedToPublish: external_exports.literal(true).describe(
           "Set only after the member has explicitly said yes to making this folder public"
         )
@@ -41431,7 +41630,7 @@ var applyStoryManifest = async (request) => {
 var APPLY_BUDGET_MILLISECONDS2 = 1e5;
 var MAX_LATITUDE2 = 90;
 var MAX_LONGITUDE2 = 180;
-var id4 = external_exports.number().int().positive();
+var id5 = external_exports.number().int().positive();
 var place = external_exports.object({
   name: external_exports.string().optional(),
   latitude: external_exports.number().min(-MAX_LATITUDE2).max(MAX_LATITUDE2).optional(),
@@ -41450,8 +41649,8 @@ var registerStoryTools = (server, {
       title: "Put a story manifest on Permanent",
       description: "Put an approved story manifest on Permanent: creates a folder for the event inside parentFolderId and a folder per story inside it, uploads each story's files, sets titles, descriptions, dates, locations, alt text and keywords, then sets each story's narrative, cover and date order. Safe to call again: finished work is skipped, and edits made to the manifest since the last call are applied. Works for a limited time per call; if `done` is false, call again.",
       inputSchema: {
-        archiveId: id4,
-        parentFolderId: id4.describe(
+        archiveId: id5,
+        parentFolderId: id5.describe(
           "Where the event folder goes, normally the archive's My Files folder"
         ),
         manifestPath: external_exports.string().refine(isAbsolute6, {
@@ -41486,8 +41685,8 @@ var registerStoryTools = (server, {
       title: "Describe a Permanent file",
       description: "Set a file's title, description, date (EDTF), location, alt text and keywords on Permanent. Only the fields you pass change. Keywords are added, not replaced.",
       inputSchema: {
-        archiveId: id4,
-        recordId: id4,
+        archiveId: id5,
+        recordId: id5,
         title: external_exports.string().min(1).optional(),
         description: external_exports.string().optional(),
         date: external_exports.string().refine(isSupportedEdtf, { error: "Not a supported EDTF date" }).optional(),
@@ -41525,10 +41724,10 @@ var registerStoryTools = (server, {
       title: "Present a Permanent folder",
       description: "Set a folder's description (the story's narrative) and cover image, and sort it by date so items appear in the order of their dates.",
       inputSchema: {
-        archiveId: id4,
-        folderId: id4,
+        archiveId: id5,
+        folderId: id5,
         description: external_exports.string().optional(),
-        coverRecordId: id4.optional().describe("A file in this folder to use as its cover"),
+        coverRecordId: id5.optional().describe("A file in this folder to use as its cover"),
         sortByDate: external_exports.boolean().default(true)
       },
       annotations: {
@@ -41566,7 +41765,7 @@ var MAX_FILES_PER_CALL = 200;
 var MAX_WAIT_SECONDS2 = 120;
 var POLL_INTERVAL_MILLISECONDS = 3e3;
 var MILLISECONDS_PER_SECOND2 = 1e3;
-var id5 = external_exports.number().int().positive();
+var id6 = external_exports.number().int().positive();
 var registerUploadTools = (server, client, ledger, options = {}) => {
   server.registerTool(
     "upload_files",
@@ -41574,8 +41773,8 @@ var registerUploadTools = (server, client, ledger, options = {}) => {
       title: "Upload files to Permanent",
       description: "Upload local files into a Permanent folder. Safe to call again with the same files: anything already uploaded to that folder is skipped. Works for a limited time per call, so if `remaining` is not empty, call again with those paths. A file whose name is already used by a different file in the folder is reported under `conflicts` and not uploaded. Refuses public folders unless allowPublic is set after the member agreed.",
       inputSchema: {
-        archiveId: id5,
-        folderId: id5,
+        archiveId: id6,
+        folderId: id6,
         paths: external_exports.array(
           external_exports.string().refine(isAbsolute7, {
             error: "Use an absolute path on this computer"
@@ -41608,7 +41807,7 @@ var registerUploadTools = (server, client, ledger, options = {}) => {
       title: "Check Permanent processing",
       description: "Check whether Permanent has finished processing uploaded files (thumbnails and previews). Optionally waits until none are still processing. A file still unprocessed 10 minutes after upload is reported as `stuck`: it is saved with its details, but Permanent will not finish it on its own, so don't keep waiting for it.",
       inputSchema: {
-        recordIds: external_exports.array(id5).min(1).max(MAX_FILES_PER_CALL),
+        recordIds: external_exports.array(id6).min(1).max(MAX_FILES_PER_CALL),
         waitSeconds: external_exports.number().min(0).max(MAX_WAIT_SECONDS2).default(0)
       },
       annotations: { readOnlyHint: true, openWorldHint: true }
@@ -41757,6 +41956,7 @@ var createServer2 = (dependencies = defaultDependencies()) => {
   registerStoryTools(server, dependencies);
   registerShareTools(server, dependencies);
   registerDescribeTools(server, dependencies);
+  registerProfileTools(server, dependencies.client);
   return server;
 };
 
