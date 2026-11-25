@@ -25,6 +25,7 @@ export interface FakeReply {
 	status?: number;
 	body: unknown;
 	headers?: Record<string, string>;
+	raw?: Buffer;
 }
 
 export type FakeRoute = (
@@ -150,6 +151,11 @@ const firstEntry = (body: unknown): LegacyEntry => {
 };
 
 const replyJson = (response: ServerResponse, reply: FakeReply): void => {
+	if (reply.raw !== undefined) {
+		response.writeHead(reply.status ?? 200, reply.headers);
+		response.end(reply.raw);
+		return;
+	}
 	response.writeHead(reply.status ?? 200, {
 		"Content-Type": "application/json",
 		...reply.headers,
@@ -158,16 +164,31 @@ const replyJson = (response: ServerResponse, reply: FakeReply): void => {
 };
 
 const STORAGE_PATH = "/api/s3";
+const CDN_PATH = "/cdn/";
+
+const checkUnauthenticatedPaths = (
+	request: IncomingMessage,
+): FakeReply | "api" | undefined => {
+	const path = request.url ?? "";
+	if (path.startsWith(CDN_PATH)) {
+		return undefined;
+	}
+	if (path.startsWith(STORAGE_PATH)) {
+		return request.headers.authorization === undefined
+			? undefined
+			: { status: 400, body: { error: "storage must not get the token" } };
+	}
+	return "api";
+};
 
 const checkApiContract = (
 	request: IncomingMessage,
 	body: unknown,
 	token: string,
 ): FakeReply | undefined => {
-	if ((request.url ?? "").startsWith(STORAGE_PATH)) {
-		return request.headers.authorization === undefined
-			? undefined
-			: { status: 400, body: { error: "storage must not get the token" } };
+	const outside = checkUnauthenticatedPaths(request);
+	if (outside !== "api") {
+		return outside;
 	}
 	if (request.headers.authorization !== `Bearer ${token}`) {
 		return { status: 401, body: { error: "missing or wrong bearer token" } };

@@ -8,6 +8,7 @@ import { StoryProgress } from "./stories/progress.ts";
 import { registerAccountTools } from "./tools/account.ts";
 import { registerArchiveTools } from "./tools/archive.ts";
 import { registerCurationTools } from "./tools/curation.ts";
+import { registerDescribeTools } from "./tools/describe.ts";
 import { registerShareTools } from "./tools/share.ts";
 import { registerStoryTools } from "./tools/story.ts";
 import { registerUploadTools } from "./tools/upload.ts";
@@ -68,5 +69,6 @@ export const createServer = (
 	);
 	registerStoryTools(server, dependencies);
 	registerShareTools(server, dependencies);
+	registerDescribeTools(server, dependencies);
 	return server;
 };

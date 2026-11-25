@@ -44,6 +44,7 @@ export const ARCHIVE = {
 };
 
 export const MY_FILES_ID = 3;
+export const FAKE_PREVIEW = Buffer.from([0xff, 0xd8, 0xff, 0xd9]);
 export const PUBLIC_ID = 4;
 
 const legacyData = z.object({
@@ -80,6 +81,11 @@ export class FakeArchive {
 	public readonly records = new Map<number, FakeRecord>();
 	public readonly pendingUploads = new Map<string, number>();
 	public currentArchiveNbr: string | undefined = undefined;
+	private cdnUrl = "";
+
+	public brokenPreviews = new Set<string>();
+
+	public previewBytes: Buffer = FAKE_PREVIEW;
 	private pendingCopies: Array<{ polls: number; finish: () => void }> = [];
 
 	public get queuedCopies(): number {
@@ -132,6 +138,16 @@ export class FakeArchive {
 
 	public install(fake: FakePermanent): void {
 		const { routes } = fake;
+		this.cdnUrl = fake.apiUrl.replace(/\/api$/v, "");
+		routes.set("GET /cdn/*", ({ path }) =>
+			[...this.brokenPreviews].some((size) => path.endsWith(size))
+				? { status: 403, body: {} }
+				: {
+						body: undefined,
+						raw: this.previewBytes,
+						headers: { "Content-Type": "image/jpeg" },
+					},
+		);
 		routes.set("GET /api/archive/getAllArchives", () => ok([ARCHIVE]));
 		routes.set("GET /api/folder/getRoot", () => ok(this.folderVo(1)));
 		routes.set("GET /api/folder/getWithChildren", ({ query }) => {
@@ -356,6 +372,10 @@ export class FakeArchive {
 			displayName: record.displayName,
 			description: record.description,
 			displayDT: record.displayDT,
+			uploadFileName: record.uploadFileName,
+			type: "type.record.image",
+			thumbURL1000: `${this.cdnUrl}/cdn/${record.recordId}.thumb.w1000`,
+			thumbURL2000: `${this.cdnUrl}/cdn/${record.recordId}.thumb.w2000`,
 			displayEndDT: null,
 			publicDT: null,
 			note: record.note,
