@@ -400,7 +400,15 @@ export class FakeArchive {
 	}
 
 	private updateFolder(body: unknown): FakeReply {
-		for (const entry of legacyData.parse(body).RequestVO.data) {
+		const {
+			RequestVO: { data: entries },
+		} = legacyData.parse(body);
+		if (entries.some((entry) => typeof entry.FolderVO?.folderId !== "number")) {
+			return legacyFail(
+				"Cannot update a VO without the primary key (folderId)",
+			);
+		}
+		for (const entry of entries) {
 			const folder = [...this.folders.values()].find(
 				(candidate) =>
 					candidate.folder_linkId === entry.FolderVO?.folder_linkId,

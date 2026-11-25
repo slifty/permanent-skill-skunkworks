@@ -86,7 +86,9 @@ const resolveFolder = async (
 	}
 	if (known.name !== title) {
 		await updateFolder(context.client, context.archive, {
+			folderId: known.folderId,
 			folderLinkId: known.folderLinkId,
+			archiveNbr: known.archiveNbr,
 			name: title,
 		});
 	}
@@ -198,7 +200,9 @@ const presentFolder = async (
 		return;
 	}
 	await updateFolder(context.client, context.archive, {
+		folderId: folder.folderId,
 		folderLinkId: folder.folderLinkId,
+		archiveNbr: folder.archiveNbr,
 		...settings,
 		sortByDate: true,
 	});

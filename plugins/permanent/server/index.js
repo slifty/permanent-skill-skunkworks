@@ -39911,14 +39911,21 @@ var addRecordKeywords = async (client, archive, recordId, keywords) => {
   });
 };
 var updateFolder = async (client, archive, details) => {
+  const changes = withoutUndefined({
+    displayName: details.name,
+    description: details.description,
+    thumbArchiveNbr: details.coverArchiveNbr
+  });
   const folder = withoutUndefined({
+    folderId: details.folderId,
+    archiveNbr: details.archiveNbr,
     folder_linkId: details.folderLinkId,
     displayName: details.name,
     description: details.description,
     thumbArchiveNbr: details.coverArchiveNbr
   });
   await inArchive(client, archive, async () => {
-    if (Object.keys(folder).length > 1) {
+    if (Object.keys(changes).length > 0) {
       await client.legacy("/folder/update", [{ FolderVO: folder }]);
     }
     if (details.sortByDate === true) {
@@ -40499,7 +40506,9 @@ var resolveFolder = async (context, parent, title, knownFolderId) => {
   }
   if (known.name !== title) {
     await updateFolder(context.client, context.archive, {
+      folderId: known.folderId,
       folderLinkId: known.folderLinkId,
+      archiveNbr: known.archiveNbr,
       name: title
     });
   }
@@ -40582,7 +40591,9 @@ var presentFolder = async (context, folder, description, coverRecordId) => {
     return;
   }
   await updateFolder(context.client, context.archive, {
+    folderId: folder.folderId,
     folderLinkId: folder.folderLinkId,
+    archiveNbr: folder.archiveNbr,
     ...settings,
     sortByDate: true
   });
@@ -40803,7 +40814,9 @@ var registerStoryTools = (server, { client, ledger, progress, applyBudgetMillise
         throw new Error(`File ${coverRecordId} is not in this folder.`);
       }
       await updateFolder(client, await findArchive(client, archiveId), {
+        folderId: folder.folderId,
         folderLinkId: folder.folderLinkId,
+        archiveNbr: folder.archiveNbr,
         description,
         coverArchiveNbr: cover?.archiveNbr,
         sortByDate
@@ -41012,7 +41025,7 @@ var UploadLedger = class {
 
 // src/server.ts
 var SERVER_NAME = "permanent";
-var SERVER_VERSION = "0.1.0";
+var SERVER_VERSION = "0.1.1";
 var defaultDependencies = () => {
   const environment = environmentFromSettings(process.env);
   const dataDirectory = defaultDataDirectory();

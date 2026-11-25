@@ -151,7 +151,9 @@ export const registerStoryTools = (
 				throw new Error(`File ${coverRecordId} is not in this folder.`);
 			}
 			await updateFolder(client, await findArchive(client, archiveId), {
+				folderId: folder.folderId,
 				folderLinkId: folder.folderLinkId,
+				archiveNbr: folder.archiveNbr,
 				description,
 				coverArchiveNbr: cover?.archiveNbr,
 				sortByDate,

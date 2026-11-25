@@ -20,7 +20,9 @@ export interface RecordDetails {
 }
 
 export interface FolderDetails {
+	folderId: number;
 	folderLinkId: number;
+	archiveNbr?: string | undefined;
 	name?: string | undefined;
 	description?: string | undefined;
 	coverArchiveNbr?: string | undefined;
@@ -145,14 +147,21 @@ export const updateFolder = async (
 	archive: ArchiveRef,
 	details: FolderDetails,
 ): Promise<void> => {
+	const changes = withoutUndefined({
+		displayName: details.name,
+		description: details.description,
+		thumbArchiveNbr: details.coverArchiveNbr,
+	});
 	const folder = withoutUndefined({
+		folderId: details.folderId,
+		archiveNbr: details.archiveNbr,
 		folder_linkId: details.folderLinkId,
 		displayName: details.name,
 		description: details.description,
 		thumbArchiveNbr: details.coverArchiveNbr,
 	});
 	await inArchive(client, archive, async () => {
-		if (Object.keys(folder).length > 1) {
+		if (Object.keys(changes).length > 0) {
 			await client.legacy("/folder/update", [{ FolderVO: folder }]);
 		}
 		if (details.sortByDate === true) {
