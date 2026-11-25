@@ -30,6 +30,7 @@ describe("scanMedia", () => {
 			buildJpeg({ dateTimeOriginal: exifDate("20:15:00"), model: "Pixel 8" }),
 		);
 		await writeFile(join(root, "speech.mov"), Buffer.from("video bytes"));
+		await writeFile(join(root, "letter.pdf"), Buffer.from("%PDF-1.4 letter"));
 		await writeFile(join(root, "notes.txt"), "not media");
 		await writeFile(join(root, ".DS_Store"), "hidden");
 	});
@@ -102,6 +103,18 @@ describe("scanMedia", () => {
 
 		expect(result.items[0]).toMatchObject({
 			kind: "video",
+			takenAtSource: "file",
+		});
+	});
+
+	it("includes PDF documents", async () => {
+		const result = await scanMedia([join(root, "letter.pdf")], {
+			recursive: true,
+			gapMinutes: 90,
+		});
+
+		expect(result.items[0]).toMatchObject({
+			kind: "document",
 			takenAtSource: "file",
 		});
 	});

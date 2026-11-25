@@ -14,7 +14,7 @@ export const registerCurationTools = (server: McpServer): void => {
 		{
 			title: "Scan photos",
 			description:
-				"Scan local files or folders for photos and videos. Returns each file's date (from EXIF when present, otherwise the file's modified time), GPS location, camera and size, marks exact duplicates, and suggests groups of items taken close together in time. Does not upload anything.",
+				"Scan local files or folders for photos, videos and PDF documents. Returns each file's date (from EXIF when present, otherwise the file's modified time), GPS location, camera and size, marks exact duplicates, and suggests groups of items taken close together in time. Does not upload anything.",
 			inputSchema: {
 				paths: z
 					.array(

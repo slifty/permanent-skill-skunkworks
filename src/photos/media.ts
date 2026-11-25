@@ -1,6 +1,6 @@
 import { extname } from "node:path";
 
-export type MediaKind = "image" | "video";
+export type MediaKind = "image" | "video" | "document";
 
 const IMAGE_EXTENSIONS = new Set([
 	".jpg",
@@ -16,6 +16,8 @@ const IMAGE_EXTENSIONS = new Set([
 ]);
 
 const VIDEO_EXTENSIONS = new Set([".mp4", ".mov", ".m4v", ".avi", ".mkv"]);
+
+const DOCUMENT_EXTENSIONS = new Set([".pdf"]);
 
 const CONTENT_TYPES: Record<string, string> = {
 	".jpg": "image/jpeg",
@@ -33,6 +35,7 @@ const CONTENT_TYPES: Record<string, string> = {
 	".m4v": "video/x-m4v",
 	".avi": "video/x-msvideo",
 	".mkv": "video/x-matroska",
+	".pdf": "application/pdf",
 };
 
 export const getContentType = (path: string): string =>
@@ -45,6 +48,9 @@ export const getMediaKind = (path: string): MediaKind | undefined => {
 	}
 	if (VIDEO_EXTENSIONS.has(extension)) {
 		return "video";
+	}
+	if (DOCUMENT_EXTENSIONS.has(extension)) {
+		return "document";
 	}
 	return undefined;
 };

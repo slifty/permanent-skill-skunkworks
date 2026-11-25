@@ -172,6 +172,35 @@ describe("upload_files", () => {
 		});
 	});
 
+	it("uploads a PDF as a PDF", async () => {
+		const { test, root, registered } = await setUp();
+		const presign = must(
+			test.fake.routes.get("POST /api/record/getPresignedUrl"),
+		);
+		const fileTypes: unknown[] = [];
+		test.fake.routes.set(
+			"POST /api/record/getPresignedUrl",
+			async (request) => {
+				fileTypes.push(
+					z.looseObject({ fileType: z.string() }).parse(request.body).fileType,
+				);
+				return await presign(request);
+			},
+		);
+		const letter = join(root, "letter.pdf");
+		await writeFile(letter, Buffer.from("%PDF-1.4 letter"));
+		const client = await connectClient(test);
+
+		await callTool(client, "upload_files", {
+			archiveId: 7,
+			folderId: 30,
+			paths: [letter],
+		});
+
+		expect(fileTypes).toEqual(["application/pdf"]);
+		expect(registered[0]).toMatchObject({ uploadFileName: "letter.pdf" });
+	});
+
 	it("skips files it already uploaded to that folder", async () => {
 		const { test, root, registered } = await setUp();
 		const first = await photo(root, "IMG_0001.jpg", "14:00:00");

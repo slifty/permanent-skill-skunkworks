@@ -39035,7 +39035,7 @@ var StoryProgress = class {
 import { readFile as readFile4, readdir } from "node:fs/promises";
 import { dirname as dirname3, join as join5, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-var SERVER_VERSION = "0.1.12";
+var SERVER_VERSION = "0.1.13";
 var PLUGIN_NAME = "permanent";
 var pluginManifest = external_exports.looseObject({
   name: external_exports.string(),
@@ -39688,6 +39688,7 @@ var IMAGE_EXTENSIONS = /* @__PURE__ */ new Set([
   ".avif"
 ]);
 var VIDEO_EXTENSIONS = /* @__PURE__ */ new Set([".mp4", ".mov", ".m4v", ".avi", ".mkv"]);
+var DOCUMENT_EXTENSIONS = /* @__PURE__ */ new Set([".pdf"]);
 var CONTENT_TYPES = {
   ".jpg": "image/jpeg",
   ".jpeg": "image/jpeg",
@@ -39703,7 +39704,8 @@ var CONTENT_TYPES = {
   ".mov": "video/quicktime",
   ".m4v": "video/x-m4v",
   ".avi": "video/x-msvideo",
-  ".mkv": "video/x-matroska"
+  ".mkv": "video/x-matroska",
+  ".pdf": "application/pdf"
 };
 var getContentType = (path) => CONTENT_TYPES[extname(path).toLowerCase()] ?? "application/octet-stream";
 var getMediaKind = (path) => {
@@ -39713,6 +39715,9 @@ var getMediaKind = (path) => {
   }
   if (VIDEO_EXTENSIONS.has(extension)) {
     return "video";
+  }
+  if (DOCUMENT_EXTENSIONS.has(extension)) {
+    return "document";
   }
   return void 0;
 };
@@ -39746,7 +39751,7 @@ var readImage = async (path) => {
     metadata: await readPhotoMetadata(contents)
   };
 };
-var readVideo = async (path) => ({
+var readWithoutMetadata = async (path) => ({
   sha256: await hashStream(path),
   metadata: {}
 });
@@ -39782,7 +39787,7 @@ var scanFile = async (path) => {
   const kind = getMediaKind(path) ?? "image";
   const [stats, { sha256, metadata }] = await Promise.all([
     stat(path),
-    kind === "image" ? readImage(path) : readVideo(path)
+    kind === "image" ? readImage(path) : readWithoutMetadata(path)
   ]);
   return {
     path,
@@ -39867,7 +39872,7 @@ var registerCurationTools = (server) => {
     "scan_photos",
     {
       title: "Scan photos",
-      description: "Scan local files or folders for photos and videos. Returns each file's date (from EXIF when present, otherwise the file's modified time), GPS location, camera and size, marks exact duplicates, and suggests groups of items taken close together in time. Does not upload anything.",
+      description: "Scan local files or folders for photos, videos and PDF documents. Returns each file's date (from EXIF when present, otherwise the file's modified time), GPS location, camera and size, marks exact duplicates, and suggests groups of items taken close together in time. Does not upload anything.",
       inputSchema: {
         paths: external_exports.array(
           external_exports.string().refine(isAbsolute3, {

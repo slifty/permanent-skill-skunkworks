@@ -78,7 +78,7 @@ const readImage = async (
 	};
 };
 
-const readVideo = async (
+const readWithoutMetadata = async (
 	path: string,
 ): Promise<{ sha256: string; metadata: PhotoMetadata }> => ({
 	sha256: await hashStream(path),
@@ -133,7 +133,7 @@ const scanFile = async (path: string): Promise<ScannedItem> => {
 	const kind = getMediaKind(path) ?? "image";
 	const [stats, { sha256, metadata }] = await Promise.all([
 		stat(path),
-		kind === "image" ? readImage(path) : readVideo(path),
+		kind === "image" ? readImage(path) : readWithoutMetadata(path),
 	]);
 	return {
 		path,
