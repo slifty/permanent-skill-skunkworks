@@ -78,18 +78,36 @@ const summarizeRecord = (vo: z.infer<typeof recordVo>): RecordSummary => ({
 	status: stripPrefix(vo.status, "status."),
 });
 
+const uniqueBy = <Item>(items: Item[], key: (item: Item) => number): Item[] => {
+	const seen = new Set<number>();
+	return items.filter((item) => {
+		const id = key(item);
+		if (seen.has(id)) {
+			return false;
+		}
+		seen.add(id);
+		return true;
+	});
+};
+
 const summarizeContents = (vo: FolderVo): FolderContents => {
 	const children = vo.ChildItemVOs ?? [];
 	return {
 		...summarizeFolder(vo),
 		sort: stripPrefix(vo.sort, "sort."),
 		view: stripPrefix(vo.view, "folder.view."),
-		folders: children
-			.filter((child) => child.type.startsWith("type.folder."))
-			.map((child) => summarizeFolder(folderVo.parse(child))),
-		records: children
-			.filter((child) => child.type.startsWith("type.record."))
-			.map((child) => summarizeRecord(recordVo.parse(child))),
+		folders: uniqueBy(
+			children
+				.filter((child) => child.type.startsWith("type.folder."))
+				.map((child) => summarizeFolder(folderVo.parse(child))),
+			(folder) => folder.folderId,
+		),
+		records: uniqueBy(
+			children
+				.filter((child) => child.type.startsWith("type.record."))
+				.map((child) => summarizeRecord(recordVo.parse(child))),
+			(record) => record.recordId,
+		),
 	};
 };
 

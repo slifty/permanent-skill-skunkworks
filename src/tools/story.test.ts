@@ -2,6 +2,7 @@ import { mkdtemp, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
+import { z } from "zod";
 import { readManifest, writeManifest } from "../manifest/file.ts";
 import { callTool, connectClient } from "../testing/client.ts";
 import {
@@ -269,6 +270,29 @@ describe("apply_story_manifest", () => {
 
 		expect(outcome.isError).toBe(true);
 		expect(outcome.text).toContain("visible to everyone");
+	});
+});
+
+describe("browse_folder after a story is applied", () => {
+	it("lists each file once, even when Permanent repeats it per keyword", async () => {
+		const { test, archive, manifestPath } = await setUp();
+		const client = await connectClient(test);
+		await callTool(client, "apply_story_manifest", {
+			archiveId: 7,
+			parentFolderId: MY_FILES_ID,
+			manifestPath,
+		});
+		const arrivals = must(archive.folderNamed("Everyone arrives"));
+
+		const outcome = await callTool(client, "browse_folder", {
+			archiveId: 7,
+			folderId: arrivals.folderId,
+		});
+
+		const listing = z
+			.object({ records: z.array(z.object({ recordId: z.number() })) })
+			.parse(outcome.json());
+		expect(listing.records).toHaveLength(2);
 	});
 });
 

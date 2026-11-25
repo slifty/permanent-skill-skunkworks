@@ -252,15 +252,19 @@ export class FakeArchive {
 			...[...this.folders.values()]
 				.filter((child) => child.parentFolderId === folderId)
 				.map((child) => ({ ...child, ChildItemVOs: [] })),
-			...this.recordsIn(folderId).map((record) => ({
-				recordId: record.recordId,
-				archiveNbr: record.archiveNbr,
-				displayName: record.displayName,
-				uploadFileName: record.uploadFileName,
-				description: record.description,
-				type: "type.record.image",
-				status: record.status,
-			})),
+			...this.recordsIn(folderId)
+				.flatMap((record) =>
+					Array.from({ length: Math.max(1, record.tags.length) }, () => record),
+				)
+				.map((record) => ({
+					recordId: record.recordId,
+					archiveNbr: record.archiveNbr,
+					displayName: record.displayName,
+					uploadFileName: record.uploadFileName,
+					description: record.description,
+					type: "type.record.image",
+					status: record.status,
+				})),
 		];
 		return { ...folder, ChildItemVOs: children };
 	}
