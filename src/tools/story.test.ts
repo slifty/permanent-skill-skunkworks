@@ -284,6 +284,106 @@ describe("apply_story_manifest", () => {
 		expect(dated?.displayDT).toBe("2024-06-01T10:00:00");
 	});
 
+	it("re-presents a story whose folder lost its narrative or order", async () => {
+		const { test, archive, manifestPath } = await setUp();
+		const client = await connectClient(test);
+		const request = { archiveId: 7, parentFolderId: MY_FILES_ID, manifestPath };
+		await callTool(client, "apply_story_manifest", request);
+		const arrivals = must(archive.folderNamed("Everyone arrives"));
+		arrivals.description = null;
+		arrivals.sort = "sort.alphabetical_asc";
+
+		await callTool(client, "apply_story_manifest", request);
+
+		expect(arrivals).toMatchObject({
+			description: "By two o'clock the porch was full.",
+			sort: "sort.display_date_asc",
+		});
+	});
+
+	it("reports an event folder whose presentation Permanent didn't keep", async () => {
+		const { test, archive, manifestPath } = await setUp();
+		const sort = must(test.fake.routes.get("POST /api/folder/sort"));
+		test.fake.routes.set("POST /api/folder/sort", async (request) => {
+			const event = archive.folderNamed("Rosa's 90th");
+			const raw = JSON.stringify(request.body);
+			return event !== undefined &&
+				raw.includes(`"folder_linkId":${event.folder_linkId}`)
+				? {
+						body: {
+							isSuccessful: true,
+							Results: [{ data: [], message: ["ok"], status: true }],
+						},
+					}
+				: await sort(request);
+		});
+		const client = await connectClient(test);
+
+		const outcome = await callTool(client, "apply_story_manifest", {
+			archiveId: 7,
+			parentFolderId: MY_FILES_ID,
+			manifestPath,
+		});
+
+		expect(outcome.isError).toBe(false);
+		expect(outcome.json()).toMatchObject({
+			done: false,
+			eventProblem: expect.stringContaining("didn't keep") as unknown,
+		});
+	});
+
+	it("accepts a story with a blank narrative", async () => {
+		const { test, manifestPath, manifest } = await setUp();
+		must(manifest.stories[1]).description = " ";
+		await writeManifest(manifestPath, manifest);
+		const client = await connectClient(test);
+
+		const outcome = await callTool(client, "apply_story_manifest", {
+			archiveId: 7,
+			parentFolderId: MY_FILES_ID,
+			manifestPath,
+		});
+
+		expect(outcome.json()).toMatchObject({
+			done: true,
+			stories: [{ presented: true }, { presented: true }],
+		});
+	});
+
+	it("reports a story whose presentation Permanent didn't keep", async () => {
+		const { test, manifestPath } = await setUp();
+		test.fake.routes.set("POST /api/folder/sort", () => ({
+			body: {
+				isSuccessful: true,
+				Results: [{ data: [], message: ["ok"], status: true }],
+			},
+		}));
+		const client = await connectClient(test);
+
+		const outcome = await callTool(client, "apply_story_manifest", {
+			archiveId: 7,
+			parentFolderId: MY_FILES_ID,
+			manifestPath,
+		});
+
+		expect(outcome.json()).toMatchObject({
+			done: false,
+			stories: [
+				{
+					title: "Everyone arrives",
+					presented: false,
+					failed: [
+						{
+							path: "Everyone arrives",
+							error: expect.stringContaining("didn't keep") as unknown,
+						},
+					],
+				},
+				{ title: "Ninety candles", presented: false },
+			],
+		});
+	});
+
 	it("reports progress and stops when its time runs out", async () => {
 		const { test, manifestPath } = await setUp();
 		test.applyBudgetMilliseconds = 0;

@@ -40637,16 +40637,16 @@ var describeItems = async (context, story, recordIdsByPath) => {
   outcome.finished = reachedEnd && outcome.failed.length === 0;
   return outcome;
 };
+var DATE_ORDER = "display_date_asc";
+var isPresented = (contents, description) => contents.sort === DATE_ORDER && ((description ?? "").trim() === "" || (contents.description ?? "").trim() !== "");
 var presentFolder = async (context, folder, description, coverRecordId) => {
-  const coverArchiveNbr = coverRecordId === void 0 ? void 0 : (await getFolderContents(
-    context.client,
-    context.archiveId,
-    folder.folderId
-  )).records.find((record2) => record2.recordId === coverRecordId)?.archiveNbr;
+  const read = async () => await getFolderContents(context.client, context.archiveId, folder.folderId);
+  const before = await read();
+  const coverArchiveNbr = coverRecordId === void 0 ? void 0 : before.records.find((record2) => record2.recordId === coverRecordId)?.archiveNbr;
   const settings = { description, coverArchiveNbr };
   const key = `folder:${folder.folderId}`;
   const digest = digestOf(settings);
-  if (await context.progress.isApplied(key, digest)) {
+  if (await context.progress.isApplied(key, digest) && isPresented(before, description)) {
     return;
   }
   await updateFolder(context.client, context.archive, {
@@ -40656,6 +40656,11 @@ var presentFolder = async (context, folder, description, coverRecordId) => {
     ...settings,
     sortByDate: true
   });
+  if (!isPresented(await read(), description)) {
+    throw new Error(
+      `Permanent didn't keep the narrative or date order for "${folder.name}"`
+    );
+  }
   await context.progress.markApplied(key, digest);
 };
 var rememberFolder = async (context, owner, folderId) => {
@@ -40704,11 +40709,18 @@ var applyStory = async (context, eventFolderId, story) => {
     recordIds: [...recordIdsByPath.values()]
   };
   const uploadsSettled = upload.remaining.length === 0;
+  let presented = false;
   if (uploadsSettled && timeLeft(context)) {
     const coverRecordId = story.cover === void 0 ? void 0 : recordIdsByPath.get(story.cover);
-    await presentFolder(context, folder, story.description, coverRecordId);
+    try {
+      await presentFolder(context, folder, story.description, coverRecordId);
+      presented = true;
+    } catch (error62) {
+      report.failed.push({ path: story.title, error: describe4(error62) });
+    }
   }
-  const finished = uploadsSettled && upload.failed.length === 0 && described.finished && timeLeft(context);
+  report.presented = presented;
+  const finished = presented && uploadsSettled && upload.failed.length === 0 && described.finished && timeLeft(context);
   return { report, finished };
 };
 var applyStoryManifest = async (request) => {
@@ -40749,16 +40761,25 @@ var applyStoryManifest = async (request) => {
     }
     return true;
   });
-  const done = reachedEnd && unfinished.length === 0;
-  if (done) {
+  if (!reachedEnd || unfinished.length > 0) {
+    return { done: false, eventFolderId: eventFolder.folderId, stories };
+  }
+  try {
     await presentFolder(
       context,
       eventFolder,
       manifest.event.description,
       void 0
     );
+  } catch (error62) {
+    return {
+      done: false,
+      eventFolderId: eventFolder.folderId,
+      eventProblem: describe4(error62),
+      stories
+    };
   }
-  return { done, eventFolderId: eventFolder.folderId, stories };
+  return { done: true, eventFolderId: eventFolder.folderId, stories };
 };
 
 // src/tools/story.ts
@@ -41104,7 +41125,7 @@ var UploadLedger = class {
 
 // src/server.ts
 var SERVER_NAME = "permanent";
-var SERVER_VERSION = "0.1.6";
+var SERVER_VERSION = "0.1.7";
 var defaultDependencies = () => {
   const environment = environmentFromSettings(process.env);
   const dataDirectory = defaultDataDirectory();

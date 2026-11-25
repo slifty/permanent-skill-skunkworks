@@ -60,6 +60,9 @@ first. Never upload photos the member hasn't approved.
      - If they come from Permanent or the plugin (for example
        "Permanent returned 500", "not found" or "rejected"), also follow
        the report-plugin-problem skill.
+   - `presented: false` on a story, or `eventProblem` on the result: the
+     folder's narrative or date order didn't stick. Call again once; if
+     it's still wrong, treat it like any other repeated failure.
    - Being signed out mid-way: sign in again, then call
      `apply_story_manifest` again. It picks up where it left off.
    - Anything else that looks like a fault in the plugin itself: follow
