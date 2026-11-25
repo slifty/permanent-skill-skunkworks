@@ -33,6 +33,7 @@ export interface RecordSummary {
 }
 
 export interface FolderContents extends FolderSummary {
+	coverArchiveNbr?: string | undefined;
 	sort?: string | undefined;
 	view?: string | undefined;
 	folders: FolderSummary[];
@@ -94,6 +95,7 @@ const summarizeContents = (vo: FolderVo): FolderContents => {
 	const children = vo.ChildItemVOs ?? [];
 	return {
 		...summarizeFolder(vo),
+		coverArchiveNbr: orUndefined(vo.thumbArchiveNbr),
 		sort: stripPrefix(vo.sort, "sort."),
 		view: stripPrefix(vo.view, "folder.view."),
 		folders: uniqueBy(

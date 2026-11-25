@@ -69,6 +69,11 @@ first. Never upload photos the member hasn't approved.
    - `presented: false` on a story, or `eventProblem` on the result: the
      folder's narrative or date order didn't stick. Call again once; if
      it's still wrong, treat it like any other repeated failure.
+   - `mismatches` on a story: after applying it, the plugin read the
+     story back and found titles, descriptions or dates that don't match
+     the manifest. Call again once, since the plugin re-applies those
+     items. If they still differ, tell the member which ones, and treat it
+     as a plugin problem.
    - Being signed out mid-way: sign in again, then call
      `apply_story_manifest` again. It picks up where it left off.
    - Anything else that looks like a fault in the plugin itself: follow
@@ -81,8 +86,10 @@ first. Never upload photos the member hasn't approved.
    Permanent didn't finish making their previews, so they may show as a
    placeholder for now. Give them the file names, and suggest they contact
    Permanent support with the list. Don't upload those files again.
-8. **Report back.** Summarize what is now on Permanent: the event folder,
-   each story and how many photos it has. Outside production, say again
+8. **Report back.** Only say the story is finished once
+   `apply_story_manifest` returns `done: true`, which means each story was
+   read back from Permanent and matched. Summarize what is now on
+   Permanent: the event folder, each story and how many photos it has. Outside production, say again
    which environment it went to. If the member later edits the
    manifest, or asks you to change a title or description, update the
    manifest and call `apply_story_manifest` again. Only what changed is

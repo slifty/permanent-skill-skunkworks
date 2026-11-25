@@ -1730,12 +1730,12 @@ var require_code2 = __commonJS({
       });
     }
     exports.checkReportMissingProp = checkReportMissingProp;
-    function checkMissingProp({ gen, data, it: { opts } }, properties, missing) {
-      return (0, codegen_1.or)(...properties.map((prop) => (0, codegen_1.and)(noPropertyInData(gen, data, prop, opts.ownProperties), (0, codegen_1._)`${missing} = ${prop}`)));
+    function checkMissingProp({ gen, data, it: { opts } }, properties, missing2) {
+      return (0, codegen_1.or)(...properties.map((prop) => (0, codegen_1.and)(noPropertyInData(gen, data, prop, opts.ownProperties), (0, codegen_1._)`${missing2} = ${prop}`)));
     }
     exports.checkMissingProp = checkMissingProp;
-    function reportMissingProp(cxt, missing) {
-      cxt.setParams({ missingProperty: missing }, true);
+    function reportMissingProp(cxt, missing2) {
+      cxt.setParams({ missingProperty: missing2 }, true);
       cxt.error();
     }
     exports.reportMissingProp = reportMissingProp;
@@ -5297,14 +5297,14 @@ var require_required = __commonJS({
           }
         }
         function exitOnErrorMode() {
-          const missing = gen.let("missing");
+          const missing2 = gen.let("missing");
           if (useLoop || $data) {
             const valid = gen.let("valid", true);
-            cxt.block$data(valid, () => loopUntilMissing(missing, valid));
+            cxt.block$data(valid, () => loopUntilMissing(missing2, valid));
             cxt.ok(valid);
           } else {
-            gen.if((0, code_1.checkMissingProp)(cxt, schema, missing));
-            (0, code_1.reportMissingProp)(cxt, missing);
+            gen.if((0, code_1.checkMissingProp)(cxt, schema, missing2));
+            (0, code_1.reportMissingProp)(cxt, missing2);
             gen.else();
           }
         }
@@ -5314,10 +5314,10 @@ var require_required = __commonJS({
             gen.if((0, code_1.noPropertyInData)(gen, data, prop, opts.ownProperties), () => cxt.error());
           });
         }
-        function loopUntilMissing(missing, valid) {
-          cxt.setParams({ missingProperty: missing });
-          gen.forOf(missing, schemaCode, () => {
-            gen.assign(valid, (0, code_1.propertyInData)(gen, data, missing, opts.ownProperties));
+        function loopUntilMissing(missing2, valid) {
+          cxt.setParams({ missingProperty: missing2 });
+          gen.forOf(missing2, schemaCode, () => {
+            gen.assign(valid, (0, code_1.propertyInData)(gen, data, missing2, opts.ownProperties));
             gen.if((0, codegen_1.not)(valid), () => {
               cxt.error();
               gen.break();
@@ -5855,7 +5855,7 @@ var require_dependencies = __commonJS({
       const { gen, data, it } = cxt;
       if (Object.keys(propertyDeps).length === 0)
         return;
-      const missing = gen.let("missing");
+      const missing2 = gen.let("missing");
       for (const prop in propertyDeps) {
         const deps = propertyDeps[prop];
         if (deps.length === 0)
@@ -5873,8 +5873,8 @@ var require_dependencies = __commonJS({
             }
           });
         } else {
-          gen.if((0, codegen_1._)`${hasProperty} && (${(0, code_1.checkMissingProp)(cxt, deps, missing)})`);
-          (0, code_1.reportMissingProp)(cxt, missing);
+          gen.if((0, codegen_1._)`${hasProperty} && (${(0, code_1.checkMissingProp)(cxt, deps, missing2)})`);
+          (0, code_1.reportMissingProp)(cxt, missing2);
           gen.else();
         }
       }
@@ -39035,7 +39035,7 @@ var StoryProgress = class {
 import { readFile as readFile4, readdir } from "node:fs/promises";
 import { dirname as dirname3, join as join5, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-var SERVER_VERSION = "0.1.10";
+var SERVER_VERSION = "0.1.11";
 var PLUGIN_NAME = "permanent";
 var pluginManifest = external_exports.looseObject({
   name: external_exports.string(),
@@ -39241,6 +39241,7 @@ var summarizeContents = (vo) => {
   const children = vo.ChildItemVOs ?? [];
   return {
     ...summarizeFolder(vo),
+    coverArchiveNbr: orUndefined(vo.thumbArchiveNbr),
     sort: stripPrefix(vo.sort, "sort."),
     view: stripPrefix(vo.view, "folder.view."),
     folders: uniqueBy(
@@ -40627,6 +40628,116 @@ var uploadToFolder = async (request) => {
   return report;
 };
 
+// src/stories/verify.ts
+var CALENDAR_DAY_LENGTH = 10;
+var sameText = (a, b) => (a ?? "").trim() === (b ?? "").trim();
+var calendarDay = (value) => (value ?? "").slice(0, CALENDAR_DAY_LENGTH);
+var missing = (path, actual) => ({
+  path,
+  field: "missing",
+  expected: "on Permanent",
+  actual
+});
+var textMismatch = (path, field, expected, actual) => expected === void 0 || sameText(expected, actual) ? [] : [{ path, field, expected, actual: actual ?? "" }];
+var itemMismatches = (item, recordId, record2) => {
+  if (recordId === void 0) {
+    return [missing(item.path, "not uploaded: see conflicts or duplicates")];
+  }
+  if (record2 === void 0) {
+    return [missing(item.path, "not found in the story's folder")];
+  }
+  const expectedDay = calendarDay(
+    item.date === void 0 ? void 0 : edtfToDisplayDate(item.date)
+  );
+  return [
+    ...textMismatch(item.path, "title", item.title, record2.name),
+    ...textMismatch(
+      item.path,
+      "description",
+      item.description,
+      record2.description
+    ),
+    ...expectedDay === "" || expectedDay === calendarDay(record2.date) ? [] : [
+      {
+        path: item.path,
+        field: "date",
+        expected: expectedDay,
+        actual: calendarDay(record2.date)
+      }
+    ]
+  ];
+};
+var narrativeMismatch = (story, contents) => {
+  const narrative = (story.description ?? "").trim();
+  return narrative === "" || sameText(narrative, contents.description) ? [] : [
+    {
+      path: story.title,
+      field: "narrative",
+      expected: narrative,
+      actual: contents.description ?? ""
+    }
+  ];
+};
+var coverMismatch = (story, contents, recordIdsByPath) => {
+  if (story.cover === void 0) {
+    return [];
+  }
+  const coverId = recordIdsByPath.get(story.cover);
+  const coverRecord = contents.records.find(
+    (record2) => record2.recordId === coverId
+  );
+  return coverRecord === void 0 || coverRecord.archiveNbr !== void 0 && coverRecord.archiveNbr === contents.coverArchiveNbr ? [] : [
+    {
+      path: story.title,
+      field: "cover",
+      expected: story.cover,
+      actual: contents.coverArchiveNbr ?? "none"
+    }
+  ];
+};
+var folderMismatches = (story, contents, recordIdsByPath) => [
+  ...narrativeMismatch(story, contents),
+  ...coverMismatch(story, contents, recordIdsByPath)
+];
+var forgetStale = async (check2, itemProblems, folderProblems) => {
+  const { progress, ledger, folderId, recordIdsByPath } = check2;
+  const stalePaths = new Set(itemProblems.map((problem) => problem.path));
+  await Promise.all([
+    ...[...stalePaths].map(async (path) => {
+      const recordId = recordIdsByPath.get(path);
+      if (recordId === void 0) {
+        return;
+      }
+      await progress.markApplied(`record:${recordId}`, "stale");
+    }),
+    ...itemProblems.filter((problem) => problem.actual === "not found in the story's folder").map(async (problem) => {
+      await ledger.forgetRecord(
+        folderId,
+        recordIdsByPath.get(problem.path) ?? 0
+      );
+    }),
+    ...folderProblems.length > 0 ? [progress.markApplied(`folder:${folderId}`, "stale")] : []
+  ]);
+};
+var checkStoryOnPermanent = async (check2) => {
+  const { client, archiveId, folderId, story, recordIdsByPath } = check2;
+  const contents = await getFolderContents(client, archiveId, folderId);
+  const byId = new Map(
+    contents.records.map((record2) => [record2.recordId, record2])
+  );
+  const itemProblems = story.items.flatMap((item) => {
+    const recordId = recordIdsByPath.get(item.path);
+    return itemMismatches(
+      item,
+      recordId,
+      recordId === void 0 ? void 0 : byId.get(recordId)
+    );
+  });
+  const folderProblems = folderMismatches(story, contents, recordIdsByPath);
+  await forgetStale(check2, itemProblems, folderProblems);
+  return [...itemProblems, ...folderProblems];
+};
+
 // src/stories/apply-manifest.ts
 var describe4 = (error62) => error62 instanceof Error ? error62.message : String(error62);
 var timeLeft = (context) => Date.now() < context.deadline;
@@ -40655,10 +40766,10 @@ var applyKeywords = async (context, recordId, keywords) => {
       async (keyword) => await context.progress.isApplied(keyFor(keyword), "added")
     )
   );
-  const missing = unique.filter((_keyword, index) => added[index] !== true);
-  await addRecordKeywords(context.client, context.archive, recordId, missing);
+  const missing2 = unique.filter((_keyword, index) => added[index] !== true);
+  await addRecordKeywords(context.client, context.archive, recordId, missing2);
   await Promise.all(
-    missing.map(async (keyword) => {
+    missing2.map(async (keyword) => {
       await context.progress.markApplied(keyFor(keyword), "added");
     })
   );
@@ -40746,6 +40857,16 @@ var rememberFolder = async (context, owner, folderId) => {
   Object.assign(owner, { permanentFolderId: folderId });
   await writeManifest(context.manifestPath, context.manifest);
 };
+var tryPresentStory = async (context, { folder, story, recordIdsByPath }, report) => {
+  const coverRecordId = story.cover === void 0 ? void 0 : recordIdsByPath.get(story.cover);
+  try {
+    await presentFolder(context, folder, story.description, coverRecordId);
+    return true;
+  } catch (error62) {
+    report.failed.push({ path: story.title, error: describe4(error62) });
+    return false;
+  }
+};
 var applyStory = async (context, eventFolderId, story) => {
   const eventFolder = await getFolderContents(
     context.client,
@@ -40785,18 +40906,24 @@ var applyStory = async (context, eventFolderId, story) => {
     recordIds: [...recordIdsByPath.values()]
   };
   const uploadsSettled = upload.remaining.length === 0;
-  let presented = false;
-  if (uploadsSettled && timeLeft(context)) {
-    const coverRecordId = story.cover === void 0 ? void 0 : recordIdsByPath.get(story.cover);
-    try {
-      await presentFolder(context, folder, story.description, coverRecordId);
-      presented = true;
-    } catch (error62) {
-      report.failed.push({ path: story.title, error: describe4(error62) });
-    }
+  report.presented = uploadsSettled && timeLeft(context) && await tryPresentStory(
+    context,
+    { folder, story, recordIdsByPath },
+    report
+  );
+  const mismatches = report.presented && described.finished ? await checkStoryOnPermanent({
+    client: context.client,
+    progress: context.progress,
+    archiveId: context.archiveId,
+    ledger: context.ledger,
+    folderId: folder.folderId,
+    story,
+    recordIdsByPath
+  }) : [];
+  if (mismatches.length > 0) {
+    report.mismatches = mismatches;
   }
-  report.presented = presented;
-  const finished = presented && uploadsSettled && upload.failed.length === 0 && described.finished && timeLeft(context);
+  const finished = mismatches.length === 0 && report.presented && upload.failed.length === 0 && described.finished && timeLeft(context);
   return { report, finished };
 };
 var applyStoryManifest = async (request) => {
@@ -41174,6 +41301,21 @@ var UploadLedger = class {
       }
     });
     return await result;
+  }
+  async forgetRecord(folderId, recordId) {
+    const next = this.pending.then(async () => {
+      const entries = await this.read();
+      await writeFileAtomically(
+        this.path,
+        JSON.stringify({
+          entries: entries.filter(
+            (entry) => !(entry.folderId === folderId && entry.recordId === recordId)
+          )
+        })
+      );
+    });
+    this.pending = next.catch(() => void 0);
+    await next;
   }
   async add(entry) {
     const next = this.pending.then(async () => {

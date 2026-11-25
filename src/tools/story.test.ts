@@ -332,6 +332,96 @@ describe("apply_story_manifest", () => {
 		});
 	});
 
+	it("reads each story back and retries what Permanent didn't keep", async () => {
+		const { test, archive, manifestPath } = await setUp();
+		const patch = must(test.fake.routes.get("PATCH /api/v2/records/*"));
+		const update = must(test.fake.routes.get("POST /api/record/update"));
+		const dropsChanges = (path: string): boolean =>
+			archive.records.get(Number(path.split("/").pop()))?.uploadFileName ===
+			"IMG_0001.jpg";
+		test.fake.routes.set("PATCH /api/v2/records/*", async (request) =>
+			dropsChanges(request.path) ? { body: {} } : await patch(request),
+		);
+		test.fake.routes.set("POST /api/record/update", async (request) => {
+			const { recordId } = z
+				.object({ recordId: z.number() })
+				.parse(request.body);
+			return dropsChanges(`/${recordId}`)
+				? { body: {} }
+				: await update(request);
+		});
+		const client = await connectClient(test);
+		const request = { archiveId: 7, parentFolderId: MY_FILES_ID, manifestPath };
+
+		const first = await callTool(client, "apply_story_manifest", request);
+		test.fake.routes.set("PATCH /api/v2/records/*", patch);
+		test.fake.routes.set("POST /api/record/update", update);
+		const second = await callTool(client, "apply_story_manifest", request);
+
+		expect(first.json()).toMatchObject({
+			done: false,
+			stories: [
+				{
+					title: "Everyone arrives",
+					mismatches: [
+						{ field: "title", expected: "The Ortiz cousins pull up" },
+						{ field: "date", expected: "2024-06-01" },
+					],
+				},
+				{ title: "Ninety candles" },
+			],
+		});
+		expect(second.json()).toMatchObject({ done: true });
+	});
+
+	it("re-uploads a file that went missing from Permanent", async () => {
+		const { test, archive, manifestPath } = await setUp();
+		const client = await connectClient(test);
+		const request = { archiveId: 7, parentFolderId: MY_FILES_ID, manifestPath };
+		await callTool(client, "apply_story_manifest", request);
+		const lost = must(
+			[...archive.records.values()].find(
+				(record) => record.uploadFileName === "IMG_0003.jpg",
+			),
+		);
+		archive.removeRecord(lost.recordId);
+
+		const noticed = await callTool(client, "apply_story_manifest", request);
+		const repaired = await callTool(client, "apply_story_manifest", request);
+
+		expect(noticed.json()).toMatchObject({
+			done: false,
+			stories: [
+				{ title: "Everyone arrives" },
+				{ title: "Ninety candles", mismatches: [{ field: "missing" }] },
+			],
+		});
+		expect(repaired.json()).toMatchObject({ done: true });
+		expect(archive.records.size).toBe(3);
+	});
+
+	it("restores a story's narrative when Permanent holds a different one", async () => {
+		const { test, archive, manifestPath } = await setUp();
+		const client = await connectClient(test);
+		const request = { archiveId: 7, parentFolderId: MY_FILES_ID, manifestPath };
+		await callTool(client, "apply_story_manifest", request);
+		const arrivals = must(archive.folderNamed("Everyone arrives"));
+		arrivals.description = "Something else entirely.";
+
+		const noticed = await callTool(client, "apply_story_manifest", request);
+		const repaired = await callTool(client, "apply_story_manifest", request);
+
+		expect(noticed.json()).toMatchObject({
+			done: false,
+			stories: [
+				{ title: "Everyone arrives", mismatches: [{ field: "narrative" }] },
+				{ title: "Ninety candles" },
+			],
+		});
+		expect(repaired.json()).toMatchObject({ done: true });
+		expect(arrivals.description).toBe("By two o'clock the porch was full.");
+	});
+
 	it("accepts a story with a blank narrative", async () => {
 		const { test, manifestPath, manifest } = await setUp();
 		must(manifest.stories[1]).description = " ";

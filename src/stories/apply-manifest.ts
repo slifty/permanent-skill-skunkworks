@@ -14,6 +14,7 @@ import {
 	updateRecordDetails,
 } from "../permanent/metadata.ts";
 import { uploadFiles } from "../uploads/upload-files.ts";
+import { checkStoryOnPermanent } from "./verify.ts";
 import { digestOf } from "./progress.ts";
 import type { StoryManifest } from "../manifest/schema.ts";
 import type { PermanentClient } from "../permanent/api.ts";
@@ -23,6 +24,7 @@ import type {
 	FolderSummary,
 } from "../permanent/folders.ts";
 import type { UploadLedger } from "../uploads/ledger.ts";
+import type { Mismatch } from "./verify.ts";
 import type { StoryProgress } from "./progress.ts";
 
 type ManifestStory = StoryManifest["stories"][number];
@@ -54,6 +56,7 @@ export interface StoryReport {
 	failed: Array<{ path: string; error: string }>;
 	recordIds: number[];
 	presented?: boolean;
+	mismatches?: Mismatch[];
 }
 
 export interface ApplyReport {
@@ -245,6 +248,28 @@ const rememberFolder = async (
 	await writeManifest(context.manifestPath, context.manifest);
 };
 
+interface StoryInFolder {
+	folder: FolderSummary;
+	story: ManifestStory;
+	recordIdsByPath: Map<string, number>;
+}
+
+const tryPresentStory = async (
+	context: ApplyContext,
+	{ folder, story, recordIdsByPath }: StoryInFolder,
+	report: StoryReport,
+): Promise<boolean> => {
+	const coverRecordId =
+		story.cover === undefined ? undefined : recordIdsByPath.get(story.cover);
+	try {
+		await presentFolder(context, folder, story.description, coverRecordId);
+		return true;
+	} catch (error) {
+		report.failed.push({ path: story.title, error: describe(error) });
+		return false;
+	}
+};
+
 const applyStory = async (
 	context: ApplyContext,
 	eventFolderId: number,
@@ -288,21 +313,32 @@ const applyStory = async (
 		recordIds: [...recordIdsByPath.values()],
 	};
 	const uploadsSettled = upload.remaining.length === 0;
-	let presented = false;
-	if (uploadsSettled && timeLeft(context)) {
-		const coverRecordId =
-			story.cover === undefined ? undefined : recordIdsByPath.get(story.cover);
-		try {
-			await presentFolder(context, folder, story.description, coverRecordId);
-			presented = true;
-		} catch (error) {
-			report.failed.push({ path: story.title, error: describe(error) });
-		}
-	}
-	report.presented = presented;
-	const finished =
-		presented &&
+	report.presented =
 		uploadsSettled &&
+		timeLeft(context) &&
+		(await tryPresentStory(
+			context,
+			{ folder, story, recordIdsByPath },
+			report,
+		));
+	const mismatches =
+		report.presented && described.finished
+			? await checkStoryOnPermanent({
+					client: context.client,
+					progress: context.progress,
+					archiveId: context.archiveId,
+					ledger: context.ledger,
+					folderId: folder.folderId,
+					story,
+					recordIdsByPath,
+				})
+			: [];
+	if (mismatches.length > 0) {
+		report.mismatches = mismatches;
+	}
+	const finished =
+		mismatches.length === 0 &&
+		report.presented &&
 		upload.failed.length === 0 &&
 		described.finished &&
 		timeLeft(context);

@@ -66,6 +66,23 @@ export class UploadLedger {
 		return await result;
 	}
 
+	public async forgetRecord(folderId: number, recordId: number): Promise<void> {
+		const next = this.pending.then(async () => {
+			const entries = await this.read();
+			await writeFileAtomically(
+				this.path,
+				JSON.stringify({
+					entries: entries.filter(
+						(entry) =>
+							!(entry.folderId === folderId && entry.recordId === recordId),
+					),
+				}),
+			);
+		});
+		this.pending = next.catch(() => undefined);
+		await next;
+	}
+
 	public async add(entry: LedgerEntry): Promise<void> {
 		const next = this.pending.then(async () => {
 			const entries = await this.read();

@@ -120,6 +120,10 @@ export class FakeArchive {
 		}
 	}
 
+	public removeRecord(recordId: number): void {
+		this.records.delete(recordId);
+	}
+
 	public recordsIn(folderId: number): FakeRecord[] {
 		return [...this.records.values()].filter(
 			(record) => record.parentFolderId === folderId,
