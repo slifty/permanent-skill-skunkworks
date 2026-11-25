@@ -9,6 +9,7 @@
 	},
 	"scripts": {
 		"build": "node scripts/build.mjs",
+		"smoke": "node --experimental-strip-types src/smoke/check.ts",
 		"demo:fake-permanent": "node --experimental-strip-types src/demo/fake-server.ts",
 		"demo:sample-photos": "node --experimental-strip-types src/demo/sample-photos.ts",
 		"check:bundle": "npm run build && node scripts/check-bundle.mjs",

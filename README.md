@@ -68,4 +68,10 @@ npm test
 Commit the rebuilt bundle together with the source change. CI fails if
 they drift apart.
 
+Before releasing, run `npm run smoke -- dev` (or `staging`, `production`).
+It checks, without signing in, that the back-end and stela answer where
+the plugin expects them and that stela's limits match what the plugin
+assumes. The tests use a fake Permanent, so this is what catches a
+difference from the real API.
+
 To try local changes in Claude Code, run `claude --plugin-dir ./plugins/permanent`.
