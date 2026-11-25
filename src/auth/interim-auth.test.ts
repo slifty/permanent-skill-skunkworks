@@ -45,7 +45,12 @@ const setUp = async (
 	const directory = await mkdtemp(join(tmpdir(), "auth-test-"));
 	const opened: string[] = [];
 	const auth = new InterimAuth({
-		environment: { name: "test", apiUrl: fake.apiUrl, webUrl: "http://web" },
+		environment: {
+			name: "test",
+			apiUrl: fake.apiUrl,
+			stelaUrl: fake.stelaUrl,
+			webUrl: "http://web",
+		},
 		store: new CredentialStore(directory, "test"),
 		openBrowser: (url) => {
 			opened.push(url);

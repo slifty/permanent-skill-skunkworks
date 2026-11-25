@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 export interface PermanentEnvironment {
 	name: string;
 	apiUrl: string;
+	stelaUrl: string;
 	webUrl: string;
 }
 
@@ -10,21 +11,25 @@ const ENVIRONMENTS: Record<string, PermanentEnvironment> = {
 	production: {
 		name: "production",
 		apiUrl: "https://app.permanent.org/api",
+		stelaUrl: "https://api.permanent.org/api/v2",
 		webUrl: "https://app.permanent.org",
 	},
 	staging: {
 		name: "staging",
 		apiUrl: "https://app.staging.permanent.org/api",
+		stelaUrl: "https://api.staging.permanent.org/api/v2",
 		webUrl: "https://app.staging.permanent.org",
 	},
 	dev: {
 		name: "dev",
 		apiUrl: "https://app.dev.permanent.org/api",
+		stelaUrl: "https://api.dev.permanent.org/api/v2",
 		webUrl: "https://app.dev.permanent.org",
 	},
 	local: {
 		name: "local",
 		apiUrl: "https://local.permanent.org/api",
+		stelaUrl: "https://local.permanent.org/api/v2",
 		webUrl: "https://local.permanent.org",
 	},
 };
@@ -33,6 +38,7 @@ export interface EnvironmentSettings {
 	PERMANENT_ENVIRONMENT?: string | undefined;
 	PERMANENT_API_URL?: string | undefined;
 	PERMANENT_WEB_URL?: string | undefined;
+	PERMANENT_STELA_URL?: string | undefined;
 }
 
 const isSet = (value: string | undefined): value is string =>
@@ -63,8 +69,11 @@ const webUrlFor = (apiUrl: string): string => apiUrl.replace(/\/api$/v, "");
 export const environmentFromSettings = (
 	settings: EnvironmentSettings,
 ): PermanentEnvironment => {
-	const { PERMANENT_API_URL: rawApiUrl, PERMANENT_WEB_URL: rawWebUrl } =
-		settings;
+	const {
+		PERMANENT_API_URL: rawApiUrl,
+		PERMANENT_WEB_URL: rawWebUrl,
+		PERMANENT_STELA_URL: rawStelaUrl,
+	} = settings;
 	if (!isSet(rawApiUrl)) {
 		return resolveEnvironment(settings.PERMANENT_ENVIRONMENT);
 	}
@@ -76,6 +85,9 @@ export const environmentFromSettings = (
 	return {
 		name: `custom-${id}`,
 		apiUrl,
+		stelaUrl: isSet(rawStelaUrl)
+			? withoutTrailingSlash(rawStelaUrl)
+			: `${apiUrl}/v2`,
 		webUrl: isSet(rawWebUrl)
 			? withoutTrailingSlash(rawWebUrl)
 			: webUrlFor(apiUrl),

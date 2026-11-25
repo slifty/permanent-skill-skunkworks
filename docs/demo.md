@@ -72,6 +72,7 @@ fake:
 
 ```
 export PERMANENT_API_URL=http://127.0.0.1:8787/api
+export PERMANENT_STELA_URL=http://127.0.0.1:8787/stela/api/v2
 export PERMANENT_WEB_URL=http://127.0.0.1:8787
 claude --plugin-dir ./plugins/permanent
 ```

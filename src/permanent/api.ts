@@ -94,7 +94,7 @@ export class PermanentClient {
 	public async stela<Schema extends z.ZodType>(
 		request: ApiRequest<Schema>,
 	): Promise<z.infer<Schema>> {
-		return await this.send(`${this.environment.apiUrl}/v2`, request);
+		return await this.send(this.environment.stelaUrl, request);
 	}
 
 	private async send<Schema extends z.ZodType>(

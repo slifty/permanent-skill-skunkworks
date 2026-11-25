@@ -33,6 +33,7 @@ export type FakeRoute = (
 
 export interface FakePermanent {
 	apiUrl: string;
+	stelaUrl: string;
 	routes: Map<string, FakeRoute>;
 	requests: Array<{
 		path: string;
@@ -179,6 +180,20 @@ const checkApiContract = (
 	return undefined;
 };
 
+const STELA_PREFIX = "/stela/api/v2/";
+const MAIN_HOST_STELA_PREFIX = "/api/v2/";
+
+const routedUrl = (rawUrl: string | undefined): URL | undefined => {
+	const requested = new URL(rawUrl ?? "/", "http://fake");
+	if (requested.pathname.startsWith(MAIN_HOST_STELA_PREFIX)) {
+		return undefined;
+	}
+	if (requested.pathname.startsWith(STELA_PREFIX)) {
+		requested.pathname = `${MAIN_HOST_STELA_PREFIX}${requested.pathname.slice(STELA_PREFIX.length)}`;
+	}
+	return requested;
+};
+
 const findRoute = (
 	routes: Map<string, FakeRoute>,
 	key: string,
@@ -203,7 +218,11 @@ export const startFakePermanent = async (
 			const isJson = (request.headers["content-type"] ?? "").includes("json");
 			const body: unknown =
 				isJson && raw.length > 0 ? JSON.parse(raw.toString("utf8")) : undefined;
-			const url = new URL(request.url ?? "/", "http://fake");
+			const url = routedUrl(request.url);
+			if (url === undefined) {
+				replyJson(response, { status: 404, body: { error: "not found" } });
+				return;
+			}
 			requests.push({ path: url.pathname, body, headers: request.headers });
 			if (url.pathname === "/api/auth/login") {
 				await delay(account.loginDelayMilliseconds ?? 0);
@@ -244,6 +263,7 @@ export const startFakePermanent = async (
 	}
 	return {
 		apiUrl: `http://127.0.0.1:${address.port}/api`,
+		stelaUrl: `http://127.0.0.1:${address.port}/stela/api/v2`,
 		routes,
 		requests,
 		close: async () => {

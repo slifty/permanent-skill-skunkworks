@@ -63,6 +63,29 @@ describe("resolveEnvironment", () => {
 		).toBe("dev");
 	});
 
+	it("points each named environment at its own stela host", () => {
+		expect(resolveEnvironment("production").stelaUrl).toBe(
+			"https://api.permanent.org/api/v2",
+		);
+		expect(resolveEnvironment("dev").stelaUrl).toBe(
+			"https://api.dev.permanent.org/api/v2",
+		);
+	});
+
+	it("uses an explicit stela address for a custom API, or the API's own /v2", () => {
+		expect(
+			environmentFromSettings({
+				PERMANENT_API_URL: "http://127.0.0.1:9000/api",
+				PERMANENT_STELA_URL: "http://127.0.0.1:9001/api/v2/",
+			}).stelaUrl,
+		).toBe("http://127.0.0.1:9001/api/v2");
+		expect(
+			environmentFromSettings({
+				PERMANENT_API_URL: "http://127.0.0.1:9000/api",
+			}).stelaUrl,
+		).toBe("http://127.0.0.1:9000/api/v2");
+	});
+
 	it("rejects unknown environments", () => {
 		expect(() => resolveEnvironment("moon")).toThrow(
 			/Unknown Permanent environment/v,

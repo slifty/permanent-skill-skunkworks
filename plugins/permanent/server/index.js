@@ -38808,7 +38808,7 @@ var PermanentClient = class {
     return response;
   }
   async stela(request) {
-    return await this.send(`${this.environment.apiUrl}/v2`, request);
+    return await this.send(this.environment.stelaUrl, request);
   }
   async send(baseUrl, { path, schema, method = "GET", query, body }) {
     const token = await this.tokens.getAccessToken();
@@ -38839,21 +38839,25 @@ var ENVIRONMENTS = {
   production: {
     name: "production",
     apiUrl: "https://app.permanent.org/api",
+    stelaUrl: "https://api.permanent.org/api/v2",
     webUrl: "https://app.permanent.org"
   },
   staging: {
     name: "staging",
     apiUrl: "https://app.staging.permanent.org/api",
+    stelaUrl: "https://api.staging.permanent.org/api/v2",
     webUrl: "https://app.staging.permanent.org"
   },
   dev: {
     name: "dev",
     apiUrl: "https://app.dev.permanent.org/api",
+    stelaUrl: "https://api.dev.permanent.org/api/v2",
     webUrl: "https://app.dev.permanent.org"
   },
   local: {
     name: "local",
     apiUrl: "https://local.permanent.org/api",
+    stelaUrl: "https://local.permanent.org/api/v2",
     webUrl: "https://local.permanent.org"
   }
 };
@@ -38873,7 +38877,11 @@ var CUSTOM_ID_LENGTH = 12;
 var withoutTrailingSlash = (url2) => url2.trim().replace(new RegExp("\\/+$", "v"), "");
 var webUrlFor = (apiUrl) => apiUrl.replace(new RegExp("\\/api$", "v"), "");
 var environmentFromSettings = (settings) => {
-  const { PERMANENT_API_URL: rawApiUrl, PERMANENT_WEB_URL: rawWebUrl } = settings;
+  const {
+    PERMANENT_API_URL: rawApiUrl,
+    PERMANENT_WEB_URL: rawWebUrl,
+    PERMANENT_STELA_URL: rawStelaUrl
+  } = settings;
   if (!isSet(rawApiUrl)) {
     return resolveEnvironment(settings.PERMANENT_ENVIRONMENT);
   }
@@ -38882,6 +38890,7 @@ var environmentFromSettings = (settings) => {
   return {
     name: `custom-${id5}`,
     apiUrl,
+    stelaUrl: isSet(rawStelaUrl) ? withoutTrailingSlash(rawStelaUrl) : `${apiUrl}/v2`,
     webUrl: isSet(rawWebUrl) ? withoutTrailingSlash(rawWebUrl) : webUrlFor(apiUrl)
   };
 };

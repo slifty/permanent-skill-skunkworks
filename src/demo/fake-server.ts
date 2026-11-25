@@ -26,6 +26,7 @@ const main = async (): Promise<void> => {
 			"",
 			"Point the plugin at it with:",
 			`  export PERMANENT_API_URL=${fake.apiUrl}`,
+			`  export PERMANENT_STELA_URL=${fake.stelaUrl}`,
 			`  export PERMANENT_WEB_URL=${webUrl}`,
 			"",
 			`Sign in as ${ACCOUNT.email} with the password "${ACCOUNT.password}".`,

@@ -44,6 +44,7 @@ export const startTestPermanent = async (
 	const environment = {
 		name: "test",
 		apiUrl: fake.apiUrl,
+		stelaUrl: fake.stelaUrl,
 		webUrl: "http://web",
 	};
 	const dataDirectory = await mkdtemp(join(tmpdir(), "permanent-test-"));
