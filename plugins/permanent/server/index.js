@@ -39035,7 +39035,7 @@ var StoryProgress = class {
 import { readFile as readFile4, readdir } from "node:fs/promises";
 import { dirname as dirname3, join as join5, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-var SERVER_VERSION = "0.1.14";
+var SERVER_VERSION = "0.1.15";
 var PLUGIN_NAME = "permanent";
 var pluginManifest = external_exports.looseObject({
   name: external_exports.string(),
@@ -40666,6 +40666,73 @@ var registerShareTools = (server, {
 // src/tools/story.ts
 import { isAbsolute as isAbsolute6 } from "node:path";
 
+// src/permanent/records.ts
+import { setTimeout as delay3 } from "node:timers/promises";
+var READY = "status.generic.ok";
+var FAILED = /* @__PURE__ */ new Set([
+  "status.generic.error",
+  "status.generic.manual_review"
+]);
+var stelaRecord = external_exports.looseObject({
+  recordId: external_exports.coerce.number(),
+  displayName: external_exports.string().nullish(),
+  status: external_exports.string(),
+  thumbUrl200: external_exports.string().nullish(),
+  createdAt: external_exports.string().nullish()
+});
+var STUCK_AFTER_MILLISECONDS = 6e5;
+var stateOf = (status, createdAt, now) => {
+  if (status === READY) {
+    return "ready";
+  }
+  if (FAILED.has(status)) {
+    return "failed";
+  }
+  const created = Date.parse(createdAt ?? "");
+  return Number.isFinite(created) && now - created > STUCK_AFTER_MILLISECONDS ? "stuck" : "processing";
+};
+var STELA_MAX_ARRAY_ITEMS = 20;
+var inBatches = (items, size) => Array.from(
+  { length: Math.ceil(items.length / size) },
+  (_, index) => items.slice(index * size, (index + 1) * size)
+);
+var fetchRecords = async (client, recordIds) => {
+  const response = await client.stela({
+    path: "/records",
+    query: { recordIds, pageSize: recordIds.length },
+    schema: external_exports.union([
+      external_exports.array(stelaRecord),
+      external_exports.object({ items: external_exports.array(stelaRecord) })
+    ])
+  });
+  return Array.isArray(response) ? response : response.items;
+};
+var getRecordProcessing = async (client, recordIds, now = Date.now()) => {
+  const batches = await Promise.all(
+    inBatches(recordIds, STELA_MAX_ARRAY_ITEMS).map(
+      async (batch) => await fetchRecords(client, batch)
+    )
+  );
+  return batches.flat().map((record2) => ({
+    recordId: record2.recordId,
+    name: record2.displayName ?? void 0,
+    state: stateOf(record2.status, record2.createdAt, now),
+    status: record2.status.replace(new RegExp("^status\\.", "v"), ""),
+    thumbnail: record2.thumbUrl200 ?? void 0
+  }));
+};
+var waitForProcessing = async (client, recordIds, deadline, pollMilliseconds) => {
+  const records = await getRecordProcessing(client, recordIds);
+  const stillProcessing2 = records.some(
+    (record2) => record2.state === "processing"
+  );
+  if (!stillProcessing2 || Date.now() + pollMilliseconds > deadline) {
+    return records;
+  }
+  await delay3(pollMilliseconds);
+  return await waitForProcessing(client, recordIds, deadline, pollMilliseconds);
+};
+
 // src/uploads/upload-files.ts
 import { createHash as createHash4 } from "node:crypto";
 import { createReadStream as createReadStream2 } from "node:fs";
@@ -40960,6 +41027,58 @@ var uploadToFolder = async (request) => {
   return report;
 };
 
+// src/stories/upload-story.ts
+var PROCESSING_POLL_MILLISECONDS = 3e3;
+var stillProcessing = async (context, recordIds) => {
+  if (recordIds.length === 0) {
+    return { processing: /* @__PURE__ */ new Set(), failed: /* @__PURE__ */ new Set() };
+  }
+  const records = await waitForProcessing(
+    context.client,
+    recordIds,
+    context.deadline,
+    context.processingPollMilliseconds ?? PROCESSING_POLL_MILLISECONDS
+  );
+  const inState = (state) => new Set(
+    records.filter((record2) => record2.state === state).map((record2) => record2.recordId)
+  );
+  return { processing: inState("processing"), failed: inState("failed") };
+};
+var PROCESSING_FAILED = "Permanent couldn't process this file, so it may not show a preview";
+var settledRecords = (recordIdsByPath, processing) => new Map(
+  [...recordIdsByPath].filter(([, recordId]) => !processing.has(recordId))
+);
+var processingField = (processing) => processing.size > 0 ? { processing: processing.size } : {};
+var uploadStory = async (context, folder, story) => {
+  const upload = await uploadFiles({
+    client: context.client,
+    ledger: context.ledger,
+    archiveId: context.archiveId,
+    folderId: folder.folderId,
+    paths: story.items.map((item) => item.path),
+    deadline: context.deadline,
+    allowPublic: context.allowPublic
+  });
+  const recordIdsByPath = new Map(
+    [...upload.uploaded, ...upload.alreadyUploaded].map(
+      (item) => [item.path, item.recordId]
+    )
+  );
+  const { processing, failed } = await stillProcessing(context, [
+    ...recordIdsByPath.values()
+  ]);
+  return {
+    upload,
+    recordIdsByPath,
+    processing,
+    failed: [
+      ...upload.failed,
+      ...[...recordIdsByPath].filter(([, recordId]) => failed.has(recordId)).map(([path]) => ({ path, error: PROCESSING_FAILED }))
+    ],
+    settled: upload.remaining.length === 0 && processing.size === 0
+  };
+};
+
 // src/stories/verify.ts
 var CALENDAR_DAY_LENGTH = 10;
 var sameText = (a, b) => (a ?? "").trim() === (b ?? "").trim();
@@ -41212,21 +41331,12 @@ var applyStory = async (context, eventFolderId, story) => {
     story.permanentFolderId
   );
   await rememberFolder(context, story, folder.folderId);
-  const upload = await uploadFiles({
-    client: context.client,
-    ledger: context.ledger,
-    archiveId: context.archiveId,
-    folderId: folder.folderId,
-    paths: story.items.map((item) => item.path),
-    deadline: context.deadline,
-    allowPublic: context.allowPublic
-  });
-  const recordIdsByPath = new Map(
-    [...upload.uploaded, ...upload.alreadyUploaded].map(
-      (item) => [item.path, item.recordId]
-    )
+  const { upload, recordIdsByPath, processing, settled, failed } = await uploadStory(context, folder, story);
+  const described = await describeItems(
+    context,
+    story,
+    settledRecords(recordIdsByPath, processing)
   );
-  const described = await describeItems(context, story, recordIdsByPath);
   const report = {
     title: story.title,
     folderId: folder.folderId,
@@ -41234,11 +41344,11 @@ var applyStory = async (context, eventFolderId, story) => {
     onPermanent: recordIdsByPath.size,
     described: described.described,
     conflicts: upload.conflicts,
-    failed: [...upload.failed, ...described.failed],
-    recordIds: [...recordIdsByPath.values()]
+    failed: [...failed, ...described.failed],
+    recordIds: [...recordIdsByPath.values()],
+    ...processingField(processing)
   };
-  const uploadsSettled = upload.remaining.length === 0;
-  report.presented = uploadsSettled && timeLeft(context) && await tryPresentStory(
+  report.presented = settled && timeLeft(context) && await tryPresentStory(
     context,
     { folder, story, recordIdsByPath },
     report
@@ -41255,7 +41365,7 @@ var applyStory = async (context, eventFolderId, story) => {
   if (mismatches.length > 0) {
     report.mismatches = mismatches;
   }
-  const finished = mismatches.length === 0 && report.presented && upload.failed.length === 0 && described.finished && timeLeft(context);
+  const finished = mismatches.length === 0 && report.presented && failed.length === 0 && described.finished && timeLeft(context);
   return { report, finished };
 };
 var applyStoryManifest = async (request) => {
@@ -41327,7 +41437,13 @@ var place = external_exports.object({
   latitude: external_exports.number().min(-MAX_LATITUDE2).max(MAX_LATITUDE2).optional(),
   longitude: external_exports.number().min(-MAX_LONGITUDE2).max(MAX_LONGITUDE2).optional()
 });
-var registerStoryTools = (server, { client, ledger, progress, applyBudgetMilliseconds }) => {
+var registerStoryTools = (server, {
+  client,
+  ledger,
+  progress,
+  applyBudgetMilliseconds,
+  uploadOptions
+}) => {
   server.registerTool(
     "apply_story_manifest",
     {
@@ -41359,7 +41475,8 @@ var registerStoryTools = (server, { client, ledger, progress, applyBudgetMillise
         parentFolderId,
         manifestPath,
         allowPublic,
-        deadline: Date.now() + (applyBudgetMilliseconds ?? APPLY_BUDGET_MILLISECONDS2)
+        deadline: Date.now() + (applyBudgetMilliseconds ?? APPLY_BUDGET_MILLISECONDS2),
+        processingPollMilliseconds: uploadOptions?.pollIntervalMilliseconds
       })
     )
   );
@@ -41444,81 +41561,12 @@ var registerStoryTools = (server, { client, ledger, progress, applyBudgetMillise
 
 // src/tools/upload.ts
 import { isAbsolute as isAbsolute7 } from "node:path";
-import { setTimeout as delay3 } from "node:timers/promises";
-
-// src/permanent/records.ts
-var READY = "status.generic.ok";
-var FAILED = /* @__PURE__ */ new Set([
-  "status.generic.error",
-  "status.generic.manual_review"
-]);
-var stelaRecord = external_exports.looseObject({
-  recordId: external_exports.coerce.number(),
-  displayName: external_exports.string().nullish(),
-  status: external_exports.string(),
-  thumbUrl200: external_exports.string().nullish(),
-  createdAt: external_exports.string().nullish()
-});
-var STUCK_AFTER_MILLISECONDS = 6e5;
-var stateOf = (status, createdAt, now) => {
-  if (status === READY) {
-    return "ready";
-  }
-  if (FAILED.has(status)) {
-    return "failed";
-  }
-  const created = Date.parse(createdAt ?? "");
-  return Number.isFinite(created) && now - created > STUCK_AFTER_MILLISECONDS ? "stuck" : "processing";
-};
-var STELA_MAX_ARRAY_ITEMS = 20;
-var inBatches = (items, size) => Array.from(
-  { length: Math.ceil(items.length / size) },
-  (_, index) => items.slice(index * size, (index + 1) * size)
-);
-var fetchRecords = async (client, recordIds) => {
-  const response = await client.stela({
-    path: "/records",
-    query: { recordIds, pageSize: recordIds.length },
-    schema: external_exports.union([
-      external_exports.array(stelaRecord),
-      external_exports.object({ items: external_exports.array(stelaRecord) })
-    ])
-  });
-  return Array.isArray(response) ? response : response.items;
-};
-var getRecordProcessing = async (client, recordIds, now = Date.now()) => {
-  const batches = await Promise.all(
-    inBatches(recordIds, STELA_MAX_ARRAY_ITEMS).map(
-      async (batch) => await fetchRecords(client, batch)
-    )
-  );
-  return batches.flat().map((record2) => ({
-    recordId: record2.recordId,
-    name: record2.displayName ?? void 0,
-    state: stateOf(record2.status, record2.createdAt, now),
-    status: record2.status.replace(new RegExp("^status\\.", "v"), ""),
-    thumbnail: record2.thumbUrl200 ?? void 0
-  }));
-};
-
-// src/tools/upload.ts
 var UPLOAD_BUDGET_MILLISECONDS = 9e4;
 var MAX_FILES_PER_CALL = 200;
 var MAX_WAIT_SECONDS2 = 120;
 var POLL_INTERVAL_MILLISECONDS = 3e3;
 var MILLISECONDS_PER_SECOND2 = 1e3;
 var id5 = external_exports.number().int().positive();
-var waitForProcessing = async (client, recordIds, deadline, pollMilliseconds) => {
-  const records = await getRecordProcessing(client, recordIds);
-  const stillProcessing = records.some(
-    (record2) => record2.state === "processing"
-  );
-  if (!stillProcessing || Date.now() + pollMilliseconds > deadline) {
-    return records;
-  }
-  await delay3(pollMilliseconds);
-  return await waitForProcessing(client, recordIds, deadline, pollMilliseconds);
-};
 var registerUploadTools = (server, client, ledger, options = {}) => {
   server.registerTool(
     "upload_files",

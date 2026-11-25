@@ -474,6 +474,94 @@ describe("apply_story_manifest", () => {
 		});
 	});
 
+	it("waits for Permanent to process new uploads before describing them", async () => {
+		const { test, archive, manifestPath } = await setUp();
+		archive.processingPolls = 3;
+		const client = await connectClient(test);
+
+		const outcome = await callTool(client, "apply_story_manifest", {
+			archiveId: 7,
+			parentFolderId: MY_FILES_ID,
+			manifestPath,
+		});
+
+		expect(outcome.json()).toMatchObject({ done: true });
+		const arrivals = must(archive.folderNamed("Everyone arrives"));
+		expect(archive.recordsIn(arrivals.folderId)).toEqual(
+			expect.arrayContaining([
+				expect.objectContaining({ displayName: "The Ortiz cousins pull up" }),
+			]),
+		);
+	});
+
+	it("leaves files Permanent is still processing for the next call", async () => {
+		const { test, archive, manifestPath } = await setUp();
+		archive.processingPolls = Infinity;
+		test.applyBudgetMilliseconds = 1000;
+		const client = await connectClient(test);
+		const apply = async (): Promise<unknown> =>
+			(
+				await callTool(client, "apply_story_manifest", {
+					archiveId: 7,
+					parentFolderId: MY_FILES_ID,
+					manifestPath,
+				})
+			).json();
+
+		const first = await apply();
+		archive.finishProcessing();
+		archive.processingPolls = 0;
+		test.applyBudgetMilliseconds = 100_000;
+		const second = await apply();
+
+		expect(first).toMatchObject({
+			done: false,
+			stories: expect.arrayContaining([
+				expect.objectContaining({
+					title: "Everyone arrives",
+					processing: 2,
+					described: 0,
+				}),
+			]) as unknown,
+		});
+		expect(second).toMatchObject({ done: true });
+		const arrivals = must(archive.folderNamed("Everyone arrives"));
+		expect(arrivals.description).toBe("By two o'clock the porch was full.");
+	});
+
+	it("reports a file Permanent failed to process", async () => {
+		const { test, archive, manifestPath } = await setUp();
+		const client = await connectClient(test);
+		const apply = async (): Promise<unknown> =>
+			(
+				await callTool(client, "apply_story_manifest", {
+					archiveId: 7,
+					parentFolderId: MY_FILES_ID,
+					manifestPath,
+				})
+			).json();
+		await apply();
+		const arrivals = must(archive.folderNamed("Everyone arrives"));
+		const [broken] = archive.recordsIn(arrivals.folderId);
+		must(broken).status = "status.generic.error";
+
+		const outcome = await apply();
+
+		expect(outcome).toMatchObject({
+			done: false,
+			stories: expect.arrayContaining([
+				expect.objectContaining({
+					title: "Everyone arrives",
+					failed: [
+						expect.objectContaining({
+							error: expect.stringContaining("couldn't process") as unknown,
+						}),
+					],
+				}),
+			]) as unknown,
+		});
+	});
+
 	it("reports progress and stops when its time runs out", async () => {
 		const { test, manifestPath } = await setUp();
 		test.applyBudgetMilliseconds = 0;

@@ -10,6 +10,7 @@ import {
 } from "../permanent/metadata.ts";
 import { applyStoryManifest } from "../stories/apply-manifest.ts";
 import { jsonResult } from "./result.ts";
+import type { UploadToolOptions } from "./upload.ts";
 import type { PermanentClient } from "../permanent/api.ts";
 import type { StoryProgress } from "../stories/progress.ts";
 import type { UploadLedger } from "../uploads/ledger.ts";
@@ -32,11 +33,18 @@ export interface StoryToolDependencies {
 	ledger: UploadLedger;
 	progress: StoryProgress;
 	applyBudgetMilliseconds?: number | undefined;
+	uploadOptions?: UploadToolOptions | undefined;
 }
 
 export const registerStoryTools = (
 	server: McpServer,
-	{ client, ledger, progress, applyBudgetMilliseconds }: StoryToolDependencies,
+	{
+		client,
+		ledger,
+		progress,
+		applyBudgetMilliseconds,
+		uploadOptions,
+	}: StoryToolDependencies,
 ): void => {
 	server.registerTool(
 		"apply_story_manifest",
@@ -73,6 +81,7 @@ export const registerStoryTools = (
 					allowPublic,
 					deadline:
 						Date.now() + (applyBudgetMilliseconds ?? APPLY_BUDGET_MILLISECONDS),
+					processingPollMilliseconds: uploadOptions?.pollIntervalMilliseconds,
 				}),
 			),
 	);

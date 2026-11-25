@@ -1,11 +1,9 @@
 import { isAbsolute } from "node:path";
-import { setTimeout as delay } from "node:timers/promises";
 import { z } from "zod";
-import { getRecordProcessing } from "../permanent/records.ts";
+import { waitForProcessing } from "../permanent/records.ts";
 import { uploadFiles } from "../uploads/upload-files.ts";
 import { jsonResult } from "./result.ts";
 import type { PermanentClient } from "../permanent/api.ts";
-import type { RecordProcessing } from "../permanent/records.ts";
 import type { UploadLedger } from "../uploads/ledger.ts";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
@@ -21,23 +19,6 @@ export interface UploadToolOptions {
 	uploadBudgetMilliseconds?: number;
 	pollIntervalMilliseconds?: number;
 }
-
-const waitForProcessing = async (
-	client: PermanentClient,
-	recordIds: number[],
-	deadline: number,
-	pollMilliseconds: number,
-): Promise<RecordProcessing[]> => {
-	const records = await getRecordProcessing(client, recordIds);
-	const stillProcessing = records.some(
-		(record) => record.state === "processing",
-	);
-	if (!stillProcessing || Date.now() + pollMilliseconds > deadline) {
-		return records;
-	}
-	await delay(pollMilliseconds);
-	return await waitForProcessing(client, recordIds, deadline, pollMilliseconds);
-};
 
 export const registerUploadTools = (
 	server: McpServer,

@@ -13,7 +13,11 @@ import {
 	updateFolder,
 	updateRecordDetails,
 } from "../permanent/metadata.ts";
-import { uploadFiles } from "../uploads/upload-files.ts";
+import {
+	processingField,
+	settledRecords,
+	uploadStory,
+} from "./upload-story.ts";
 import { checkStoryOnPermanent } from "./verify.ts";
 import { digestOf } from "./progress.ts";
 import type { StoryManifest } from "../manifest/schema.ts";
@@ -39,6 +43,7 @@ export interface ApplyRequest {
 	manifestPath: string;
 	allowPublic: boolean;
 	deadline: number;
+	processingPollMilliseconds?: number | undefined;
 }
 
 interface ApplyContext extends ApplyRequest {
@@ -55,6 +60,7 @@ export interface StoryReport {
 	conflicts: Array<{ path: string; fileName: string }>;
 	failed: Array<{ path: string; error: string }>;
 	recordIds: number[];
+	processing?: number;
 	presented?: boolean;
 	mismatches?: Mismatch[];
 }
@@ -287,21 +293,13 @@ const applyStory = async (
 		story.permanentFolderId,
 	);
 	await rememberFolder(context, story, folder.folderId);
-	const upload = await uploadFiles({
-		client: context.client,
-		ledger: context.ledger,
-		archiveId: context.archiveId,
-		folderId: folder.folderId,
-		paths: story.items.map((item) => item.path),
-		deadline: context.deadline,
-		allowPublic: context.allowPublic,
-	});
-	const recordIdsByPath = new Map<string, number>(
-		[...upload.uploaded, ...upload.alreadyUploaded].map(
-			(item): [string, number] => [item.path, item.recordId],
-		),
+	const { upload, recordIdsByPath, processing, settled, failed } =
+		await uploadStory(context, folder, story);
+	const described = await describeItems(
+		context,
+		story,
+		settledRecords(recordIdsByPath, processing),
 	);
-	const described = await describeItems(context, story, recordIdsByPath);
 	const report: StoryReport = {
 		title: story.title,
 		folderId: folder.folderId,
@@ -309,12 +307,12 @@ const applyStory = async (
 		onPermanent: recordIdsByPath.size,
 		described: described.described,
 		conflicts: upload.conflicts,
-		failed: [...upload.failed, ...described.failed],
+		failed: [...failed, ...described.failed],
 		recordIds: [...recordIdsByPath.values()],
+		...processingField(processing),
 	};
-	const uploadsSettled = upload.remaining.length === 0;
 	report.presented =
-		uploadsSettled &&
+		settled &&
 		timeLeft(context) &&
 		(await tryPresentStory(
 			context,
@@ -339,7 +337,7 @@ const applyStory = async (
 	const finished =
 		mismatches.length === 0 &&
 		report.presented &&
-		upload.failed.length === 0 &&
+		failed.length === 0 &&
 		described.finished &&
 		timeLeft(context);
 	return { report, finished };

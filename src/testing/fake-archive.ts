@@ -85,6 +85,13 @@ export class FakeArchive {
 
 	public brokenPreviews = new Set<string>();
 
+	public processingPolls = 0;
+
+	private readonly processing = new Map<
+		number,
+		{ polls: number; snapshot: Partial<FakeRecord> }
+	>();
+
 	public previewBytes: Buffer = FAKE_PREVIEW;
 	private pendingCopies: Array<{ polls: number; finish: () => void }> = [];
 
@@ -190,6 +197,7 @@ export class FakeArchive {
 			}
 			return ok({
 				items: query.getAll("recordIds[]").map((recordId) => {
+					this.advanceProcessing(Number(recordId));
 					const record = this.records.get(Number(recordId));
 					return {
 						recordId,
@@ -276,6 +284,9 @@ export class FakeArchive {
 		if (folder === undefined) {
 			throw new Error(`no folder ${folderId}`);
 		}
+		this.recordsIn(folderId).forEach((record) => {
+			this.advanceProcessing(record.recordId);
+		});
 		const children = [
 			...[...this.folders.values()]
 				.filter((child) => child.parentFolderId === folderId)
@@ -355,14 +366,45 @@ export class FakeArchive {
 			note: "keep me",
 			location: null,
 			tags: [],
-			status: "status.generic.ok",
+			status:
+				this.processingPolls > 0
+					? "status.record.uploaded"
+					: "status.generic.ok",
 			bytes,
 		};
 		this.records.set(recordId, record);
+		if (this.processingPolls > 0) {
+			const { displayName, description, displayDT, displayTime } = record;
+			this.processing.set(recordId, {
+				polls: this.processingPolls,
+				snapshot: { displayName, description, displayDT, displayTime },
+			});
+		}
 		return ok({ ...record, type: "type.record.image" });
 	}
 
+	public finishProcessing(): void {
+		for (const job of this.processing.values()) {
+			job.polls = 1;
+		}
+	}
+
+	private advanceProcessing(recordId: number): void {
+		const job = this.processing.get(recordId);
+		const record = this.records.get(recordId);
+		if (job === undefined || record === undefined) {
+			return;
+		}
+		job.polls -= 1;
+		if (job.polls > 0) {
+			return;
+		}
+		this.processing.delete(recordId);
+		Object.assign(record, job.snapshot, { status: "status.generic.ok" });
+	}
+
 	private recordVo(recordId: number): FakeReply {
+		this.advanceProcessing(recordId);
 		const record = this.records.get(recordId);
 		if (record === undefined) {
 			return { status: 404, body: {} };

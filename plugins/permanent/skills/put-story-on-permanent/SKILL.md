@@ -66,6 +66,12 @@ first. Never upload photos the member hasn't approved.
      - If they come from Permanent or the plugin (for example
        "Permanent returned 500", "not found" or "rejected"), also follow
        the report-plugin-problem skill.
+   - `processing` on a story: Permanent is still making previews for that
+     many new files. Their titles and descriptions are written once it
+     finishes, because writing them sooner gets undone. This isn't a
+     failure: tell the member it's still working and call again. While
+     a story has `processing`, its `presented: false` doesn't count as a
+     failure either.
    - `presented: false` on a story, or `eventProblem` on the result: the
      folder's narrative or date order didn't stick. Call again once; if
      it's still wrong, treat it like any other repeated failure.

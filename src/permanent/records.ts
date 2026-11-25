@@ -1,3 +1,4 @@
+import { setTimeout as delay } from "node:timers/promises";
 import { z } from "zod";
 import type { PermanentClient } from "./api.ts";
 
@@ -83,4 +84,21 @@ export const getRecordProcessing = async (
 		status: record.status.replace(/^status\./v, ""),
 		thumbnail: record.thumbUrl200 ?? undefined,
 	}));
+};
+
+export const waitForProcessing = async (
+	client: PermanentClient,
+	recordIds: number[],
+	deadline: number,
+	pollMilliseconds: number,
+): Promise<RecordProcessing[]> => {
+	const records = await getRecordProcessing(client, recordIds);
+	const stillProcessing = records.some(
+		(record) => record.state === "processing",
+	);
+	if (!stillProcessing || Date.now() + pollMilliseconds > deadline) {
+		return records;
+	}
+	await delay(pollMilliseconds);
+	return await waitForProcessing(client, recordIds, deadline, pollMilliseconds);
 };
