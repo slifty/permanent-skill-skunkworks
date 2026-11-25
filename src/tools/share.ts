@@ -14,6 +14,7 @@ import {
 	shareUrl,
 } from "../permanent/sharing.ts";
 import { KeyedLock } from "../keyed-lock.ts";
+import { environmentNote } from "../permanent/environment.ts";
 import { jsonResult } from "./result.ts";
 import type { PermanentClient } from "../permanent/api.ts";
 import type { PermanentEnvironment } from "../permanent/environment.ts";
@@ -92,6 +93,15 @@ const STILL_COPYING = {
 	stillCopying: true,
 	instructions:
 		"Permanent is still copying the folder. Call publish_folder again in a minute to get the public link.",
+};
+
+const withEnvironment = (
+	name: string,
+): { environment: string; environmentNote?: string } => {
+	const note = environmentNote(name);
+	return note === undefined
+		? { environment: name }
+		: { environment: name, environmentNote: note };
 };
 
 export const registerShareTools = (
@@ -227,6 +237,7 @@ export const registerShareTools = (
 				access,
 				created,
 				url: shareUrl(environment, token),
+				...withEnvironment(environment.name),
 			});
 		},
 	);
@@ -254,11 +265,12 @@ export const registerShareTools = (
 			},
 		},
 		async ({ archiveId, folderId }) =>
-			jsonResult(
-				await locks.run(
+			jsonResult({
+				...(await locks.run(
 					`publish:${folderId}`,
 					async () => await publish(archiveId, folderId),
-				),
-			),
+				)),
+				...withEnvironment(environment.name),
+			}),
 	);
 };

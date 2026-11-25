@@ -29,7 +29,10 @@ first. Never upload photos the member hasn't approved.
    browser. If it didn't open, give them the link. Then call
    `check_sign_in` with `waitSeconds: 60` until they're done. Never ask
    for their password in the chat; if they offer it, tell them to use the
-   sign-in page instead.
+   sign-in page instead. If the result has an `environmentNote`, the
+   plugin isn't using the live permanent.org. Tell the member plainly
+   which environment it is, and that photos put there aren't in their
+   real archive.
 2. **Choose the archive.** Call `list_archives`. If there is more than one,
    ask which archive the event belongs in. Check their role allows adding
    files.
@@ -40,7 +43,8 @@ first. Never upload photos the member hasn't approved.
 4. **Confirm.** Before uploading, tell the member in one or two sentences
    what will happen. For example: "I'll create 'Rosa's 90th' in your
    family archive's My Files, with 4 stories and 38 photos. Nothing will be
-   public." Wait for a yes.
+   public." When the environment isn't production, name it in the same
+   sentence ("…on Permanent's **dev** server"). Wait for a yes.
 5. **Upload.** Call `apply_story_manifest` with the archive, the parent
    folder and the manifest's path. It does the work in time-limited
    chunks. While `done` is false, tell the member how far along it is
@@ -76,7 +80,8 @@ first. Never upload photos the member hasn't approved.
    placeholder for now. Give them the file names, and suggest they contact
    Permanent support with the list. Don't upload those files again.
 8. **Report back.** Summarize what is now on Permanent: the event folder,
-   each story and how many photos it has. If the member later edits the
+   each story and how many photos it has. Outside production, say again
+   which environment it went to. If the member later edits the
    manifest, or asks you to change a title or description, update the
    manifest and call `apply_story_manifest` again. Only what changed is
    updated.
@@ -94,7 +99,9 @@ There are two ways to show it to others. Offer the link first.
     member that anyone the link is forwarded to can see it.
   - `permanent_account`: people must sign in to Permanent first.
 
-  Give the member the URL to send. Calling it again returns the same link.
+  Give the member the URL to send. If the result has an
+  `environmentNote`, warn them that most people won't be able to open it.
+  Calling it again returns the same link.
 
 - **Publishing** (`publish_folder`): a copy goes into the archive's Public
   space. Anyone on the internet can find it, and it appears on the

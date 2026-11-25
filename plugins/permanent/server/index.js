@@ -38385,8 +38385,8 @@ var page = (title, body) => `<!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${escapeHtml(title)}</title>
 <style>
-:root { color-scheme: light dark; --bg: #f6f5f2; --card: #ffffff; --text: #1d1d1f; --muted: #5f5f66; --accent: #131b4a; --accent-text: #ffffff; --border: #d6d4cf; --error: #a4161a; }
-@media (prefers-color-scheme: dark) { :root { --bg: #15161a; --card: #202127; --text: #f2f2f4; --muted: #a8a8b3; --accent: #c9cff5; --accent-text: #131b4a; --border: #3a3b44; --error: #ff8a8f; } }
+:root { color-scheme: light dark; --bg: #f6f5f2; --card: #ffffff; --text: #1d1d1f; --muted: #5f5f66; --accent: #131b4a; --accent-text: #ffffff; --border: #d6d4cf; --error: #a4161a; --warning-bg: #fff4d6; --warning-border: #e0b84a; }
+@media (prefers-color-scheme: dark) { :root { --bg: #15161a; --card: #202127; --text: #f2f2f4; --muted: #a8a8b3; --accent: #c9cff5; --accent-text: #131b4a; --border: #3a3b44; --error: #ff8a8f; --warning-bg: #3a3014; --warning-border: #8a6d1e; } }
 * { box-sizing: border-box; }
 body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 16px; background: var(--bg); color: var(--text); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
 main { width: 100%; max-width: 420px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 32px 24px; }
@@ -38396,7 +38396,7 @@ label { display: block; font-weight: 600; margin: 16px 0 6px; }
 input { width: 100%; padding: 10px 12px; font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--border); border-radius: 8px; }
 button { margin-top: 24px; width: 100%; padding: 12px; font: inherit; font-weight: 600; color: var(--accent-text); background: var(--accent); border: 0; border-radius: 8px; cursor: pointer; }
 .error { color: var(--error); font-weight: 600; }
-.environment { font-size: 0.85rem; }
+.warning { color: var(--text); background: var(--warning-bg); border: 1px solid var(--warning-border); border-radius: 8px; padding: 10px 12px; }
 </style>
 </head>
 <body><main>${body}</main></body>
@@ -38406,7 +38406,7 @@ var credentialsPage = (environment, action, error62) => page(
   "Sign in to Permanent",
   `<h1>Sign in to Permanent</h1>
 <p>Claude is asking to work in your Permanent archive. Your password goes straight to Permanent; Claude never sees it.</p>
-<p class="environment">Environment: ${escapeHtml(environment)}</p>
+${environment === "production" ? "" : `<p class="warning" role="note">This is Permanent's <strong>${escapeHtml(environment)}</strong> test environment, not the live permanent.org. Use the account you have there.</p>`}
 ${errorLine(error62)}
 <form method="post" action="${escapeHtml(action)}">
 <label for="email">Email</label>
@@ -38894,6 +38894,8 @@ var environmentFromSettings = (settings) => {
     webUrl: isSet(rawWebUrl) ? withoutTrailingSlash(rawWebUrl) : webUrlFor(apiUrl)
   };
 };
+var PRODUCTION = "production";
+var environmentNote = (name) => name === PRODUCTION ? void 0 : `This is Permanent's "${name}" environment, not the live permanent.org. Photos here aren't in the member's real archive, and most people can't open links to it.`;
 
 // src/permanent/publications.ts
 import { readFile as readFile2 } from "node:fs/promises";
@@ -39071,9 +39073,15 @@ var registerAccountTools = (server, auth) => {
       },
       annotations: { readOnlyHint: true, openWorldHint: false }
     },
-    async ({ waitSeconds }) => jsonResult(
-      await auth.waitForSignIn(waitSeconds * MILLISECONDS_PER_SECOND)
-    )
+    async ({ waitSeconds }) => {
+      const status = await auth.waitForSignIn(
+        waitSeconds * MILLISECONDS_PER_SECOND
+      );
+      const note = environmentNote(status.environment);
+      return jsonResult(
+        note === void 0 ? status : { ...status, environmentNote: note }
+      );
+    }
   );
   server.registerTool(
     "sign_out",
@@ -40109,6 +40117,10 @@ var STILL_COPYING = {
   stillCopying: true,
   instructions: "Permanent is still copying the folder. Call publish_folder again in a minute to get the public link."
 };
+var withEnvironment = (name) => {
+  const note = environmentNote(name);
+  return note === void 0 ? { environment: name } : { environment: name, environmentNote: note };
+};
 var registerShareTools = (server, {
   client,
   environment,
@@ -40222,7 +40234,8 @@ var registerShareTools = (server, {
         folder: folder.name,
         access,
         created,
-        url: shareUrl(environment, token)
+        url: shareUrl(environment, token),
+        ...withEnvironment(environment.name)
       });
     }
   );
@@ -40245,12 +40258,13 @@ var registerShareTools = (server, {
         openWorldHint: true
       }
     },
-    async ({ archiveId, folderId }) => jsonResult(
-      await locks.run(
+    async ({ archiveId, folderId }) => jsonResult({
+      ...await locks.run(
         `publish:${folderId}`,
         async () => await publish(archiveId, folderId)
-      )
-    )
+      ),
+      ...withEnvironment(environment.name)
+    })
   );
 };
 
@@ -41125,7 +41139,7 @@ var UploadLedger = class {
 
 // src/server.ts
 var SERVER_NAME = "permanent";
-var SERVER_VERSION = "0.1.7";
+var SERVER_VERSION = "0.1.8";
 var defaultDependencies = () => {
   const environment = environmentFromSettings(process.env);
   const dataDirectory = defaultDataDirectory();

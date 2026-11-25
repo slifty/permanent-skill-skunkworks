@@ -92,6 +92,7 @@ describe("InterimAuth", () => {
 
 		expect(opened).toEqual([url]);
 		expect(form).toContain('type="password"');
+		expect(form).toContain("test environment, not the live permanent.org");
 		expect(done).toContain("You're signed in");
 		expect(await auth.getAccessToken()).toBe(token);
 		expect(await auth.status()).toMatchObject({

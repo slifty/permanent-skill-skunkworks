@@ -75,6 +75,10 @@ describe("share_folder", () => {
 			access: "anyone_with_link",
 			created: true,
 			url: `${test.environment.webUrl}/share/token-1`,
+			environment: "test",
+			environmentNote: expect.stringContaining(
+				"not the live permanent.org",
+			) as unknown,
 		});
 		expect(second.json()).toMatchObject({
 			created: false,
@@ -156,9 +160,10 @@ describe("publish_folder", () => {
 			),
 		);
 		expect(copy.displayName).toBe("Rosa's 90th");
-		expect(outcome.json()).toEqual({
+		expect(outcome.json()).toMatchObject({
 			published: true,
 			url: `${test.environment.webUrl}/p/archive/${ARCHIVE.archiveNbr}/${copy.archiveNbr}/${copy.folder_linkId}`,
+			environment: "test",
 		});
 	});
 

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { environmentNote } from "../permanent/environment.ts";
 import { jsonResult } from "./result.ts";
 import type { InterimAuth } from "../auth/interim-auth.ts";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -54,10 +55,15 @@ export const registerAccountTools = (
 			},
 			annotations: { readOnlyHint: true, openWorldHint: false },
 		},
-		async ({ waitSeconds }) =>
-			jsonResult(
-				await auth.waitForSignIn(waitSeconds * MILLISECONDS_PER_SECOND),
-			),
+		async ({ waitSeconds }) => {
+			const status = await auth.waitForSignIn(
+				waitSeconds * MILLISECONDS_PER_SECOND,
+			);
+			const note = environmentNote(status.environment);
+			return jsonResult(
+				note === undefined ? status : { ...status, environmentNote: note },
+			);
+		},
 	);
 
 	server.registerTool(

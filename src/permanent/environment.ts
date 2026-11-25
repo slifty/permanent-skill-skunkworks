@@ -93,3 +93,10 @@ export const environmentFromSettings = (
 			: webUrlFor(apiUrl),
 	};
 };
+
+export const PRODUCTION = "production";
+
+export const environmentNote = (name: string): string | undefined =>
+	name === PRODUCTION
+		? undefined
+		: `This is Permanent's "${name}" environment, not the live permanent.org. Photos here aren't in the member's real archive, and most people can't open links to it.`;
