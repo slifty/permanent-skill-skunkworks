@@ -105,6 +105,19 @@ describe("view_record", () => {
 		expect(details).not.toHaveProperty("description");
 	});
 
+	it("treats a file name with an extension Permanent added as missing", async () => {
+		const { client, bare } = await setUp();
+		bare.uploadFileName = "IMG_0001.jpg.gif";
+		bare.displayName = "IMG_0001";
+
+		const outcome = await callTool(client, "view_record", {
+			archiveId: 7,
+			recordId: bare.recordId,
+		});
+
+		expect(outcome.json()).not.toHaveProperty("title");
+	});
+
 	it("treats a title that is the whole file name as missing", async () => {
 		const { client, bare } = await setUp();
 		bare.displayName = "IMG_0001.jpg";

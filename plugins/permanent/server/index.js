@@ -39035,7 +39035,7 @@ var StoryProgress = class {
 import { readFile as readFile4, readdir } from "node:fs/promises";
 import { dirname as dirname3, join as join5, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-var SERVER_VERSION = "0.1.13";
+var SERVER_VERSION = "0.1.14";
 var PLUGIN_NAME = "permanent";
 var pluginManifest = external_exports.looseObject({
   name: external_exports.string(),
@@ -40133,7 +40133,12 @@ var readRecord = async (client, archiveId, recordId) => await client.backEnd({
   query: { recordId, archiveId },
   schema: viewableRecord
 });
-var fileStem = (fileName) => fileName?.replace(new RegExp("\\.[^.]+$", "v"), "");
+var EXTENSION = new RegExp("\\.[\\p{L}\\p{N}]{1,5}$", "v");
+var namesWithoutExtensions = (fileName) => {
+  const shorter = fileName.replace(EXTENSION, "");
+  return shorter === fileName ? [fileName] : [fileName, ...namesWithoutExtensions(shorter)];
+};
+var isFileNameTitle = (title, fileName) => fileName !== void 0 && namesWithoutExtensions(fileName).includes(title);
 var fieldsOf = (record2) => {
   const fileName = orUndefined2(record2.uploadFileName);
   const title = orUndefined2(record2.displayName);
@@ -40141,7 +40146,7 @@ var fieldsOf = (record2) => {
     recordId: record2.recordId,
     fileName,
     kind: orUndefined2(record2.type)?.replace(new RegExp("^type\\.record\\.", "v"), ""),
-    title: title === fileName || title === fileStem(fileName) ? void 0 : title,
+    title: title === void 0 || isFileNameTitle(title, fileName) ? void 0 : title,
     description: orUndefined2(record2.description),
     altText: orUndefined2(record2.altText),
     date: orUndefined2(record2.displayDT)

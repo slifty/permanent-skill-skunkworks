@@ -102,8 +102,20 @@ const readRecord = async (
 		schema: viewableRecord,
 	});
 
-const fileStem = (fileName: string | undefined): string | undefined =>
-	fileName?.replace(/\.[^.]+$/v, "");
+const EXTENSION = /\.[\p{L}\p{N}]{1,5}$/v;
+
+const namesWithoutExtensions = (fileName: string): string[] => {
+	const shorter = fileName.replace(EXTENSION, "");
+	return shorter === fileName
+		? [fileName]
+		: [fileName, ...namesWithoutExtensions(shorter)];
+};
+
+const isFileNameTitle = (
+	title: string,
+	fileName: string | undefined,
+): boolean =>
+	fileName !== undefined && namesWithoutExtensions(fileName).includes(title);
 
 const fieldsOf = (record: z.infer<typeof viewableRecord>): RecordView => {
 	const fileName = orUndefined(record.uploadFileName);
@@ -113,7 +125,9 @@ const fieldsOf = (record: z.infer<typeof viewableRecord>): RecordView => {
 		fileName,
 		kind: orUndefined(record.type)?.replace(/^type\.record\./v, ""),
 		title:
-			title === fileName || title === fileStem(fileName) ? undefined : title,
+			title === undefined || isFileNameTitle(title, fileName)
+				? undefined
+				: title,
 		description: orUndefined(record.description),
 		altText: orUndefined(record.altText),
 		date: orUndefined(record.displayDT),
