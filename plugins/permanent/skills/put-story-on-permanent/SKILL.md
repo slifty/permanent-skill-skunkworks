@@ -50,7 +50,10 @@ first. Never upload photos the member hasn't approved.
 5. **Upload.** Call `apply_story_manifest` with the archive, the parent
    folder and the manifest's path. It does the work in time-limited
    chunks. While `done` is false, tell the member how far along it is
-   ("2 of 4 stories uploaded") and call it again. It records where each
+   ("2 of 4 stories uploaded") and call it again. Each unfinished story
+   has a `waitingFor` that says why, and `notStarted` lists stories this
+   call didn't reach. Use them to tell the member what's happening in
+   plain words. It records where each
    story went in the manifest (`permanentFolderId`). That's how a story
    renamed later keeps its folder, so leave those fields alone.
 6. **Deal with problems.**

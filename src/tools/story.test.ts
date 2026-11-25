@@ -521,6 +521,7 @@ describe("apply_story_manifest", () => {
 					title: "Everyone arrives",
 					processing: 2,
 					described: 0,
+					waitingFor: expect.stringContaining("processing") as unknown,
 				}),
 			]) as unknown,
 		});
@@ -573,7 +574,10 @@ describe("apply_story_manifest", () => {
 			manifestPath,
 		});
 
-		expect(outcome.json()).toMatchObject({ done: false });
+		expect(outcome.json()).toMatchObject({
+			done: false,
+			notStarted: ["Everyone arrives", "Ninety candles"],
+		});
 	});
 
 	it("will not build in Public unless allowed", async () => {

@@ -39035,7 +39035,7 @@ var StoryProgress = class {
 import { readFile as readFile4, readdir } from "node:fs/promises";
 import { dirname as dirname3, join as join5, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-var SERVER_VERSION = "0.1.17";
+var SERVER_VERSION = "0.1.18";
 var PLUGIN_NAME = "permanent";
 var pluginManifest = external_exports.looseObject({
   name: external_exports.string(),
@@ -41518,6 +41518,18 @@ var tryPresentStory = async (context, { folder, story, recordIdsByPath }, report
     return false;
   }
 };
+var whyUnfinished = (context, state) => [
+  [state.failed > 0, "files that failed: see failed"],
+  [state.mismatches > 0, "details Permanent didn't keep: see mismatches"],
+  [
+    state.processing > 0,
+    `Permanent to finish processing ${state.processing} file(s)`
+  ],
+  [state.remaining > 0, `${state.remaining} file(s) still to upload`],
+  [!timeLeft(context), "more time: this call ran out"],
+  [!state.described, "more files to describe"],
+  [!state.presented, "the folder's narrative and date order"]
+].find(([applies]) => applies)?.[1];
 var applyStory = async (context, eventFolderId, story) => {
   const eventFolder = await getFolderContents(
     context.client,
@@ -41565,8 +41577,18 @@ var applyStory = async (context, eventFolderId, story) => {
   if (mismatches.length > 0) {
     report.mismatches = mismatches;
   }
-  const finished = mismatches.length === 0 && report.presented && failed.length === 0 && described.finished && timeLeft(context);
-  return { report, finished };
+  const waitingFor = whyUnfinished(context, {
+    remaining: upload.remaining.length,
+    processing: processing.size,
+    failed: report.failed.length,
+    mismatches: mismatches.length,
+    presented: report.presented,
+    described: described.finished
+  });
+  if (waitingFor !== void 0) {
+    report.waitingFor = waitingFor;
+  }
+  return { report, finished: waitingFor === void 0 };
 };
 var applyStoryManifest = async (request) => {
   const manifest = await readManifest(request.manifestPath);
@@ -41607,7 +41629,13 @@ var applyStoryManifest = async (request) => {
     return true;
   });
   if (!reachedEnd || unfinished.length > 0) {
-    return { done: false, eventFolderId: eventFolder.folderId, stories };
+    const notStarted = manifest.stories.slice(stories.length).map((story) => story.title);
+    return {
+      done: false,
+      eventFolderId: eventFolder.folderId,
+      ...notStarted.length > 0 ? { notStarted } : {},
+      stories
+    };
   }
   try {
     await presentFolder(

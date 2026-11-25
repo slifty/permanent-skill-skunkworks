@@ -63,12 +63,14 @@ export interface StoryReport {
 	processing?: number;
 	presented?: boolean;
 	mismatches?: Mismatch[];
+	waitingFor?: string;
 }
 
 export interface ApplyReport {
 	done: boolean;
 	eventFolderId: number;
 	eventProblem?: string;
+	notStarted?: string[];
 	stories: StoryReport[];
 }
 
@@ -276,6 +278,34 @@ const tryPresentStory = async (
 	}
 };
 
+interface StoryState {
+	remaining: number;
+	processing: number;
+	failed: number;
+	mismatches: number;
+	presented: boolean;
+	described: boolean;
+}
+
+const whyUnfinished = (
+	context: ApplyContext,
+	state: StoryState,
+): string | undefined =>
+	(
+		[
+			[state.failed > 0, "files that failed: see failed"],
+			[state.mismatches > 0, "details Permanent didn't keep: see mismatches"],
+			[
+				state.processing > 0,
+				`Permanent to finish processing ${state.processing} file(s)`,
+			],
+			[state.remaining > 0, `${state.remaining} file(s) still to upload`],
+			[!timeLeft(context), "more time: this call ran out"],
+			[!state.described, "more files to describe"],
+			[!state.presented, "the folder's narrative and date order"],
+		] satisfies Array<[boolean, string]>
+	).find(([applies]) => applies)?.[1];
+
 const applyStory = async (
 	context: ApplyContext,
 	eventFolderId: number,
@@ -334,13 +364,18 @@ const applyStory = async (
 	if (mismatches.length > 0) {
 		report.mismatches = mismatches;
 	}
-	const finished =
-		mismatches.length === 0 &&
-		report.presented &&
-		failed.length === 0 &&
-		described.finished &&
-		timeLeft(context);
-	return { report, finished };
+	const waitingFor = whyUnfinished(context, {
+		remaining: upload.remaining.length,
+		processing: processing.size,
+		failed: report.failed.length,
+		mismatches: mismatches.length,
+		presented: report.presented,
+		described: described.finished,
+	});
+	if (waitingFor !== undefined) {
+		report.waitingFor = waitingFor;
+	}
+	return { report, finished: waitingFor === undefined };
 };
 
 export const applyStoryManifest = async (
@@ -384,7 +419,15 @@ export const applyStoryManifest = async (
 		return true;
 	});
 	if (!reachedEnd || unfinished.length > 0) {
-		return { done: false, eventFolderId: eventFolder.folderId, stories };
+		const notStarted = manifest.stories
+			.slice(stories.length)
+			.map((story) => story.title);
+		return {
+			done: false,
+			eventFolderId: eventFolder.folderId,
+			...(notStarted.length > 0 ? { notStarted } : {}),
+			stories,
+		};
 	}
 	try {
 		await presentFolder(
