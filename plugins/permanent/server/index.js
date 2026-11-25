@@ -39035,7 +39035,7 @@ var StoryProgress = class {
 import { readFile as readFile4, readdir } from "node:fs/promises";
 import { dirname as dirname3, join as join5, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-var SERVER_VERSION = "0.1.19";
+var SERVER_VERSION = "0.1.20";
 var PLUGIN_NAME = "permanent";
 var pluginManifest = external_exports.looseObject({
   name: external_exports.string(),
@@ -39193,6 +39193,7 @@ var folderVo = external_exports.looseObject({
   displayName: optionalString,
   description: optionalString,
   displayDT: optionalString,
+  displayEndDT: optionalString,
   type: external_exports.string(),
   status: optionalString,
   sort: optionalString,
@@ -39214,6 +39215,7 @@ var summarizeFolder = (vo) => ({
   name: vo.displayName ?? "",
   kind: stripPrefix(vo.type, "type.folder.") ?? vo.type,
   date: orUndefined(vo.displayDT),
+  endDate: orUndefined(vo.displayEndDT),
   description: orUndefined(vo.description)
 });
 var summarizeRecord = (vo) => ({
@@ -39431,6 +39433,15 @@ var isEdtfDateTime = (value) => {
   return isCalendarDate(Number(year), Number(month), Number(day2)) && isTimeOfDay(groups);
 };
 var isInstant = (value) => isDate(value) || isEdtfDateTime(value);
+var isInOrder = (start, end) => {
+  if (OPEN_INTERVAL_ENDS.has(start) || OPEN_INTERVAL_ENDS.has(end)) {
+    return true;
+  }
+  const from = start.replace(new RegExp("[?~%]", "gv"), "");
+  const to = end.replace(new RegExp("[?~%]", "gv"), "");
+  const shared = Math.min(from.length, to.length);
+  return from.slice(0, shared) <= to.slice(0, shared);
+};
 var isInterval = (value) => {
   const parts = value.split("/");
   if (parts.length !== INTERVAL_PARTS) {
@@ -39439,7 +39450,7 @@ var isInterval = (value) => {
   const [start = "", end = ""] = parts;
   const startOpen = OPEN_INTERVAL_ENDS.has(start);
   const endOpen = OPEN_INTERVAL_ENDS.has(end);
-  return !(startOpen && endOpen) && (startOpen || isDate(start)) && (endOpen || isDate(end));
+  return !(startOpen && endOpen) && (startOpen || isDate(start)) && (endOpen || isDate(end)) && isInOrder(start, end);
 };
 var isSupportedEdtf = (value) => value.includes("/") ? isInterval(value) : isInstant(value);
 var QUALIFIERS = new RegExp("[?~%]", "gv");
@@ -39464,6 +39475,15 @@ var edtfToDisplayDate = (value) => {
     return `${instant}-01T00:00:00`;
   }
   return `${instant}T00:00:00`;
+};
+var edtfToDisplayRange = (value) => {
+  const start = edtfToDisplayDate(value);
+  if (start === void 0) {
+    return void 0;
+  }
+  const [, endPart = ""] = value.split("/");
+  const end = OPEN_INTERVAL_ENDS.has(endPart) ? void 0 : edtfToDisplayDate(endPart);
+  return { start, end: end ?? start };
 };
 
 // src/manifest/schema.ts
@@ -40044,7 +40064,9 @@ var updateFolder = async (client, archive, details) => {
   const changes = withoutUndefined({
     displayName: details.name,
     description: details.description,
-    thumbArchiveNbr: details.coverArchiveNbr
+    thumbArchiveNbr: details.coverArchiveNbr,
+    displayDT: details.displayDate,
+    displayEndDT: details.displayEndDate
   });
   const folder = withoutUndefined({
     folderId: details.folderId,
@@ -40052,7 +40074,9 @@ var updateFolder = async (client, archive, details) => {
     folder_linkId: details.folderLinkId,
     displayName: details.name,
     description: details.description,
-    thumbArchiveNbr: details.coverArchiveNbr
+    thumbArchiveNbr: details.coverArchiveNbr,
+    displayDT: details.displayDate,
+    displayEndDT: details.displayEndDate
   });
   await inArchive(client, archive, async () => {
     if (Object.keys(changes).length > 0) {
@@ -41279,10 +41303,44 @@ var uploadStory = async (context, folder, story) => {
   };
 };
 
-// src/stories/verify.ts
+// src/stories/present-folder.ts
+var DATE_ORDER = "display_date_asc";
 var CALENDAR_DAY_LENGTH = 10;
-var sameText = (a, b) => (a ?? "").trim() === (b ?? "").trim();
 var calendarDay = (value) => (value ?? "").slice(0, CALENDAR_DAY_LENGTH);
+var isPresented = (contents, look) => contents.sort === DATE_ORDER && ((look.description ?? "").trim() === "" || (contents.description ?? "").trim() !== "") && (look.date === void 0 || calendarDay(contents.date) === calendarDay(look.date.start) && calendarDay(contents.endDate) === calendarDay(look.date.end));
+var presentFolder = async (context, folder, look) => {
+  const read = async () => await getFolderContents(context.client, context.archiveId, folder.folderId);
+  const before = await read();
+  const coverArchiveNbr = look.coverRecordId === void 0 ? void 0 : before.records.find((record2) => record2.recordId === look.coverRecordId)?.archiveNbr;
+  const settings = { description: look.description, coverArchiveNbr };
+  const key = `folder:${folder.folderId}`;
+  const digest = digestOf(
+    look.date === void 0 ? settings : { ...settings, date: look.date }
+  );
+  if (await context.progress.isApplied(key, digest) && isPresented(before, look)) {
+    return;
+  }
+  await updateFolder(context.client, context.archive, {
+    folderId: folder.folderId,
+    folderLinkId: folder.folderLinkId,
+    archiveNbr: folder.archiveNbr,
+    ...settings,
+    displayDate: look.date?.start,
+    displayEndDate: look.date?.end,
+    sortByDate: true
+  });
+  if (!isPresented(await read(), look)) {
+    throw new Error(
+      `Permanent didn't keep the narrative, date or date order for "${folder.name}"`
+    );
+  }
+  await context.progress.markApplied(key, digest);
+};
+
+// src/stories/verify.ts
+var CALENDAR_DAY_LENGTH2 = 10;
+var sameText = (a, b) => (a ?? "").trim() === (b ?? "").trim();
+var calendarDay2 = (value) => (value ?? "").slice(0, CALENDAR_DAY_LENGTH2);
 var missing = (path, actual) => ({
   path,
   field: "missing",
@@ -41297,7 +41355,7 @@ var itemMismatches = (item, recordId, record2) => {
   if (record2 === void 0) {
     return [missing(item.path, "not found in the story's folder")];
   }
-  const expectedDay = calendarDay(
+  const expectedDay = calendarDay2(
     item.date === void 0 ? void 0 : edtfToDisplayDate(item.date)
   );
   return [
@@ -41308,12 +41366,12 @@ var itemMismatches = (item, recordId, record2) => {
       item.description,
       record2.description
     ),
-    ...expectedDay === "" || expectedDay === calendarDay(record2.date) ? [] : [
+    ...expectedDay === "" || expectedDay === calendarDay2(record2.date) ? [] : [
       {
         path: item.path,
         field: "date",
         expected: expectedDay,
-        actual: calendarDay(record2.date)
+        actual: calendarDay2(record2.date)
       }
     ]
   ];
@@ -41475,32 +41533,6 @@ var describeItems = async (context, story, recordIdsByPath) => {
   outcome.finished = reachedEnd && outcome.failed.length === 0;
   return outcome;
 };
-var DATE_ORDER = "display_date_asc";
-var isPresented = (contents, description) => contents.sort === DATE_ORDER && ((description ?? "").trim() === "" || (contents.description ?? "").trim() !== "");
-var presentFolder = async (context, folder, description, coverRecordId) => {
-  const read = async () => await getFolderContents(context.client, context.archiveId, folder.folderId);
-  const before = await read();
-  const coverArchiveNbr = coverRecordId === void 0 ? void 0 : before.records.find((record2) => record2.recordId === coverRecordId)?.archiveNbr;
-  const settings = { description, coverArchiveNbr };
-  const key = `folder:${folder.folderId}`;
-  const digest = digestOf(settings);
-  if (await context.progress.isApplied(key, digest) && isPresented(before, description)) {
-    return;
-  }
-  await updateFolder(context.client, context.archive, {
-    folderId: folder.folderId,
-    folderLinkId: folder.folderLinkId,
-    archiveNbr: folder.archiveNbr,
-    ...settings,
-    sortByDate: true
-  });
-  if (!isPresented(await read(), description)) {
-    throw new Error(
-      `Permanent didn't keep the narrative or date order for "${folder.name}"`
-    );
-  }
-  await context.progress.markApplied(key, digest);
-};
 var rememberFolder = async (context, owner, folderId) => {
   if (owner.permanentFolderId === folderId) {
     return;
@@ -41511,7 +41543,10 @@ var rememberFolder = async (context, owner, folderId) => {
 var tryPresentStory = async (context, { folder, story, recordIdsByPath }, report) => {
   const coverRecordId = story.cover === void 0 ? void 0 : recordIdsByPath.get(story.cover);
   try {
-    await presentFolder(context, folder, story.description, coverRecordId);
+    await presentFolder(context, folder, {
+      description: story.description,
+      coverRecordId
+    });
     return true;
   } catch (error62) {
     report.failed.push({ path: story.title, error: describe5(error62) });
@@ -41638,12 +41673,10 @@ var applyStoryManifest = async (request) => {
     };
   }
   try {
-    await presentFolder(
-      context,
-      eventFolder,
-      manifest.event.description,
-      void 0
-    );
+    await presentFolder(context, eventFolder, {
+      description: manifest.event.description,
+      date: manifest.event.date === void 0 ? void 0 : edtfToDisplayRange(manifest.event.date)
+    });
   } catch (error62) {
     return {
       done: false,

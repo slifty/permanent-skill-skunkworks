@@ -30,6 +30,7 @@ export const folderVo = z.looseObject({
 	displayName: optionalString,
 	description: optionalString,
 	displayDT: optionalString,
+	displayEndDT: optionalString,
 	type: z.string(),
 	status: optionalString,
 	sort: optionalString,

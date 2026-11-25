@@ -1,5 +1,5 @@
 import { runInOrder } from "../concurrency.ts";
-import { edtfToDisplayDate } from "../dates/edtf.ts";
+import { edtfToDisplayDate, edtfToDisplayRange } from "../dates/edtf.ts";
 import { readManifest, writeManifest } from "../manifest/file.ts";
 import {
 	findArchive,
@@ -18,6 +18,7 @@ import {
 	settledRecords,
 	uploadStory,
 } from "./upload-story.ts";
+import { presentFolder } from "./present-folder.ts";
 import { checkStoryOnPermanent } from "./verify.ts";
 import { digestOf } from "./progress.ts";
 import type { StoryManifest } from "../manifest/schema.ts";
@@ -196,54 +197,6 @@ const describeItems = async (
 	return outcome;
 };
 
-const DATE_ORDER = "display_date_asc";
-
-const isPresented = (
-	contents: FolderContents,
-	description: string | undefined,
-): boolean =>
-	contents.sort === DATE_ORDER &&
-	((description ?? "").trim() === "" ||
-		(contents.description ?? "").trim() !== "");
-
-const presentFolder = async (
-	context: ApplyContext,
-	folder: FolderSummary,
-	description: string | undefined,
-	coverRecordId: number | undefined,
-): Promise<void> => {
-	const read = async (): Promise<FolderContents> =>
-		await getFolderContents(context.client, context.archiveId, folder.folderId);
-	const before = await read();
-	const coverArchiveNbr =
-		coverRecordId === undefined
-			? undefined
-			: before.records.find((record) => record.recordId === coverRecordId)
-					?.archiveNbr;
-	const settings = { description, coverArchiveNbr };
-	const key = `folder:${folder.folderId}`;
-	const digest = digestOf(settings);
-	if (
-		(await context.progress.isApplied(key, digest)) &&
-		isPresented(before, description)
-	) {
-		return;
-	}
-	await updateFolder(context.client, context.archive, {
-		folderId: folder.folderId,
-		folderLinkId: folder.folderLinkId,
-		archiveNbr: folder.archiveNbr,
-		...settings,
-		sortByDate: true,
-	});
-	if (!isPresented(await read(), description)) {
-		throw new Error(
-			`Permanent didn't keep the narrative or date order for "${folder.name}"`,
-		);
-	}
-	await context.progress.markApplied(key, digest);
-};
-
 const rememberFolder = async (
 	context: ApplyContext,
 	owner: { permanentFolderId?: number | undefined },
@@ -270,7 +223,10 @@ const tryPresentStory = async (
 	const coverRecordId =
 		story.cover === undefined ? undefined : recordIdsByPath.get(story.cover);
 	try {
-		await presentFolder(context, folder, story.description, coverRecordId);
+		await presentFolder(context, folder, {
+			description: story.description,
+			coverRecordId,
+		});
 		return true;
 	} catch (error) {
 		report.failed.push({ path: story.title, error: describe(error) });
@@ -430,12 +386,13 @@ export const applyStoryManifest = async (
 		};
 	}
 	try {
-		await presentFolder(
-			context,
-			eventFolder,
-			manifest.event.description,
-			undefined,
-		);
+		await presentFolder(context, eventFolder, {
+			description: manifest.event.description,
+			date:
+				manifest.event.date === undefined
+					? undefined
+					: edtfToDisplayRange(manifest.event.date),
+		});
 	} catch (error) {
 		return {
 			done: false,

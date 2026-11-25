@@ -563,6 +563,50 @@ describe("apply_story_manifest", () => {
 		});
 	});
 
+	it("dates the event folder from the manifest, not its contents", async () => {
+		const { test, archive, manifest, manifestPath } = await setUp();
+		manifest.event.date = "1934-05-02/2021-11-18";
+		await writeManifest(manifestPath, manifest);
+		const client = await connectClient(test);
+
+		const outcome = await callTool(client, "apply_story_manifest", {
+			archiveId: 7,
+			parentFolderId: MY_FILES_ID,
+			manifestPath,
+		});
+
+		expect(outcome.json()).toMatchObject({ done: true });
+		expect(must(archive.folderNamed("Rosa's 90th"))).toMatchObject({
+			displayDT: "1934-05-02T00:00:00",
+			displayEndDT: "2021-11-18T00:00:00",
+		});
+	});
+
+	it("restores an event end date Permanent recalculated", async () => {
+		const { test, archive, manifest, manifestPath } = await setUp();
+		manifest.event.date = "1934-05-02/2021-11-18";
+		await writeManifest(manifestPath, manifest);
+		const client = await connectClient(test);
+		const apply = async (): Promise<unknown> =>
+			(
+				await callTool(client, "apply_story_manifest", {
+					archiveId: 7,
+					parentFolderId: MY_FILES_ID,
+					manifestPath,
+				})
+			).json();
+		await apply();
+		must(archive.folderNamed("Rosa's 90th")).displayEndDT =
+			"2024-06-01T11:00:00";
+
+		const outcome = await apply();
+
+		expect(outcome).toMatchObject({ done: true });
+		expect(must(archive.folderNamed("Rosa's 90th")).displayEndDT).toBe(
+			"2021-11-18T00:00:00",
+		);
+	});
+
 	it("reports progress and stops when its time runs out", async () => {
 		const { test, manifestPath } = await setUp();
 		test.applyBudgetMilliseconds = 0;

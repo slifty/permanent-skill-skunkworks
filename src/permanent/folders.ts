@@ -18,6 +18,7 @@ export interface FolderSummary {
 	name: string;
 	kind: string;
 	date?: string | undefined;
+	endDate?: string | undefined;
 	description?: string | undefined;
 }
 
@@ -65,6 +66,7 @@ const summarizeFolder = (vo: FolderVo): FolderSummary => ({
 	name: vo.displayName ?? "",
 	kind: stripPrefix(vo.type, "type.folder.") ?? vo.type,
 	date: orUndefined(vo.displayDT),
+	endDate: orUndefined(vo.displayEndDT),
 	description: orUndefined(vo.description),
 });
 

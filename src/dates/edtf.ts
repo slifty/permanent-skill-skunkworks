@@ -69,6 +69,16 @@ export const isEdtfDateTime = (value: string): boolean => {
 const isInstant = (value: string): boolean =>
 	isDate(value) || isEdtfDateTime(value);
 
+const isInOrder = (start: string, end: string): boolean => {
+	if (OPEN_INTERVAL_ENDS.has(start) || OPEN_INTERVAL_ENDS.has(end)) {
+		return true;
+	}
+	const from = start.replace(/[?~%]/gv, "");
+	const to = end.replace(/[?~%]/gv, "");
+	const shared = Math.min(from.length, to.length);
+	return from.slice(0, shared) <= to.slice(0, shared);
+};
+
 const isInterval = (value: string): boolean => {
 	const parts = value.split("/");
 	if (parts.length !== INTERVAL_PARTS) {
@@ -80,7 +90,8 @@ const isInterval = (value: string): boolean => {
 	return (
 		!(startOpen && endOpen) &&
 		(startOpen || isDate(start)) &&
-		(endOpen || isDate(end))
+		(endOpen || isDate(end)) &&
+		isInOrder(start, end)
 	);
 };
 
@@ -110,4 +121,18 @@ export const edtfToDisplayDate = (value: string): string | undefined => {
 		return `${instant}-01T00:00:00`;
 	}
 	return `${instant}T00:00:00`;
+};
+
+export const edtfToDisplayRange = (
+	value: string,
+): { start: string; end: string } | undefined => {
+	const start = edtfToDisplayDate(value);
+	if (start === undefined) {
+		return undefined;
+	}
+	const [, endPart = ""] = value.split("/");
+	const end = OPEN_INTERVAL_ENDS.has(endPart)
+		? undefined
+		: edtfToDisplayDate(endPart);
+	return { start, end: end ?? start };
 };

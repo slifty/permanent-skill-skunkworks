@@ -15,6 +15,8 @@ export interface FakeFolder {
 	description: string | null;
 	sort: string;
 	thumbArchiveNbr: string | null;
+	displayDT?: string | undefined;
+	displayEndDT?: string | undefined;
 }
 
 export interface FakeRecord {
@@ -389,6 +391,27 @@ export class FakeArchive {
 		}
 	}
 
+	private datesUnder(folderId: number): string[] {
+		return [
+			...this.recordsIn(folderId).map((record) => record.displayDT),
+			...[...this.folders.values()]
+				.filter((child) => child.parentFolderId === folderId)
+				.flatMap((child) => this.datesUnder(child.folderId)),
+		];
+	}
+
+	private recalculateFolderDates(folderId: number | undefined): void {
+		const folder =
+			folderId === undefined ? undefined : this.folders.get(folderId);
+		if (folder === undefined) {
+			return;
+		}
+		const dates = this.datesUnder(folder.folderId).sort();
+		folder.displayDT = dates.at(0);
+		folder.displayEndDT = dates.at(-1);
+		this.recalculateFolderDates(folder.parentFolderId);
+	}
+
 	private advanceProcessing(recordId: number): void {
 		const job = this.processing.get(recordId);
 		const record = this.records.get(recordId);
@@ -446,6 +469,7 @@ export class FakeArchive {
 		record.note = update.note ?? null;
 		record.altText = update.altText ?? null;
 		record.displayDT = update.displayDt ?? record.displayDT;
+		this.recalculateFolderDates(record.parentFolderId);
 		return ok({});
 	}
 
@@ -499,13 +523,23 @@ export class FakeArchive {
 					candidate.folder_linkId === entry.FolderVO?.folder_linkId,
 			);
 			if (folder !== undefined) {
-				const { displayName, description, thumbArchiveNbr } = z
+				const {
+					displayName,
+					description,
+					thumbArchiveNbr,
+					displayDT,
+					displayEndDT,
+				} = z
 					.object({
 						displayName: z.string().optional(),
 						description: z.string().optional(),
 						thumbArchiveNbr: z.string().optional(),
+						displayDT: z.string().optional(),
+						displayEndDT: z.string().optional(),
 					})
 					.parse(entry.FolderVO);
+				folder.displayDT = displayDT ?? folder.displayDT;
+				folder.displayEndDT = displayEndDT ?? folder.displayEndDT;
 				folder.displayName = displayName ?? folder.displayName;
 				folder.description = description ?? folder.description;
 				folder.thumbArchiveNbr = thumbArchiveNbr ?? folder.thumbArchiveNbr;

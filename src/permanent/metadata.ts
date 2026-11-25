@@ -27,6 +27,8 @@ export interface FolderDetails {
 	description?: string | undefined;
 	coverArchiveNbr?: string | undefined;
 	sortByDate?: boolean | undefined;
+	displayDate?: string | undefined;
+	displayEndDate?: string | undefined;
 }
 
 export const SORT_BY_DATE = "sort.display_date_asc";
@@ -160,6 +162,8 @@ export const updateFolder = async (
 		displayName: details.name,
 		description: details.description,
 		thumbArchiveNbr: details.coverArchiveNbr,
+		displayDT: details.displayDate,
+		displayEndDT: details.displayEndDate,
 	});
 	const folder = withoutUndefined({
 		folderId: details.folderId,
@@ -168,6 +172,8 @@ export const updateFolder = async (
 		displayName: details.name,
 		description: details.description,
 		thumbArchiveNbr: details.coverArchiveNbr,
+		displayDT: details.displayDate,
+		displayEndDT: details.displayEndDate,
 	});
 	await inArchive(client, archive, async () => {
 		if (Object.keys(changes).length > 0) {
