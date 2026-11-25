@@ -16,7 +16,7 @@ import type { PermanentEnvironment } from "./permanent/environment.ts";
 import type { UploadToolOptions } from "./tools/upload.ts";
 
 const SERVER_NAME = "permanent";
-const SERVER_VERSION = "0.1.1";
+const SERVER_VERSION = "0.1.2";
 
 export interface ServerDependencies {
 	environment: PermanentEnvironment;

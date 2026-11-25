@@ -1,6 +1,7 @@
 import { openAsBlob } from "node:fs";
 import { z } from "zod";
 import { mapWithConcurrency } from "../concurrency.ts";
+import { KeyedLock } from "../keyed-lock.ts";
 import { recordVo } from "./vo.ts";
 import type { PermanentClient } from "./api.ts";
 import type { RecordVo } from "./vo.ts";
@@ -8,6 +9,7 @@ import type { RecordVo } from "./vo.ts";
 export const MULTIPART_PART_BYTES = 10_485_760;
 export const MULTIPART_THRESHOLD_BYTES = 104_857_600;
 const PART_CONCURRENCY = 3;
+const registrations = new KeyedLock();
 
 const presignedUpload = z.object({
 	destinationUrl: z.string(),
@@ -119,17 +121,21 @@ export const uploadRecord = async (
 		file.size > MULTIPART_THRESHOLD_BYTES
 			? { multipartUploadData: await uploadInParts(client, file) }
 			: { s3url: await uploadWithPost(client, file) };
-	return await client.backEnd({
-		path: "/record/registerRecord",
-		method: "POST",
-		body: {
-			displayName: file.uploadFileName,
-			parentFolderId: file.parentFolderId,
-			uploadFileName: file.uploadFileName,
-			size: file.size,
-			failOnDuplicateName: true,
-			...location,
-		},
-		schema: recordVo,
-	});
+	return await registrations.run(
+		"registerRecord",
+		async () =>
+			await client.backEnd({
+				path: "/record/registerRecord",
+				method: "POST",
+				body: {
+					displayName: file.uploadFileName,
+					parentFolderId: file.parentFolderId,
+					uploadFileName: file.uploadFileName,
+					size: file.size,
+					failOnDuplicateName: true,
+					...location,
+				},
+				schema: recordVo,
+			}),
+	);
 };

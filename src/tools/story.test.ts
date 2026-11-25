@@ -216,11 +216,11 @@ describe("apply_story_manifest", () => {
 	it("is not done while an item failed, but finishes the other stories", async () => {
 		const { test, archive, manifestPath } = await setUp();
 		const patch = test.fake.routes.get("PATCH /api/v2/records/*");
-		test.fake.routes.set("PATCH /api/v2/records/*", (request) => {
+		test.fake.routes.set("PATCH /api/v2/records/*", async (request) => {
 			const record = archive.records.get(Number(request.path.split("/").pop()));
 			return record?.uploadFileName === "IMG_0001.jpg"
 				? { status: 500, body: { error: "temporary" } }
-				: (patch?.(request) ?? { body: {} });
+				: ((await patch?.(request)) ?? { body: {} });
 		});
 		const client = await connectClient(test);
 

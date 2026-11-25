@@ -92,7 +92,7 @@ export const registerUploadTools = (
 		{
 			title: "Check Permanent processing",
 			description:
-				"Check whether Permanent has finished processing uploaded files (thumbnails and previews). Optionally waits until they are all ready or failed.",
+				"Check whether Permanent has finished processing uploaded files (thumbnails and previews). Optionally waits until none are still processing. A file still unprocessed 10 minutes after upload is reported as `stuck`: it is saved with its details, but Permanent will not finish it on its own, so don't keep waiting for it.",
 			inputSchema: {
 				recordIds: z.array(id).min(1).max(MAX_FILES_PER_CALL),
 				waitSeconds: z.number().min(0).max(MAX_WAIT_SECONDS).default(0),
@@ -110,6 +110,7 @@ export const registerUploadTools = (
 				ready: records.filter((record) => record.state === "ready").length,
 				processing: records.filter((record) => record.state === "processing")
 					.length,
+				stuck: records.filter((record) => record.state === "stuck").length,
 				failed: records.filter((record) => record.state === "failed").length,
 				records,
 			});

@@ -27,7 +27,9 @@ export interface FakeReply {
 	headers?: Record<string, string>;
 }
 
-export type FakeRoute = (request: FakeRequest) => FakeReply;
+export type FakeRoute = (
+	request: FakeRequest,
+) => FakeReply | Promise<FakeReply>;
 
 export interface FakePermanent {
 	apiUrl: string;
@@ -224,7 +226,7 @@ export const startFakePermanent = async (
 			}
 			replyJson(
 				response,
-				route({
+				await route({
 					path: url.pathname,
 					query: url.searchParams,
 					body,

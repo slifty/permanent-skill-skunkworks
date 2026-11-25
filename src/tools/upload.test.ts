@@ -1,10 +1,12 @@
 import { chmod, mkdtemp, utimes, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { setTimeout as delay } from "node:timers/promises";
 import { afterEach, describe, expect, it } from "vitest";
 import { z } from "zod";
 import { callTool, connectClient } from "../testing/client.ts";
 import { buildJpeg } from "../testing/jpeg.ts";
+import { must } from "../testing/must.ts";
 import { startTestPermanent } from "../testing/permanent.ts";
 import { UploadLedger } from "../uploads/ledger.ts";
 import type { TestPermanent } from "../testing/permanent.ts";
@@ -260,10 +262,10 @@ describe("upload_files", () => {
 		const { test, root } = await setUp();
 		const first = await photo(root, "IMG_0001.jpg", "14:00:00");
 		const storage = test.fake.routes.get("POST /api/s3");
-		test.fake.routes.set("POST /api/s3", (request) => {
+		test.fake.routes.set("POST /api/s3", async (request) => {
 			const later = new Date(Date.now() + 60_000);
-			void utimes(first, later, later);
-			return storage?.(request) ?? { body: "" };
+			await utimes(first, later, later);
+			return (await storage?.(request)) ?? { body: "" };
 		});
 		const client = await connectClient(test);
 
@@ -297,6 +299,37 @@ describe("upload_files", () => {
 		const report = uploadReport.parse(outcome.json());
 		expect(report.failed).toEqual([]);
 		expect(report.uploaded[0]?.warning).toContain("couldn't record it");
+	});
+
+	it("registers one file at a time", async () => {
+		const { test, root, registered } = await setUp();
+		const register = must(
+			test.fake.routes.get("POST /api/record/registerRecord"),
+		);
+		let inFlight = 0;
+		let mostAtOnce = 0;
+		test.fake.routes.set("POST /api/record/registerRecord", async (request) => {
+			inFlight += 1;
+			mostAtOnce = Math.max(mostAtOnce, inFlight);
+			await delay(20);
+			inFlight -= 1;
+			return await register(request);
+		});
+		const paths = await Promise.all(
+			["a.jpg", "b.jpg", "c.jpg", "d.jpg"].map(
+				async (name, index) => await photo(root, name, `1${index}:00:00`),
+			),
+		);
+		const client = await connectClient(test);
+
+		await callTool(client, "upload_files", {
+			archiveId: 7,
+			folderId: 30,
+			paths,
+		});
+
+		expect(registered).toHaveLength(4);
+		expect(mostAtOnce).toBe(1);
 	});
 
 	it("uses multipart upload for large files", async () => {
@@ -392,6 +425,47 @@ describe("check_processing", () => {
 			failed: 0,
 		});
 		expect(polls).toBe(3);
+	});
+
+	it("reports files that never finished processing as stuck", async () => {
+		const test = await startTestPermanent();
+		permanent = test;
+		await test.signIn();
+		const longAgo = new Date(Date.now() - 3_600_000).toISOString();
+		const justNow = new Date().toISOString();
+		test.fake.routes.set("GET /api/v2/records", () => ({
+			body: {
+				items: [
+					{
+						recordId: "501",
+						status: "status.record.uploaded",
+						createdAt: longAgo,
+					},
+					{
+						recordId: "502",
+						status: "status.record.processing",
+						createdAt: justNow,
+					},
+				],
+			},
+		}));
+		const client = await connectClient(test);
+		const started = Date.now();
+
+		const outcome = await callTool(client, "check_processing", {
+			recordIds: [501, 502],
+		});
+
+		expect(outcome.json()).toMatchObject({
+			ready: 0,
+			processing: 1,
+			stuck: 1,
+			records: [
+				{ recordId: 501, state: "stuck" },
+				{ recordId: 502, state: "processing" },
+			],
+		});
+		expect(Date.now() - started).toBeLessThan(1000);
 	});
 
 	it("also reads the older unpaged response", async () => {

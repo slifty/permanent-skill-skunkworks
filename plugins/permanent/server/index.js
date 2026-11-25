@@ -40216,6 +40216,7 @@ import { openAsBlob } from "node:fs";
 var MULTIPART_PART_BYTES = 10485760;
 var MULTIPART_THRESHOLD_BYTES = 104857600;
 var PART_CONCURRENCY = 3;
+var registrations = new KeyedLock();
 var presignedUpload = external_exports.object({
   destinationUrl: external_exports.string(),
   presignedPost: external_exports.object({
@@ -40294,19 +40295,22 @@ var uploadInParts = async (client, file2) => {
 };
 var uploadRecord = async (client, file2) => {
   const location2 = file2.size > MULTIPART_THRESHOLD_BYTES ? { multipartUploadData: await uploadInParts(client, file2) } : { s3url: await uploadWithPost(client, file2) };
-  return await client.backEnd({
-    path: "/record/registerRecord",
-    method: "POST",
-    body: {
-      displayName: file2.uploadFileName,
-      parentFolderId: file2.parentFolderId,
-      uploadFileName: file2.uploadFileName,
-      size: file2.size,
-      failOnDuplicateName: true,
-      ...location2
-    },
-    schema: recordVo
-  });
+  return await registrations.run(
+    "registerRecord",
+    async () => await client.backEnd({
+      path: "/record/registerRecord",
+      method: "POST",
+      body: {
+        displayName: file2.uploadFileName,
+        parentFolderId: file2.parentFolderId,
+        uploadFileName: file2.uploadFileName,
+        size: file2.size,
+        failOnDuplicateName: true,
+        ...location2
+      },
+      schema: recordVo
+    })
+  );
 };
 
 // src/uploads/upload-files.ts
@@ -40840,15 +40844,21 @@ var stelaRecord = external_exports.looseObject({
   recordId: external_exports.coerce.number(),
   displayName: external_exports.string().nullish(),
   status: external_exports.string(),
-  thumbUrl200: external_exports.string().nullish()
+  thumbUrl200: external_exports.string().nullish(),
+  createdAt: external_exports.string().nullish()
 });
-var stateOf = (status) => {
+var STUCK_AFTER_MILLISECONDS = 6e5;
+var stateOf = (status, createdAt, now) => {
   if (status === READY) {
     return "ready";
   }
-  return FAILED.has(status) ? "failed" : "processing";
+  if (FAILED.has(status)) {
+    return "failed";
+  }
+  const created = Date.parse(createdAt ?? "");
+  return Number.isFinite(created) && now - created > STUCK_AFTER_MILLISECONDS ? "stuck" : "processing";
 };
-var getRecordProcessing = async (client, recordIds) => {
+var getRecordProcessing = async (client, recordIds, now = Date.now()) => {
   const response = await client.stela({
     path: "/records",
     query: { recordIds, pageSize: recordIds.length },
@@ -40861,7 +40871,7 @@ var getRecordProcessing = async (client, recordIds) => {
   return records.map((record2) => ({
     recordId: record2.recordId,
     name: record2.displayName ?? void 0,
-    state: stateOf(record2.status),
+    state: stateOf(record2.status, record2.createdAt, now),
     status: record2.status.replace(new RegExp("^status\\.", "v"), ""),
     thumbnail: record2.thumbUrl200 ?? void 0
   }));
@@ -40924,7 +40934,7 @@ var registerUploadTools = (server, client, ledger, options = {}) => {
     "check_processing",
     {
       title: "Check Permanent processing",
-      description: "Check whether Permanent has finished processing uploaded files (thumbnails and previews). Optionally waits until they are all ready or failed.",
+      description: "Check whether Permanent has finished processing uploaded files (thumbnails and previews). Optionally waits until none are still processing. A file still unprocessed 10 minutes after upload is reported as `stuck`: it is saved with its details, but Permanent will not finish it on its own, so don't keep waiting for it.",
       inputSchema: {
         recordIds: external_exports.array(id4).min(1).max(MAX_FILES_PER_CALL),
         waitSeconds: external_exports.number().min(0).max(MAX_WAIT_SECONDS2).default(0)
@@ -40941,6 +40951,7 @@ var registerUploadTools = (server, client, ledger, options = {}) => {
       return jsonResult({
         ready: records.filter((record2) => record2.state === "ready").length,
         processing: records.filter((record2) => record2.state === "processing").length,
+        stuck: records.filter((record2) => record2.state === "stuck").length,
         failed: records.filter((record2) => record2.state === "failed").length,
         records
       });
@@ -41025,7 +41036,7 @@ var UploadLedger = class {
 
 // src/server.ts
 var SERVER_NAME = "permanent";
-var SERVER_VERSION = "0.1.1";
+var SERVER_VERSION = "0.1.2";
 var defaultDependencies = () => {
   const environment = environmentFromSettings(process.env);
   const dataDirectory = defaultDataDirectory();

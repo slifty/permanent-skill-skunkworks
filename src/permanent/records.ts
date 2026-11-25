@@ -12,9 +12,12 @@ const stelaRecord = z.looseObject({
 	displayName: z.string().nullish(),
 	status: z.string(),
 	thumbUrl200: z.string().nullish(),
+	createdAt: z.string().nullish(),
 });
 
-export type ProcessingState = "ready" | "processing" | "failed";
+export type ProcessingState = "ready" | "processing" | "stuck" | "failed";
+
+export const STUCK_AFTER_MILLISECONDS = 600_000;
 
 export interface RecordProcessing {
 	recordId: number;
@@ -24,16 +27,27 @@ export interface RecordProcessing {
 	thumbnail?: string | undefined;
 }
 
-const stateOf = (status: string): ProcessingState => {
+const stateOf = (
+	status: string,
+	createdAt: string | null | undefined,
+	now: number,
+): ProcessingState => {
 	if (status === READY) {
 		return "ready";
 	}
-	return FAILED.has(status) ? "failed" : "processing";
+	if (FAILED.has(status)) {
+		return "failed";
+	}
+	const created = Date.parse(createdAt ?? "");
+	return Number.isFinite(created) && now - created > STUCK_AFTER_MILLISECONDS
+		? "stuck"
+		: "processing";
 };
 
 export const getRecordProcessing = async (
 	client: PermanentClient,
 	recordIds: number[],
+	now = Date.now(),
 ): Promise<RecordProcessing[]> => {
 	const response = await client.stela({
 		path: "/records",
@@ -47,7 +61,7 @@ export const getRecordProcessing = async (
 	return records.map((record) => ({
 		recordId: record.recordId,
 		name: record.displayName ?? undefined,
-		state: stateOf(record.status),
+		state: stateOf(record.status, record.createdAt, now),
 		status: record.status.replace(/^status\./v, ""),
 		thumbnail: record.thumbUrl200 ?? undefined,
 	}));

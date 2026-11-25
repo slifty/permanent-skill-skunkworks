@@ -59,6 +59,11 @@ first. Never upload photos the member hasn't approved.
 7. **Wait for processing.** Permanent makes thumbnails and previews after
    upload. Call `check_processing` with the story's `recordIds` and
    `waitSeconds: 60`, so you can tell the member when everything is ready.
+   If any come back `stuck`, stop waiting for them. Tell the member those
+   photos are safely saved with their titles and descriptions, but
+   Permanent didn't finish making their previews, so they may show as a
+   placeholder for now. Give them the file names, and suggest they contact
+   Permanent support with the list. Don't upload those files again.
 8. **Report back.** Summarize what is now on Permanent: the event folder,
    each story and how many photos it has. If the member later edits the
    manifest, or asks you to change a title or description, update the
