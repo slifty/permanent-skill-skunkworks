@@ -48,8 +48,23 @@ text fits.
    look for ID or account numbers, addresses of living people, medical,
    legal or financial details, and anything said about living people that
    they might not want kept. List what you found and ask the member
-   whether to include it, leave it out (`[redacted]`), or skip that
-   document. Don't decide on their behalf.
+   what to do. Don't decide on their behalf.
+
+   Leaving a detail out of the transcription (`[redacted]`) doesn't hide
+   it: the scan itself, and its preview on Permanent, still show it. Say
+   so plainly, then offer these choices:
+   - **Upload the file anyway**, with the detail left out of the
+     transcription only.
+   - **Redact the file first.** The member covers the detail before
+     scanning, or blacks it out with a PDF or image editor, and gives you
+     the new file.
+   - **Keep only the transcription.** Write it to a text file next to the
+     original, with the same name and a `.txt` extension (`letter-03.jpg`
+     becomes `letter-03.txt`), and put that file in the manifest instead
+     of the scan, with the document's title as its `title`. The scan
+     stays on the member's computer.
+   - **Skip the document.**
+
 7. **Group them.** Suggest folders for related documents, such as one
    correspondence or one year of a diary. Show the member the list:
    titles, dates and how they're grouped. Wait for their yes.
@@ -68,3 +83,8 @@ text fits.
 If the documents are already in the member's archive, use the
 describe-existing-records skill to read and update them, and apply steps 4
 to 6 above to each one.
+
+The file is already on Permanent, so leaving a sensitive detail out of its
+description doesn't hide it. Tell the member, and let them choose between
+keeping the file as it is or replacing it with a redacted copy themselves
+in Permanent. Never delete or replace files on Permanent yourself.

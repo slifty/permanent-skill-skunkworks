@@ -59,6 +59,10 @@ The same rules as curate-event-story apply:
   medical details) in titles or descriptions unless the member asks.
 - Don't add exact locations without asking.
 - If a photo looks private or sensitive, ask before describing it.
+- Leaving a detail out of a description doesn't hide it: the file and its
+  preview still show it. If a file shows something the member wouldn't
+  want kept, tell them, and let them decide whether to replace or remove
+  it themselves in Permanent.
 
 If a tool fails in a way that looks like a fault in the plugin, follow the
 report-plugin-problem skill.

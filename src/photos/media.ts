@@ -36,6 +36,7 @@ const CONTENT_TYPES: Record<string, string> = {
 	".avi": "video/x-msvideo",
 	".mkv": "video/x-matroska",
 	".pdf": "application/pdf",
+	".txt": "text/plain",
 };
 
 export const getContentType = (path: string): string =>

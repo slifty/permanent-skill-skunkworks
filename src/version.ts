@@ -3,7 +3,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { z } from "zod";
 
-export const SERVER_VERSION = "0.1.16";
+export const SERVER_VERSION = "0.1.17";
 
 const PLUGIN_NAME = "permanent";
 const pluginManifest = z.looseObject({
