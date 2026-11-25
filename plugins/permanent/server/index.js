@@ -2241,10 +2241,10 @@ var require_resolve = __commonJS({
       }
       return count;
     }
-    function getFullPath(resolver, id7 = "", normalize) {
+    function getFullPath(resolver, id8 = "", normalize) {
       if (normalize !== false)
-        id7 = normalizeId(id7);
-      const p = resolver.parse(id7);
+        id8 = normalizeId(id8);
+      const p = resolver.parse(id8);
       return _getFullPath(resolver, p);
     }
     exports.getFullPath = getFullPath;
@@ -2254,13 +2254,13 @@ var require_resolve = __commonJS({
     }
     exports._getFullPath = _getFullPath;
     var TRAILING_SLASH_HASH = /#\/?$/;
-    function normalizeId(id7) {
-      return id7 ? id7.replace(TRAILING_SLASH_HASH, "") : "";
+    function normalizeId(id8) {
+      return id8 ? id8.replace(TRAILING_SLASH_HASH, "") : "";
     }
     exports.normalizeId = normalizeId;
-    function resolveUrl(resolver, baseId, id7) {
-      id7 = normalizeId(id7);
-      return resolver.resolve(baseId, id7);
+    function resolveUrl(resolver, baseId, id8) {
+      id8 = normalizeId(id8);
+      return resolver.resolve(baseId, id8);
     }
     exports.resolveUrl = resolveUrl;
     var ANCHOR = /^[a-z_][-a-z0-9._]*$/i;
@@ -3030,8 +3030,8 @@ var require_compile = __commonJS({
       if (Object.keys(root.schema).length > 0 && refPath === baseId) {
         return getJsonPointer.call(this, p, root);
       }
-      const id7 = (0, resolve_1.normalizeId)(refPath);
-      const schOrRef = this.refs[id7] || this.schemas[id7];
+      const id8 = (0, resolve_1.normalizeId)(refPath);
+      const schOrRef = this.refs[id8] || this.schemas[id8];
       if (typeof schOrRef == "string") {
         const sch = resolveSchema.call(this, root, schOrRef);
         if (typeof (sch === null || sch === void 0 ? void 0 : sch.schema) !== "object")
@@ -3042,7 +3042,7 @@ var require_compile = __commonJS({
         return;
       if (!schOrRef.validate)
         compileSchema.call(this, schOrRef);
-      if (id7 === (0, resolve_1.normalizeId)(ref)) {
+      if (id8 === (0, resolve_1.normalizeId)(ref)) {
         const { schema } = schOrRef;
         const { schemaId } = this.opts;
         const schId = schema[schemaId];
@@ -4525,15 +4525,15 @@ var require_core = __commonJS({
             this.addSchema(sch, void 0, _meta, _validateSchema);
           return this;
         }
-        let id7;
+        let id8;
         if (typeof schema === "object") {
           const { schemaId } = this.opts;
-          id7 = schema[schemaId];
-          if (id7 !== void 0 && typeof id7 != "string") {
+          id8 = schema[schemaId];
+          if (id8 !== void 0 && typeof id8 != "string") {
             throw new Error(`schema ${schemaId} must be string`);
           }
         }
-        key = (0, resolve_1.normalizeId)(key || id7);
+        key = (0, resolve_1.normalizeId)(key || id8);
         this._checkUnique(key);
         this.schemas[key] = this._addSchema(schema, _meta, key, _validateSchema, true);
         return this;
@@ -4612,11 +4612,11 @@ var require_core = __commonJS({
           case "object": {
             const cacheKey = schemaKeyRef;
             this._cache.delete(cacheKey);
-            let id7 = schemaKeyRef[this.opts.schemaId];
-            if (id7) {
-              id7 = (0, resolve_1.normalizeId)(id7);
-              delete this.schemas[id7];
-              delete this.refs[id7];
+            let id8 = schemaKeyRef[this.opts.schemaId];
+            if (id8) {
+              id8 = (0, resolve_1.normalizeId)(id8);
+              delete this.schemas[id8];
+              delete this.refs[id8];
             }
             return this;
           }
@@ -4723,10 +4723,10 @@ var require_core = __commonJS({
         }
       }
       _addSchema(schema, meta3, baseId, validateSchema = this.opts.validateSchema, addSchema = this.opts.addUsedSchema) {
-        let id7;
+        let id8;
         const { schemaId } = this.opts;
         if (typeof schema == "object") {
-          id7 = schema[schemaId];
+          id8 = schema[schemaId];
         } else {
           if (this.opts.jtd)
             throw new Error("schema must be object");
@@ -4736,7 +4736,7 @@ var require_core = __commonJS({
         let sch = this._cache.get(schema);
         if (sch !== void 0)
           return sch;
-        baseId = (0, resolve_1.normalizeId)(id7 || baseId);
+        baseId = (0, resolve_1.normalizeId)(id8 || baseId);
         const localRefs = resolve_1.getSchemaRefs.call(this, schema, baseId);
         sch = new compile_1.SchemaEnv({ schema, schemaId, meta: meta3, baseId, localRefs });
         this._cache.set(sch.schema, sch);
@@ -4749,9 +4749,9 @@ var require_core = __commonJS({
           this.validateSchema(schema, true);
         return sch;
       }
-      _checkUnique(id7) {
-        if (this.schemas[id7] || this.refs[id7]) {
-          throw new Error(`schema with key or id "${id7}" already exists`);
+      _checkUnique(id8) {
+        if (this.schemas[id8] || this.refs[id8]) {
+          throw new Error(`schema with key or id "${id8}" already exists`);
         }
       }
       _compileSchemaEnv(sch) {
@@ -12364,15 +12364,15 @@ var $ZodObjectJIT = /* @__PURE__ */ $constructor("$ZodObjectJIT", (inst, def) =>
     const syms = normalized.symbolKeys;
     const doc = new Doc(["payload", "ctx"], { shape, inst, memo: memo2, syms });
     const parseStr = (k) => `shape[${k}]._zod.run({ value: input[${k}], issues: [] }, ctx)`;
-    const prefixStr = (id7, k) => `
-          let ${id7}_ab = false;
-          for (let i = 0; i < ${id7}.issues.length; i++) {
-            const iss = ${id7}.issues[i];
+    const prefixStr = (id8, k) => `
+          let ${id8}_ab = false;
+          for (let i = 0; i < ${id8}.issues.length; i++) {
+            const iss = ${id8}.issues[i];
             iss.path = iss.path ? [${k}, ...iss.path] : [${k}];
             payload.issues.push(iss);
-            if (iss.continue !== true) ${id7}_ab = true;
+            if (iss.continue !== true) ${id8}_ab = true;
           }
-          if (${id7}_ab && ctx && ctx.abortEarly) {
+          if (${id8}_ab && ctx && ctx.abortEarly) {
             payload.value = newResult;
             return payload;
           }`;
@@ -12386,34 +12386,34 @@ var $ZodObjectJIT = /* @__PURE__ */ $constructor("$ZodObjectJIT", (inst, def) =>
     for (const key of normalized.allKeys) {
       if (key === "__proto__")
         continue;
-      const id7 = ids[key];
+      const id8 = ids[key];
       const k = typeof key === "symbol" ? `syms[${syms.indexOf(key)}]` : esc(key);
       const isPresent = `${k} in input`;
       const schema = shape[key];
       const optin = schema?._zod?.optin;
       const isOptionalIn = optin !== void 0;
       const isOptionalOut = schema?._zod?.optout === "optional";
-      doc.write(`const ${id7} = ${parseStr(k)};`);
+      doc.write(`const ${id8} = ${parseStr(k)};`);
       if (isOptionalIn && isOptionalOut) {
-        const assign = optin === "optional" ? `${id7}_present` : `${id7}.value !== undefined || ${id7}_present`;
+        const assign = optin === "optional" ? `${id8}_present` : `${id8}.value !== undefined || ${id8}_present`;
         doc.write(`
-        const ${id7}_present = ${isPresent};
-        if (!${id7}.issues.length || ${id7}_present) {
-          if (${id7}.issues.length) {${prefixStr(id7, k)}
+        const ${id8}_present = ${isPresent};
+        if (!${id8}.issues.length || ${id8}_present) {
+          if (${id8}.issues.length) {${prefixStr(id8, k)}
           }
 
           if (${assign}) {
-            newResult[${k}] = ${id7}.value;
+            newResult[${k}] = ${id8}.value;
           }
         }
 
       `);
       } else if (!isOptionalIn) {
         doc.write(`
-        const ${id7}_present = ${isPresent};
-        if (${id7}.issues.length) {${prefixStr(id7, k)}
+        const ${id8}_present = ${isPresent};
+        if (${id8}.issues.length) {${prefixStr(id8, k)}
         }
-        if (!${id7}_present && !${id7}.issues.length) {
+        if (!${id8}_present && !${id8}.issues.length) {
           payload.issues.push({
             code: "invalid_type",
             expected: "nonoptional",
@@ -12426,22 +12426,22 @@ var $ZodObjectJIT = /* @__PURE__ */ $constructor("$ZodObjectJIT", (inst, def) =>
           }
         }
 
-        if (${id7}_present) {
-          newResult[${k}] = ${id7}.value;
+        if (${id8}_present) {
+          newResult[${k}] = ${id8}.value;
         }
 
       `);
       } else {
         doc.write(`
-        if (${id7}.issues.length) {${prefixStr(id7, k)}
+        if (${id8}.issues.length) {${prefixStr(id8, k)}
         }
       `);
         if (optin === "defaulted") {
-          doc.write(`newResult[${k}] = ${id7}.value;`);
+          doc.write(`newResult[${k}] = ${id8}.value;`);
         } else {
           doc.write(`
-        if (${id7}.value !== undefined || ${isPresent}) {
-          newResult[${k}] = ${id7}.value;
+        if (${id8}.value !== undefined || ${isPresent}) {
+          newResult[${k}] = ${id8}.value;
         }
       `);
         }
@@ -24469,26 +24469,26 @@ function extractDefs(ctx, schema) {
     return;
   const idToSchema = /* @__PURE__ */ new Map();
   for (const entry of ctx.seen.entries()) {
-    const id7 = ctx.metadataRegistry.get(entry[0])?.id;
-    if (id7) {
-      const existing = idToSchema.get(id7);
+    const id8 = ctx.metadataRegistry.get(entry[0])?.id;
+    if (id8) {
+      const existing = idToSchema.get(id8);
       if (existing && existing !== entry[0]) {
-        throw new Error(`Duplicate schema id "${id7}" detected during JSON Schema conversion. Two different schemas cannot share the same id when converted together.`);
+        throw new Error(`Duplicate schema id "${id8}" detected during JSON Schema conversion. Two different schemas cannot share the same id when converted together.`);
       }
-      idToSchema.set(id7, entry[0]);
+      idToSchema.set(id8, entry[0]);
     }
   }
   const makeURI = (entry) => {
     const defsSegment = ctx.target === "draft-2020-12" ? "$defs" : "definitions";
     if (ctx.external) {
       const externalId = ctx.external.registry.get(entry[0])?.id;
-      const uriGenerator = ctx.external.uri ?? ((id8) => id8);
+      const uriGenerator = ctx.external.uri ?? ((id9) => id9);
       if (externalId) {
         return { ref: uriGenerator(externalId) };
       }
-      const id7 = entry[1].defId ?? entry[1].schema.id ?? `schema${ctx.counter++}`;
-      entry[1].defId = id7;
-      return { defId: id7, ref: `${uriGenerator("__shared")}#/${defsSegment}/${encodeJSONPointerSegment(id7)}` };
+      const id8 = entry[1].defId ?? entry[1].schema.id ?? `schema${ctx.counter++}`;
+      entry[1].defId = id8;
+      return { defId: id8, ref: `${uriGenerator("__shared")}#/${defsSegment}/${encodeJSONPointerSegment(id8)}` };
     }
     const uriPrefix = `#`;
     const defUriPrefix = `${uriPrefix}/${defsSegment}/`;
@@ -24536,8 +24536,8 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
         continue;
       }
     }
-    const id7 = ctx.metadataRegistry.get(entry[0])?.id;
-    if (id7) {
+    const id8 = ctx.metadataRegistry.get(entry[0])?.id;
+    if (id8) {
       extractToDef(entry);
       continue;
     }
@@ -24770,10 +24770,10 @@ function finalize(ctx, schema) {
   } else {
   }
   if (ctx.external?.uri) {
-    const id7 = ctx.external.registry.get(schema)?.id;
-    if (!id7)
+    const id8 = ctx.external.registry.get(schema)?.id;
+    if (!id8)
       throw new Error("Schema is missing an `id` property");
-    result.$id = ctx.external.uri(id7);
+    result.$id = ctx.external.uri(id8);
   }
   assignProps(result, root.defId ? root.schema : root.def ?? root.schema);
   const rootMetaId = ctx.metadataRegistry.get(schema)?.id;
@@ -25379,7 +25379,7 @@ function stringifyKeyNames(bySchema, json2, visited) {
   const values = json2.enum ?? (json2.const !== void 0 ? [json2.const] : void 0);
   if (!numericType && !values?.some((v) => typeof v === "number"))
     return json2;
-  const { minimum, maximum, exclusiveMinimum, exclusiveMaximum, multipleOf, format, id: id7, ...rest } = json2;
+  const { minimum, maximum, exclusiveMinimum, exclusiveMaximum, multipleOf, format, id: id8, ...rest } = json2;
   if (rest.enum)
     rest.enum = rest.enum.map((v) => typeof v === "number" ? String(v) : v);
   else if (typeof rest.const === "number")
@@ -30097,6 +30097,9 @@ var StdioServerTransport = class {
     });
   }
 };
+
+// src/server.ts
+import { join as join9 } from "node:path";
 
 // node_modules/zod/v3/helpers/util.js
 var util;
@@ -36683,7 +36686,7 @@ var ExperimentalServerTasks = class {
       if (hasPreviousToolUse) {
         const toolUseIds = new Set(previousContent.filter((c) => c.type === "tool_use").map((c) => c.id));
         const toolResultIds = new Set(lastContent.filter((c) => c.type === "tool_result").map((c) => c.toolUseId));
-        if (toolUseIds.size !== toolResultIds.size || ![...toolUseIds].every((id7) => toolResultIds.has(id7))) {
+        if (toolUseIds.size !== toolResultIds.size || ![...toolUseIds].every((id8) => toolResultIds.has(id8))) {
           throw new Error("ids of tool_result blocks and tool_use blocks from previous message do not match");
         }
       }
@@ -37108,7 +37111,7 @@ var Server = class extends Protocol {
       if (hasPreviousToolUse) {
         const toolUseIds = new Set(previousContent.filter((c) => c.type === "tool_use").map((c) => c.id));
         const toolResultIds = new Set(lastContent.filter((c) => c.type === "tool_result").map((c) => c.toolUseId));
-        if (toolUseIds.size !== toolResultIds.size || ![...toolUseIds].every((id7) => toolResultIds.has(id7))) {
+        if (toolUseIds.size !== toolResultIds.size || ![...toolUseIds].every((id8) => toolResultIds.has(id8))) {
           throw new Error("ids of tool_result blocks and tool_use blocks from previous message do not match");
         }
       }
@@ -38886,9 +38889,9 @@ var environmentFromSettings = (settings) => {
     return resolveEnvironment(settings.PERMANENT_ENVIRONMENT);
   }
   const apiUrl = withoutTrailingSlash(rawApiUrl);
-  const id7 = createHash("sha256").update(apiUrl).digest("hex").slice(0, CUSTOM_ID_LENGTH);
+  const id8 = createHash("sha256").update(apiUrl).digest("hex").slice(0, CUSTOM_ID_LENGTH);
   return {
-    name: `custom-${id7}`,
+    name: `custom-${id8}`,
     apiUrl,
     stelaUrl: isSet(rawStelaUrl) ? withoutTrailingSlash(rawStelaUrl) : `${apiUrl}/v2`,
     webUrl: isSet(rawWebUrl) ? withoutTrailingSlash(rawWebUrl) : webUrlFor(apiUrl)
@@ -39035,7 +39038,7 @@ var StoryProgress = class {
 import { readFile as readFile4, readdir } from "node:fs/promises";
 import { dirname as dirname3, join as join5, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-var SERVER_VERSION = "0.1.20";
+var SERVER_VERSION = "0.1.21";
 var PLUGIN_NAME = "permanent";
 var pluginManifest = external_exports.looseObject({
   name: external_exports.string(),
@@ -39231,11 +39234,11 @@ var summarizeRecord = (vo) => ({
 var uniqueBy = (items, key) => {
   const seen = /* @__PURE__ */ new Set();
   return items.filter((item) => {
-    const id7 = key(item);
-    if (seen.has(id7)) {
+    const id8 = key(item);
+    if (seen.has(id8)) {
       return false;
     }
-    seen.add(id7);
+    seen.add(id8);
     return true;
   });
 };
@@ -40416,6 +40419,121 @@ var registerDescribeTools = (server, { client, progress, applyBudgetMilliseconds
   );
 };
 
+// src/permanent/download.ts
+import { randomBytes as randomBytes3 } from "node:crypto";
+import { mkdir as mkdir4, rename as rename2, rm as rm3, writeFile as writeFile4 } from "node:fs/promises";
+import { basename, join as join7 } from "node:path";
+var BYTES_PER_MEGABYTE = 1e6;
+var MAX_DOWNLOAD_MEGABYTES = 100;
+var MAX_DOWNLOAD_BYTES = MAX_DOWNLOAD_MEGABYTES * BYTES_PER_MEGABYTE;
+var DOWNLOAD_TIMEOUT_MILLISECONDS = 12e4;
+var OWNER_ONLY4 = 384;
+var SUFFIX_BYTES2 = 6;
+var ORIGINAL = "file.format.original";
+var stelaFile = external_exports.looseObject({
+  format: external_exports.string(),
+  size: external_exports.coerce.number().nullish(),
+  fileUrl: external_exports.string()
+});
+var stelaRecord = external_exports.looseObject({
+  recordId: external_exports.coerce.number(),
+  uploadFileName: external_exports.string().nullish(),
+  displayName: external_exports.string().nullish(),
+  files: external_exports.array(stelaFile).default([])
+});
+var tooLarge2 = () => new Error(
+  `The original is larger than ${MAX_DOWNLOAD_MEGABYTES} MB, too large to download here`
+);
+var findOriginal = async (client, recordId) => {
+  const response = await client.stela({
+    path: "/records",
+    query: { recordIds: [recordId], pageSize: 1 },
+    schema: external_exports.union([
+      external_exports.array(stelaRecord),
+      external_exports.object({ items: external_exports.array(stelaRecord) })
+    ])
+  });
+  const [record2] = Array.isArray(response) ? response : response.items;
+  const file2 = record2?.files.find((candidate) => candidate.format === ORIGINAL);
+  if (record2 === void 0 || file2 === void 0) {
+    throw new Error(`Permanent has no original file for record ${recordId}`);
+  }
+  if ((file2.size ?? 0) > MAX_DOWNLOAD_BYTES) {
+    throw tooLarge2();
+  }
+  return { record: record2, file: file2 };
+};
+var readCapped2 = async (response) => {
+  if (Number(response.headers.get("content-length") ?? 0) > MAX_DOWNLOAD_BYTES) {
+    throw tooLarge2();
+  }
+  let received = 0;
+  const cap = new TransformStream({
+    transform: (chunk, controller) => {
+      received += chunk.byteLength;
+      if (received > MAX_DOWNLOAD_BYTES) {
+        controller.error(tooLarge2());
+        return;
+      }
+      controller.enqueue(chunk);
+    }
+  });
+  return Buffer.from(
+    await new Response(response.body?.pipeThrough(cap)).arrayBuffer()
+  );
+};
+var safeFileName = (recordId, name) => `${recordId}-${basename(name).replace(new RegExp("[^\\p{L}\\p{N}._ \\-]", "gv"), "_")}`;
+var saveOwnerOnly = async (path, bytes) => {
+  const temporary = `${path}.${randomBytes3(SUFFIX_BYTES2).toString("hex")}.tmp`;
+  try {
+    await writeFile4(temporary, bytes, { mode: OWNER_ONLY4 });
+    await rename2(temporary, path);
+  } catch (error62) {
+    await rm3(temporary, { force: true });
+    throw error62;
+  }
+};
+var downloadOriginal = async (client, recordId, directory) => {
+  const { record: record2, file: file2 } = await findOriginal(client, recordId);
+  const response = await fetch(file2.fileUrl, {
+    signal: AbortSignal.timeout(DOWNLOAD_TIMEOUT_MILLISECONDS)
+  });
+  if (!response.ok) {
+    throw new Error(`Permanent's file store returned ${response.status}`);
+  }
+  const bytes = await readCapped2(response);
+  const fileName = record2.uploadFileName ?? record2.displayName ?? `record-${recordId}`;
+  await mkdir4(directory, { recursive: true, mode: 448 });
+  const path = join7(directory, safeFileName(recordId, fileName));
+  await saveOwnerOnly(path, bytes);
+  return {
+    path,
+    fileName,
+    size: bytes.length,
+    contentType: (response.headers.get("content-type") ?? "").split(";")[0] ?? "application/octet-stream"
+  };
+};
+
+// src/tools/download.ts
+var id3 = external_exports.number().int().positive();
+var registerDownloadTools = (server, client, downloadDirectory) => {
+  server.registerTool(
+    "download_record_file",
+    {
+      title: "Download a Permanent file",
+      description: "Download the original of a file that's already on Permanent to the member's computer, and return where it was saved. Use it when the preview isn't enough, such as reading every page of a PDF. Files over 100 MB are refused. The copy stays private to this computer.",
+      inputSchema: { recordId: id3 },
+      annotations: {
+        readOnlyHint: false,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: true
+      }
+    },
+    async ({ recordId }) => jsonResult(await downloadOriginal(client, recordId, downloadDirectory))
+  );
+};
+
 // src/permanent/profile.ts
 var BLURB_MAX_LENGTH = 200;
 var MILESTONE_TITLE_MAX_LENGTH = 140;
@@ -40566,7 +40684,7 @@ var updateArchiveProfile = async (client, archive, changes) => {
 };
 
 // src/tools/profile.ts
-var id3 = external_exports.number().int().positive();
+var id4 = external_exports.number().int().positive();
 var day = external_exports.iso.date().describe("A full date, YYYY-MM-DD. Leave it out if the day isn't known.");
 var milestone = external_exports.object({
   title: external_exports.string().trim().min(1).max(MILESTONE_TITLE_MAX_LENGTH),
@@ -40580,7 +40698,7 @@ var registerProfileTools = (server, client) => {
     {
       title: "Read an archive's profile",
       description: "Read an archive's profile: the short blurb, the longer 'about' text and its milestones. isPublic says whether any of it is shown on the archive's public profile page, and publicFields lists which parts are. Changing a public field changes what everyone sees.",
-      inputSchema: { archiveId: id3 },
+      inputSchema: { archiveId: id4 },
       annotations: { readOnlyHint: true, openWorldHint: true }
     },
     async ({ archiveId }) => jsonResult(
@@ -40593,7 +40711,7 @@ var registerProfileTools = (server, client) => {
       title: "Set an archive's profile",
       description: "Set an archive's blurb, 'about' text and milestones. Only the fields passed are changed. A milestone with the same title as an existing one updates it; others are added. Nothing is removed. New items are private until the member makes the profile public in Permanent. Needs the owner or manager role. Only call after the member has approved the exact text.",
       inputSchema: {
-        archiveId: id3,
+        archiveId: id4,
         blurb: external_exports.string().trim().min(1).max(BLURB_MAX_LENGTH).optional(),
         about: external_exports.string().trim().min(1).optional(),
         milestones: external_exports.array(milestone).optional()
@@ -40706,7 +40824,7 @@ var KeyedLock = class {
 };
 
 // src/tools/share.ts
-var id4 = external_exports.number().int().positive();
+var id5 = external_exports.number().int().positive();
 var PUBLISH_WAIT_MILLISECONDS = 2e4;
 var PUBLISH_POLL_MILLISECONDS = 2e3;
 var COPY_GIVE_UP_MILLISECONDS = 18e5;
@@ -40830,8 +40948,8 @@ var registerShareTools = (server, {
       title: "Share a Permanent folder",
       description: "Get a link to a folder that the member can send to people. The folder stays private; only people with the link can see it. Reuses an existing link with the same access if there is one. Ask the member who should be able to open it before choosing `access`.",
       inputSchema: {
-        archiveId: id4,
-        folderId: id4,
+        archiveId: id5,
+        folderId: id5,
         access: external_exports.enum(["anyone_with_link", "permanent_account"]).describe(
           "anyone_with_link: anyone who has the link can view. permanent_account: they must sign in to Permanent first."
         )
@@ -40864,8 +40982,8 @@ var registerShareTools = (server, {
       title: "Publish a folder to Permanent's Public space",
       description: "Make a public copy of a folder in the archive's Public space, where anyone on the internet can see it and it appears on the archive's public page. Only call this after the member has explicitly agreed to make it public. The public copy does not follow later edits to the original. Needs the owner or manager role.",
       inputSchema: {
-        archiveId: id4,
-        folderId: id4,
+        archiveId: id5,
+        folderId: id5,
         memberAgreedToPublish: external_exports.literal(true).describe(
           "Set only after the member has explicitly said yes to making this folder public"
         )
@@ -40897,7 +41015,7 @@ var FAILED = /* @__PURE__ */ new Set([
   "status.generic.error",
   "status.generic.manual_review"
 ]);
-var stelaRecord = external_exports.looseObject({
+var stelaRecord2 = external_exports.looseObject({
   recordId: external_exports.coerce.number(),
   displayName: external_exports.string().nullish(),
   status: external_exports.string(),
@@ -40925,8 +41043,8 @@ var fetchRecords = async (client, recordIds) => {
     path: "/records",
     query: { recordIds, pageSize: recordIds.length },
     schema: external_exports.union([
-      external_exports.array(stelaRecord),
-      external_exports.object({ items: external_exports.array(stelaRecord) })
+      external_exports.array(stelaRecord2),
+      external_exports.object({ items: external_exports.array(stelaRecord2) })
     ])
   });
   return Array.isArray(response) ? response : response.items;
@@ -40961,7 +41079,7 @@ var waitForProcessing = async (client, recordIds, deadline, pollMilliseconds) =>
 import { createHash as createHash4 } from "node:crypto";
 import { createReadStream as createReadStream2 } from "node:fs";
 import { stat as stat2 } from "node:fs/promises";
-import { basename, extname as extname2 } from "node:path";
+import { basename as basename2, extname as extname2 } from "node:path";
 import { pipeline as pipeline2 } from "node:stream/promises";
 
 // src/permanent/upload.ts
@@ -41153,7 +41271,7 @@ var prepare = async (request, report, names) => {
       });
       continue;
     }
-    const original = basename(item.path);
+    const original = basename2(item.path);
     if (names.takenOnPermanent(original)) {
       report.conflicts.push({ path: item.path, fileName: original });
       continue;
@@ -41692,7 +41810,7 @@ var applyStoryManifest = async (request) => {
 var APPLY_BUDGET_MILLISECONDS2 = 1e5;
 var MAX_LATITUDE2 = 90;
 var MAX_LONGITUDE2 = 180;
-var id5 = external_exports.number().int().positive();
+var id6 = external_exports.number().int().positive();
 var place = external_exports.object({
   name: external_exports.string().optional(),
   latitude: external_exports.number().min(-MAX_LATITUDE2).max(MAX_LATITUDE2).optional(),
@@ -41711,8 +41829,8 @@ var registerStoryTools = (server, {
       title: "Put a story manifest on Permanent",
       description: "Put an approved story manifest on Permanent: creates a folder for the event inside parentFolderId and a folder per story inside it, uploads each story's files, sets titles, descriptions, dates, locations, alt text and keywords, then sets each story's narrative, cover and date order. Safe to call again: finished work is skipped, and edits made to the manifest since the last call are applied. Works for a limited time per call; if `done` is false, call again.",
       inputSchema: {
-        archiveId: id5,
-        parentFolderId: id5.describe(
+        archiveId: id6,
+        parentFolderId: id6.describe(
           "Where the event folder goes, normally the archive's My Files folder"
         ),
         manifestPath: external_exports.string().refine(isAbsolute6, {
@@ -41747,8 +41865,8 @@ var registerStoryTools = (server, {
       title: "Describe a Permanent file",
       description: "Set a file's title, description, date (EDTF), location, alt text and keywords on Permanent. Only the fields you pass change. Keywords are added, not replaced.",
       inputSchema: {
-        archiveId: id5,
-        recordId: id5,
+        archiveId: id6,
+        recordId: id6,
         title: external_exports.string().min(1).optional(),
         description: external_exports.string().optional(),
         date: external_exports.string().refine(isSupportedEdtf, { error: "Not a supported EDTF date" }).optional(),
@@ -41786,10 +41904,10 @@ var registerStoryTools = (server, {
       title: "Present a Permanent folder",
       description: "Set a folder's description (the story's narrative) and cover image, and sort it by date so items appear in the order of their dates.",
       inputSchema: {
-        archiveId: id5,
-        folderId: id5,
+        archiveId: id6,
+        folderId: id6,
         description: external_exports.string().optional(),
-        coverRecordId: id5.optional().describe("A file in this folder to use as its cover"),
+        coverRecordId: id6.optional().describe("A file in this folder to use as its cover"),
         sortByDate: external_exports.boolean().default(true)
       },
       annotations: {
@@ -41827,7 +41945,7 @@ var MAX_FILES_PER_CALL = 200;
 var MAX_WAIT_SECONDS2 = 120;
 var POLL_INTERVAL_MILLISECONDS = 3e3;
 var MILLISECONDS_PER_SECOND2 = 1e3;
-var id6 = external_exports.number().int().positive();
+var id7 = external_exports.number().int().positive();
 var registerUploadTools = (server, client, ledger, options = {}) => {
   server.registerTool(
     "upload_files",
@@ -41835,8 +41953,8 @@ var registerUploadTools = (server, client, ledger, options = {}) => {
       title: "Upload files to Permanent",
       description: "Upload local files into a Permanent folder. Safe to call again with the same files: anything already uploaded to that folder is skipped. Works for a limited time per call, so if `remaining` is not empty, call again with those paths. A file whose name is already used by a different file in the folder is reported under `conflicts` and not uploaded. Refuses public folders unless allowPublic is set after the member agreed.",
       inputSchema: {
-        archiveId: id6,
-        folderId: id6,
+        archiveId: id7,
+        folderId: id7,
         paths: external_exports.array(
           external_exports.string().refine(isAbsolute7, {
             error: "Use an absolute path on this computer"
@@ -41869,7 +41987,7 @@ var registerUploadTools = (server, client, ledger, options = {}) => {
       title: "Check Permanent processing",
       description: "Check whether Permanent has finished processing uploaded files (thumbnails and previews). Optionally waits until none are still processing. A file still unprocessed 10 minutes after upload is reported as `stuck`: it is saved with its details, but Permanent will not finish it on its own, so don't keep waiting for it.",
       inputSchema: {
-        recordIds: external_exports.array(id6).min(1).max(MAX_FILES_PER_CALL),
+        recordIds: external_exports.array(id7).min(1).max(MAX_FILES_PER_CALL),
         waitSeconds: external_exports.number().min(0).max(MAX_WAIT_SECONDS2).default(0)
       },
       annotations: { readOnlyHint: true, openWorldHint: true }
@@ -41894,7 +42012,7 @@ var registerUploadTools = (server, client, ledger, options = {}) => {
 
 // src/uploads/ledger.ts
 import { readFile as readFile8 } from "node:fs/promises";
-import { join as join7 } from "node:path";
+import { join as join8 } from "node:path";
 var ledgerEntry = external_exports.object({
   folderId: external_exports.number(),
   sha256: external_exports.string(),
@@ -41923,7 +42041,7 @@ var UploadLedger = class {
   pending = Promise.resolve();
   folderLocks = /* @__PURE__ */ new Map();
   constructor(dataDirectory, environment) {
-    this.path = join7(dataDirectory, `uploads.${environment}.json`);
+    this.path = join8(dataDirectory, `uploads.${environment}.json`);
   }
   async forFolder(folderId) {
     const entries = await this.read();
@@ -42019,6 +42137,11 @@ var createServer2 = (dependencies = defaultDependencies()) => {
   registerShareTools(server, dependencies);
   registerDescribeTools(server, dependencies);
   registerProfileTools(server, dependencies.client);
+  registerDownloadTools(
+    server,
+    dependencies.client,
+    dependencies.downloadDirectory ?? join9(defaultDataDirectory(), "downloads", dependencies.environment.name)
+  );
   return server;
 };
 

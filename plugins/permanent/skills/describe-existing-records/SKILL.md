@@ -23,6 +23,11 @@ has reviewed your drafts.
    preview image and the file's current details; fields that are empty,
    or a title that's just the file name, are left out. For large folders,
    work in batches of about 20, and tell the member how far along you are.
+   The preview of a PDF or other document shows only its first page. To
+   read the rest, call `download_record_file`, which saves the original
+   on this computer and returns its path, then read that file. If it
+   can't be downloaded, tell the member that only the first page could be
+   read, and ask them for the original file instead.
 4. **Draft.** For each file, write only what's missing or what the member
    asked for:
    - **title**: short and specific, not a file name.

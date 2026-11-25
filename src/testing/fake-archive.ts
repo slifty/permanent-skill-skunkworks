@@ -95,6 +95,8 @@ export class FakeArchive {
 	>();
 
 	public previewBytes: Buffer = FAKE_PREVIEW;
+
+	public originalBytes: Buffer = Buffer.from("%PDF-1.4 fake original");
 	private pendingCopies: Array<{ polls: number; finish: () => void }> = [];
 
 	public get queuedCopies(): number {
@@ -149,13 +151,19 @@ export class FakeArchive {
 		const { routes } = fake;
 		this.cdnUrl = fake.apiUrl.replace(/\/api$/v, "");
 		routes.set("GET /cdn/*", ({ path }) =>
-			[...this.brokenPreviews].some((size) => path.endsWith(size))
-				? { status: 403, body: {} }
-				: {
+			path.includes("/original/")
+				? {
 						body: undefined,
-						raw: this.previewBytes,
-						headers: { "Content-Type": "image/jpeg" },
-					},
+						raw: this.originalBytes,
+						headers: { "Content-Type": "application/pdf" },
+					}
+				: [...this.brokenPreviews].some((size) => path.endsWith(size))
+					? { status: 403, body: {} }
+					: {
+							body: undefined,
+							raw: this.previewBytes,
+							headers: { "Content-Type": "image/jpeg" },
+						},
 		);
 		routes.set("GET /api/archive/getAllArchives", () => ok([ARCHIVE]));
 		routes.set("GET /api/folder/getRoot", () => ok(this.folderVo(1)));
@@ -204,6 +212,14 @@ export class FakeArchive {
 					return {
 						recordId,
 						displayName: record?.displayName,
+						uploadFileName: record?.uploadFileName,
+						files: [
+							{
+								format: "file.format.original",
+								size: this.originalBytes.length,
+								fileUrl: `${this.cdnUrl}/cdn/original/${recordId}`,
+							},
+						],
 						status: record?.status ?? "status.generic.error",
 					};
 				}),

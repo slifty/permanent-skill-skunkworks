@@ -1,8 +1,10 @@
-import { mkdtemp, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { CallToolResultSchema } from "@modelcontextprotocol/sdk/types.js";
 import { afterEach, describe, expect, it } from "vitest";
+import { z } from "zod";
+import { MAX_DOWNLOAD_BYTES } from "../permanent/download.ts";
 import { callTool, connectClient } from "../testing/client.ts";
 import {
 	FAKE_PREVIEW,
@@ -76,6 +78,35 @@ const setUp = async (): Promise<Fixture> => {
 	});
 	return { test, archive, client, root, bare, described };
 };
+
+describe("download_record_file", () => {
+	it("saves the original privately and says where", async () => {
+		const { client, archive, bare } = await setUp();
+
+		const outcome = await callTool(client, "download_record_file", {
+			recordId: bare.recordId,
+		});
+
+		const saved = z
+			.object({ path: z.string(), fileName: z.string(), size: z.number() })
+			.parse(outcome.json());
+		expect(saved.fileName).toBe("IMG_0001.jpg");
+		expect(await readFile(saved.path)).toEqual(archive.originalBytes);
+		expect((await stat(saved.path)).mode & 0o777).toBe(0o600);
+	});
+
+	it("refuses an original that is too large", async () => {
+		const { client, archive, bare } = await setUp();
+		archive.originalBytes = Buffer.alloc(MAX_DOWNLOAD_BYTES + 1);
+
+		const outcome = await callTool(client, "download_record_file", {
+			recordId: bare.recordId,
+		});
+
+		expect(outcome.isError).toBe(true);
+		expect(outcome.text).toContain("too large");
+	});
+});
 
 describe("view_record", () => {
 	it("shows the preview and leaves out empty fields and file-name titles", async () => {

@@ -88,7 +88,10 @@ text fits.
 
 If the documents are already in the member's archive, use the
 describe-existing-records skill to read and update them, and apply steps 4
-to 6 above to each one.
+to 6 above to each one. A document's preview shows only its first page, so
+download the original with `download_record_file` and transcribe every
+page from it. Never present a transcription of the first page as the
+whole document.
 
 The file is already on Permanent, so leaving a sensitive detail out of its
 description doesn't hide it. Tell the member, and let them choose between

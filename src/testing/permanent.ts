@@ -63,6 +63,7 @@ export const startTestPermanent = async (
 		progress: new StoryProgress(dataDirectory, "test"),
 		publications: new PublicationStore(dataDirectory, "test"),
 		pluginRoot: join(dataDirectory, "plugin"),
+		downloadDirectory: join(dataDirectory, "downloads"),
 		uploadOptions: { pollIntervalMilliseconds: 10 },
 		publishPollMilliseconds: 10,
 		signIn: async () => {
