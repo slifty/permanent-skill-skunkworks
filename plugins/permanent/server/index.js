@@ -39371,6 +39371,29 @@ var isInterval = (value) => {
   return !(startOpen && endOpen) && (startOpen || isDate(start)) && (endOpen || isDate(end));
 };
 var isSupportedEdtf = (value) => value.includes("/") ? isInterval(value) : isInstant(value);
+var QUALIFIERS = new RegExp("[?~%]", "gv");
+var MONTH_LENGTH = 7;
+var YEAR_LENGTH = 4;
+var edtfToDisplayDate = (value) => {
+  if (!isSupportedEdtf(value)) {
+    return void 0;
+  }
+  const [start = "", end = ""] = value.split("/");
+  const instant = (OPEN_INTERVAL_ENDS.has(start) ? end : start).replace(
+    QUALIFIERS,
+    ""
+  );
+  if (instant.includes("T")) {
+    return instant;
+  }
+  if (instant.length === YEAR_LENGTH) {
+    return `${instant}-01-01T00:00:00`;
+  }
+  if (instant.length === MONTH_LENGTH) {
+    return `${instant}-01T00:00:00`;
+  }
+  return `${instant}T00:00:00`;
+};
 
 // src/manifest/schema.ts
 var MANIFEST_VERSION = 1;
@@ -39863,6 +39886,7 @@ var editableRecord = external_exports.looseObject({
   displayEndDT: external_exports.string().nullish(),
   publicDT: external_exports.string().nullish(),
   note: external_exports.string().nullish(),
+  altText: external_exports.string().nullish(),
   locnId: external_exports.number().nullish()
 });
 var withoutUndefined = (value) => Object.fromEntries(
@@ -39885,7 +39909,10 @@ var updateRecordDetails = async (client, recordId, details) => {
     schema: external_exports.unknown()
   });
 };
-var setRecordAltText = async (client, archiveId, recordId, altText) => {
+var updateBackEndRecordFields = async (client, archiveId, recordId, fields) => {
+  if (fields.altText === void 0 && fields.displayDate === void 0) {
+    return;
+  }
   const current = await client.backEnd({
     path: "/record/get",
     query: { recordId, archiveId },
@@ -39899,12 +39926,12 @@ var setRecordAltText = async (client, archiveId, recordId, altText) => {
       archiveId,
       displayName: current.displayName,
       description: current.description,
-      displayDt: current.displayDT,
+      displayDt: fields.displayDate ?? current.displayDT,
       displayEndDt: current.displayEndDT,
       publicDt: current.publicDT,
       note: current.note,
       locnId: current.locnId,
-      altText
+      altText: fields.altText ?? current.altText
     },
     schema: external_exports.unknown()
   });
@@ -40560,10 +40587,11 @@ var applyKeywords = async (context, recordId, keywords) => {
     })
   );
 };
+var ITEM_METADATA_VERSION = 2;
 var applyItemMetadata = async (context, recordId, item) => {
   const { keywords = [], ...details } = item;
   const key = `record:${recordId}`;
-  const digest = digestOf(details);
+  const digest = digestOf({ version: ITEM_METADATA_VERSION, details });
   if (!await context.progress.isApplied(key, digest)) {
     await updateRecordDetails(context.client, recordId, {
       title: details.title,
@@ -40571,14 +40599,15 @@ var applyItemMetadata = async (context, recordId, item) => {
       date: details.date,
       location: details.location
     });
-    if (details.altText !== void 0) {
-      await setRecordAltText(
-        context.client,
-        context.archiveId,
-        recordId,
-        details.altText
-      );
-    }
+    await updateBackEndRecordFields(
+      context.client,
+      context.archiveId,
+      recordId,
+      {
+        altText: details.altText,
+        displayDate: details.date === void 0 ? void 0 : edtfToDisplayDate(details.date)
+      }
+    );
     await context.progress.markApplied(key, digest);
   }
   await applyKeywords(context, recordId, keywords);
@@ -40802,9 +40831,10 @@ var registerStoryTools = (server, { client, ledger, progress, applyBudgetMillise
     },
     async ({ archiveId, recordId, altText, keywords, ...details }) => {
       await updateRecordDetails(client, recordId, details);
-      if (altText !== void 0) {
-        await setRecordAltText(client, archiveId, recordId, altText);
-      }
+      await updateBackEndRecordFields(client, archiveId, recordId, {
+        altText,
+        displayDate: details.date === void 0 ? void 0 : edtfToDisplayDate(details.date)
+      });
       if (keywords !== void 0 && keywords.length > 0) {
         await addRecordKeywords(
           client,
@@ -41074,7 +41104,7 @@ var UploadLedger = class {
 
 // src/server.ts
 var SERVER_NAME = "permanent";
-var SERVER_VERSION = "0.1.5";
+var SERVER_VERSION = "0.1.6";
 var defaultDependencies = () => {
   const environment = environmentFromSettings(process.env);
   const dataDirectory = defaultDataDirectory();

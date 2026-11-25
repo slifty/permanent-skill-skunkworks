@@ -86,3 +86,28 @@ const isInterval = (value: string): boolean => {
 
 export const isSupportedEdtf = (value: string): boolean =>
 	value.includes("/") ? isInterval(value) : isInstant(value);
+
+const QUALIFIERS = /[?~%]/gv;
+const MONTH_LENGTH = 7;
+const YEAR_LENGTH = 4;
+
+export const edtfToDisplayDate = (value: string): string | undefined => {
+	if (!isSupportedEdtf(value)) {
+		return undefined;
+	}
+	const [start = "", end = ""] = value.split("/");
+	const instant = (OPEN_INTERVAL_ENDS.has(start) ? end : start).replace(
+		QUALIFIERS,
+		"",
+	);
+	if (instant.includes("T")) {
+		return instant;
+	}
+	if (instant.length === YEAR_LENGTH) {
+		return `${instant}-01-01T00:00:00`;
+	}
+	if (instant.length === MONTH_LENGTH) {
+		return `${instant}-01T00:00:00`;
+	}
+	return `${instant}T00:00:00`;
+};

@@ -39,6 +39,7 @@ const editableRecord = z.looseObject({
 	displayEndDT: z.string().nullish(),
 	publicDT: z.string().nullish(),
 	note: z.string().nullish(),
+	altText: z.string().nullish(),
 	locnId: z.number().nullish(),
 });
 
@@ -74,12 +75,20 @@ export const updateRecordDetails = async (
 	});
 };
 
-export const setRecordAltText = async (
+export interface BackEndRecordFields {
+	altText?: string | undefined;
+	displayDate?: string | undefined;
+}
+
+export const updateBackEndRecordFields = async (
 	client: PermanentClient,
 	archiveId: number,
 	recordId: number,
-	altText: string,
+	fields: BackEndRecordFields,
 ): Promise<void> => {
+	if (fields.altText === undefined && fields.displayDate === undefined) {
+		return;
+	}
 	const current = await client.backEnd({
 		path: "/record/get",
 		query: { recordId, archiveId },
@@ -93,12 +102,12 @@ export const setRecordAltText = async (
 			archiveId,
 			displayName: current.displayName,
 			description: current.description,
-			displayDt: current.displayDT,
+			displayDt: fields.displayDate ?? current.displayDT,
 			displayEndDt: current.displayEndDT,
 			publicDt: current.publicDT,
 			note: current.note,
 			locnId: current.locnId,
-			altText,
+			altText: fields.altText ?? current.altText,
 		},
 		schema: z.unknown(),
 	});

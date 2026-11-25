@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { z } from "zod";
 import { readManifest, writeManifest } from "../manifest/file.ts";
+import { digestOf } from "../stories/progress.ts";
 import { callTool, connectClient } from "../testing/client.ts";
 import {
 	FakeArchive,
@@ -91,6 +92,23 @@ const setUp = async (): Promise<Fixture> => {
 	return { test, archive, root, photos, manifestPath, manifest };
 };
 
+const markDescribedByOldVersion = async (
+	test: TestPermanent,
+	archive: FakeArchive,
+	items: StoryManifest["stories"][number]["items"],
+	record: { recordId: number; uploadFileName: string },
+): Promise<void> => {
+	archive.resetDisplayDate(record.recordId, "2026-11-25T12:00:00");
+	const item = must(
+		items.find((candidate) => candidate.path.endsWith(record.uploadFileName)),
+	);
+	const { keywords: _keywords, ...details } = item;
+	await test.progress.markApplied(
+		`record:${record.recordId}`,
+		digestOf(details),
+	);
+};
+
 describe("apply_story_manifest", () => {
 	it("builds the event on Permanent from the manifest", async () => {
 		const { test, archive, manifestPath } = await setUp();
@@ -135,6 +153,8 @@ describe("apply_story_manifest", () => {
 			tags: ["arrivals", "cousins"],
 		});
 		expect(must(rosa).location).toEqual({ name: "Austin, Texas" });
+		expect(cousins?.displayDT).toBe("2024-06-01T10:00:00");
+		expect(must(rosa).displayDT).toBe("2024-06-01T11:00:00");
 		expect(arrivals.thumbArchiveNbr).toBe(must(rosa).archiveNbr);
 	});
 
@@ -242,6 +262,26 @@ describe("apply_story_manifest", () => {
 				{ title: "Ninety candles", described: 1, failed: [] },
 			],
 		});
+	});
+
+	it("sets dates on items an earlier version already described", async () => {
+		const { test, archive, manifestPath, manifest } = await setUp();
+		const client = await connectClient(test);
+		const request = { archiveId: 7, parentFolderId: MY_FILES_ID, manifestPath };
+		await callTool(client, "apply_story_manifest", request);
+		const items = manifest.stories.flatMap((story) => story.items);
+		await Promise.all(
+			[...archive.records.values()].map(async (record) => {
+				await markDescribedByOldVersion(test, archive, items, record);
+			}),
+		);
+
+		await callTool(client, "apply_story_manifest", request);
+
+		const dated = [...archive.records.values()].find(
+			(record) => record.uploadFileName === "IMG_0001.jpg",
+		);
+		expect(dated?.displayDT).toBe("2024-06-01T10:00:00");
 	});
 
 	it("reports progress and stops when its time runs out", async () => {

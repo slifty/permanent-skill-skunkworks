@@ -1,10 +1,10 @@
 import { isAbsolute } from "node:path";
 import { z } from "zod";
-import { isSupportedEdtf } from "../dates/edtf.ts";
+import { edtfToDisplayDate, isSupportedEdtf } from "../dates/edtf.ts";
 import { findArchive, getFolderContents } from "../permanent/folders.ts";
 import {
 	addRecordKeywords,
-	setRecordAltText,
+	updateBackEndRecordFields,
 	updateFolder,
 	updateRecordDetails,
 } from "../permanent/metadata.ts";
@@ -105,9 +105,13 @@ export const registerStoryTools = (
 		},
 		async ({ archiveId, recordId, altText, keywords, ...details }) => {
 			await updateRecordDetails(client, recordId, details);
-			if (altText !== undefined) {
-				await setRecordAltText(client, archiveId, recordId, altText);
-			}
+			await updateBackEndRecordFields(client, archiveId, recordId, {
+				altText,
+				displayDate:
+					details.date === undefined
+						? undefined
+						: edtfToDisplayDate(details.date),
+			});
 			if (keywords !== undefined && keywords.length > 0) {
 				await addRecordKeywords(
 					client,

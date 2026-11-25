@@ -25,6 +25,7 @@ export interface FakeRecord {
 	uploadFileName: string;
 	description: string | null;
 	displayTime: string | null;
+	displayDT: string;
 	altText: string | null;
 	note: string | null;
 	location: unknown;
@@ -110,6 +111,13 @@ export class FakeArchive {
 		return [...this.folders.values()].find(
 			(folder) => folder.displayName === name,
 		);
+	}
+
+	public resetDisplayDate(recordId: number, displayDT: string): void {
+		const record = this.records.get(recordId);
+		if (record !== undefined) {
+			record.displayDT = displayDT;
+		}
 	}
 
 	public recordsIn(folderId: number): FakeRecord[] {
@@ -262,6 +270,7 @@ export class FakeArchive {
 					displayName: record.displayName,
 					uploadFileName: record.uploadFileName,
 					description: record.description,
+					displayDT: record.displayDT,
 					type: "type.record.image",
 					status: record.status,
 				})),
@@ -321,6 +330,7 @@ export class FakeArchive {
 			uploadFileName: request.uploadFileName,
 			description: null,
 			displayTime: null,
+			displayDT: "2026-11-25T12:00:00",
 			altText: null,
 			note: "keep me",
 			location: null,
@@ -341,7 +351,7 @@ export class FakeArchive {
 			recordId,
 			displayName: record.displayName,
 			description: record.description,
-			displayDT: record.displayTime,
+			displayDT: record.displayDT,
 			displayEndDT: null,
 			publicDT: null,
 			note: record.note,
@@ -358,6 +368,7 @@ export class FakeArchive {
 				description: z.string().nullish(),
 				note: z.string().nullish(),
 				altText: z.string().nullish(),
+				displayDt: z.string().nullish(),
 			})
 			.parse(body);
 		const record = this.records.get(update.recordId);
@@ -368,6 +379,7 @@ export class FakeArchive {
 		record.description = update.description ?? null;
 		record.note = update.note ?? null;
 		record.altText = update.altText ?? null;
+		record.displayDT = update.displayDt ?? record.displayDT;
 		return ok({});
 	}
 

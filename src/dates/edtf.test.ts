@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isEdtfDateTime, isSupportedEdtf } from "./edtf.ts";
+import { edtfToDisplayDate, isEdtfDateTime, isSupportedEdtf } from "./edtf.ts";
 
 describe("isSupportedEdtf", () => {
 	it.each([
@@ -44,5 +44,24 @@ describe("isSupportedEdtf", () => {
 describe("isEdtfDateTime", () => {
 	it("rejects a time zone offset out of range", () => {
 		expect(isEdtfDateTime("2024-06-01T18:30:00+15:00")).toBe(false);
+	});
+});
+
+describe("edtfToDisplayDate", () => {
+	it.each([
+		["2024-06-01T18:30:00", "2024-06-01T18:30:00"],
+		["2024-06-01T18:30:00-05:00", "2024-06-01T18:30:00-05:00"],
+		["2024-06-01", "2024-06-01T00:00:00"],
+		["2024-06", "2024-06-01T00:00:00"],
+		["2024", "2024-01-01T00:00:00"],
+		["2024-06-01~", "2024-06-01T00:00:00"],
+		["2024-06-01/2024-06-03", "2024-06-01T00:00:00"],
+		["../2024-06-03", "2024-06-03T00:00:00"],
+	])("turns %s into %s", (value, expected) => {
+		expect(edtfToDisplayDate(value)).toBe(expected);
+	});
+
+	it("ignores values that are not supported EDTF", () => {
+		expect(edtfToDisplayDate("last Saturday")).toBeUndefined();
 	});
 });

@@ -1,4 +1,5 @@
 import { runInOrder } from "../concurrency.ts";
+import { edtfToDisplayDate } from "../dates/edtf.ts";
 import { readManifest, writeManifest } from "../manifest/file.ts";
 import {
 	findArchive,
@@ -8,7 +9,7 @@ import {
 } from "../permanent/folders.ts";
 import {
 	addRecordKeywords,
-	setRecordAltText,
+	updateBackEndRecordFields,
 	updateFolder,
 	updateRecordDetails,
 } from "../permanent/metadata.ts";
@@ -118,6 +119,8 @@ const applyKeywords = async (
 	);
 };
 
+const ITEM_METADATA_VERSION = 2;
+
 const applyItemMetadata = async (
 	context: ApplyContext,
 	recordId: number,
@@ -125,7 +128,7 @@ const applyItemMetadata = async (
 ): Promise<void> => {
 	const { keywords = [], ...details } = item;
 	const key = `record:${recordId}`;
-	const digest = digestOf(details);
+	const digest = digestOf({ version: ITEM_METADATA_VERSION, details });
 	if (!(await context.progress.isApplied(key, digest))) {
 		await updateRecordDetails(context.client, recordId, {
 			title: details.title,
@@ -133,14 +136,18 @@ const applyItemMetadata = async (
 			date: details.date,
 			location: details.location,
 		});
-		if (details.altText !== undefined) {
-			await setRecordAltText(
-				context.client,
-				context.archiveId,
-				recordId,
-				details.altText,
-			);
-		}
+		await updateBackEndRecordFields(
+			context.client,
+			context.archiveId,
+			recordId,
+			{
+				altText: details.altText,
+				displayDate:
+					details.date === undefined
+						? undefined
+						: edtfToDisplayDate(details.date),
+			},
+		);
 		await context.progress.markApplied(key, digest);
 	}
 	await applyKeywords(context, recordId, keywords);
