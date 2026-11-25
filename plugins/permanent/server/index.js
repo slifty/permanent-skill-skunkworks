@@ -2990,7 +2990,7 @@ var require_compile = __commonJS({
       const schOrFunc = root.refs[ref];
       if (schOrFunc)
         return schOrFunc;
-      let _sch = resolve2.call(this, root, ref);
+      let _sch = resolve3.call(this, root, ref);
       if (_sch === void 0) {
         const schema = (_a3 = root.localRefs) === null || _a3 === void 0 ? void 0 : _a3[ref];
         const { schemaId } = this.opts;
@@ -3017,7 +3017,7 @@ var require_compile = __commonJS({
     function sameSchemaEnv(s1, s2) {
       return s1.schema === s2.schema && s1.root === s2.root && s1.baseId === s2.baseId;
     }
-    function resolve2(root, ref) {
+    function resolve3(root, ref) {
       let sch;
       while (typeof (sch = this.refs[ref]) == "string")
         ref = sch;
@@ -3881,7 +3881,7 @@ var require_fast_uri = __commonJS({
       }
       return uri;
     }
-    function resolve2(baseURI, relativeURI, options) {
+    function resolve3(baseURI, relativeURI, options) {
       const schemelessOptions = options ? Object.assign({ scheme: "null" }, options) : { scheme: "null" };
       const {
         parsed: baseParsed,
@@ -4272,7 +4272,7 @@ var require_fast_uri = __commonJS({
     var fastUri = {
       SCHEMES,
       normalize,
-      resolve: resolve2,
+      resolve: resolve3,
       resolveComponent,
       equal,
       serialize,
@@ -13813,7 +13813,7 @@ var recursive = /* @__PURE__ */ new WeakMap();
 var NONE = 0;
 var ASSUMED = 1;
 var PROVEN = 2;
-function isRecursive(inst, stack, resolve2) {
+function isRecursive(inst, stack, resolve3) {
   const cached2 = recursive.get(inst);
   if (cached2 !== void 0)
     return cached2 ? PROVEN : NONE;
@@ -13823,7 +13823,7 @@ function isRecursive(inst, stack, resolve2) {
   let result = NONE;
   const check2 = (child) => {
     if (result !== PROVEN && child?._zod) {
-      const answer = isRecursive(child, stack, resolve2);
+      const answer = isRecursive(child, stack, resolve3);
       if (answer > result)
         result = answer;
     }
@@ -13834,7 +13834,7 @@ function isRecursive(inst, stack, resolve2) {
       const desc = Object.getOwnPropertyDescriptor(sh, key);
       if (spread && !desc.enumerable)
         continue;
-      const child = desc.get ? ASSUMED : desc.value?._zod ? isRecursive(desc.value, stack, resolve2) : NONE;
+      const child = desc.get ? ASSUMED : desc.value?._zod ? isRecursive(desc.value, stack, resolve3) : NONE;
       if (child > answer)
         answer = child;
     }
@@ -13898,7 +13898,7 @@ function isRecursive(inst, stack, resolve2) {
       break;
     // `$ZodLazy` caches its inner on the def, so a resolved edge is followed exactly
     case "lazy": {
-      const inner = def._cachedInner ?? (resolve2 ? inst._zod.innerType : void 0);
+      const inner = def._cachedInner ?? (resolve3 ? inst._zod.innerType : void 0);
       merge2(inner ? isRecursive(inner, stack, false) : ASSUMED);
       break;
     }
@@ -30087,12 +30087,12 @@ var StdioServerTransport = class {
     this.onclose?.();
   }
   send(message) {
-    return new Promise((resolve2) => {
+    return new Promise((resolve3) => {
       const json2 = serializeMessage(message);
       if (this._stdout.write(json2)) {
-        resolve2();
+        resolve3();
       } else {
-        this._stdout.once("drain", resolve2);
+        this._stdout.once("drain", resolve3);
       }
     });
   }
@@ -36072,7 +36072,7 @@ var Protocol = class {
           return;
         }
         const pollInterval = task2.pollInterval ?? this._options?.defaultTaskPollInterval ?? 1e3;
-        await new Promise((resolve2) => setTimeout(resolve2, pollInterval));
+        await new Promise((resolve3) => setTimeout(resolve3, pollInterval));
         options?.signal?.throwIfAborted();
       }
     } catch (error62) {
@@ -36089,7 +36089,7 @@ var Protocol = class {
    */
   request(request, resultSchema, options) {
     const { relatedRequestId, resumptionToken, onresumptiontoken, task, relatedTask } = options ?? {};
-    return new Promise((resolve2, reject) => {
+    return new Promise((resolve3, reject) => {
       const earlyReject = (error62) => {
         reject(error62);
       };
@@ -36167,7 +36167,7 @@ var Protocol = class {
           if (!parseResult.success) {
             reject(parseResult.error);
           } else {
-            resolve2(parseResult.data);
+            resolve3(parseResult.data);
           }
         } catch (error62) {
           reject(error62);
@@ -36429,12 +36429,12 @@ var Protocol = class {
       }
     } catch {
     }
-    return new Promise((resolve2, reject) => {
+    return new Promise((resolve3, reject) => {
       if (signal.aborted) {
         reject(new McpError(ErrorCode.InvalidRequest, "Request cancelled"));
         return;
       }
-      const timeoutId = setTimeout(resolve2, interval);
+      const timeoutId = setTimeout(resolve3, interval);
       signal.addEventListener("abort", () => {
         clearTimeout(timeoutId);
         reject(new McpError(ErrorCode.InvalidRequest, "Request cancelled"));
@@ -37574,7 +37574,7 @@ var McpServer = class {
     let task = createTaskResult.task;
     const pollInterval = task.pollInterval ?? 5e3;
     while (task.status !== "completed" && task.status !== "failed" && task.status !== "cancelled") {
-      await new Promise((resolve2) => setTimeout(resolve2, pollInterval));
+      await new Promise((resolve3) => setTimeout(resolve3, pollInterval));
       const updatedTask = await extra.taskStore.getTask(taskId);
       if (!updatedTask) {
         throw new McpError(ErrorCode.InternalError, `Task ${taskId} not found during polling`);
@@ -39031,6 +39031,65 @@ var StoryProgress = class {
   }
 };
 
+// src/version.ts
+import { readFile as readFile4, readdir } from "node:fs/promises";
+import { dirname as dirname3, join as join5, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+var SERVER_VERSION = "0.1.10";
+var PLUGIN_NAME = "permanent";
+var pluginManifest = external_exports.looseObject({
+  name: external_exports.string(),
+  version: external_exports.string()
+});
+var parseVersion = (version2) => version2.split(".").map((part) => {
+  const value = Number.parseInt(part, 10);
+  return Number.isNaN(value) ? 0 : value;
+});
+var isNewer = (candidate, current) => {
+  const [a, b] = [parseVersion(candidate), parseVersion(current)];
+  const length = Math.max(a.length, b.length);
+  for (let index = 0; index < length; index += 1) {
+    const difference = (a[index] ?? 0) - (b[index] ?? 0);
+    if (difference !== 0) {
+      return difference > 0;
+    }
+  }
+  return false;
+};
+var readPluginVersion = async (pluginRoot) => {
+  try {
+    const manifest = pluginManifest.parse(
+      JSON.parse(
+        await readFile4(
+          join5(pluginRoot, ".claude-plugin", "plugin.json"),
+          "utf8"
+        )
+      )
+    );
+    return manifest.name === PLUGIN_NAME ? manifest.version : void 0;
+  } catch (_error) {
+    return void 0;
+  }
+};
+var newestInstalledVersion = async (pluginRoot) => {
+  const siblings = await readdir(dirname3(pluginRoot)).catch(() => []);
+  const versions = await Promise.all([
+    readPluginVersion(pluginRoot),
+    ...siblings.map(
+      async (name) => await readPluginVersion(join5(dirname3(pluginRoot), name))
+    )
+  ]);
+  return versions.filter((version2) => version2 !== void 0).reduce(
+    (newest, version2) => newest === void 0 || isNewer(version2, newest) ? version2 : newest,
+    void 0
+  );
+};
+var defaultPluginRoot = () => resolve(dirname3(fileURLToPath(import.meta.url)), "..");
+var updateNote = async (pluginRoot, runningVersion = SERVER_VERSION) => {
+  const newest = await newestInstalledVersion(pluginRoot);
+  return newest !== void 0 && isNewer(newest, runningVersion) ? `The Permanent plugin running now is version ${runningVersion}, but version ${newest} is installed. Restart Claude to use it.` : void 0;
+};
+
 // src/tools/result.ts
 var JSON_INDENT = 2;
 var jsonResult = (value) => ({
@@ -39040,7 +39099,7 @@ var jsonResult = (value) => ({
 // src/tools/account.ts
 var MAX_WAIT_SECONDS = 120;
 var MILLISECONDS_PER_SECOND = 1e3;
-var registerAccountTools = (server, auth) => {
+var registerAccountTools = (server, auth, pluginRoot) => {
   server.registerTool(
     "sign_in",
     {
@@ -39078,9 +39137,12 @@ var registerAccountTools = (server, auth) => {
         waitSeconds * MILLISECONDS_PER_SECOND
       );
       const note = environmentNote(status.environment);
-      return jsonResult(
-        note === void 0 ? status : { ...status, environmentNote: note }
-      );
+      const outdated = await updateNote(pluginRoot);
+      return jsonResult({
+        ...status,
+        ...note === void 0 ? {} : { environmentNote: note },
+        ...outdated === void 0 ? {} : { updateNote: outdated }
+      });
     }
   );
   server.registerTool(
@@ -39317,8 +39379,8 @@ var registerArchiveTools = (server, client) => {
 import { isAbsolute as isAbsolute3 } from "node:path";
 
 // src/manifest/file.ts
-import { chmod as chmod2, mkdir as mkdir3, readFile as readFile4, writeFile as writeFile3 } from "node:fs/promises";
-import { dirname as dirname3, isAbsolute as isAbsolute2 } from "node:path";
+import { chmod as chmod2, mkdir as mkdir3, readFile as readFile5, writeFile as writeFile3 } from "node:fs/promises";
+import { dirname as dirname4, isAbsolute as isAbsolute2 } from "node:path";
 
 // src/manifest/schema.ts
 import { isAbsolute } from "node:path";
@@ -39491,13 +39553,13 @@ var requireAbsolute = (path) => {
   return path;
 };
 var readManifest = async (path) => {
-  const contents = await readFile4(requireAbsolute(path), "utf8");
+  const contents = await readFile5(requireAbsolute(path), "utf8");
   return storyManifest.parse(JSON.parse(contents));
 };
 var writeManifest = async (path, manifest) => {
   const fullPath = requireAbsolute(path);
   const validated = storyManifest.parse(manifest);
-  await mkdir3(dirname3(fullPath), { recursive: true });
+  await mkdir3(dirname4(fullPath), { recursive: true });
   await writeFile3(
     fullPath,
     `${JSON.stringify(validated, null, JSON_INDENT2)}
@@ -39511,8 +39573,8 @@ var writeManifest = async (path, manifest) => {
 // src/photos/scan.ts
 import { createHash as createHash3 } from "node:crypto";
 import { createReadStream } from "node:fs";
-import { readFile as readFile5, readdir, stat } from "node:fs/promises";
-import { join as join5, resolve } from "node:path";
+import { readFile as readFile6, readdir as readdir2, stat } from "node:fs/promises";
+import { join as join6, resolve as resolve2 } from "node:path";
 import { pipeline } from "node:stream/promises";
 
 // src/concurrency.ts
@@ -39677,7 +39739,7 @@ var hashStream = async (path) => {
 };
 var hashBuffer = (contents) => createHash3("sha256").update(contents).digest("hex");
 var readImage = async (path) => {
-  const contents = await readFile5(path);
+  const contents = await readFile6(path);
   return {
     sha256: hashBuffer(contents),
     metadata: await readPhotoMetadata(contents)
@@ -39689,7 +39751,7 @@ var readVideo = async (path) => ({
 });
 var classifyFile = (path) => getMediaKind(path) === void 0 ? { ...emptyFound(), unsupported: [path] } : { ...emptyFound(), media: [path] };
 var findInDirectory = async (directory, recursive2) => {
-  const entries = await readdir(directory, { withFileTypes: true }).catch(
+  const entries = await readdir2(directory, { withFileTypes: true }).catch(
     () => void 0
   );
   if (entries === void 0) {
@@ -39698,7 +39760,7 @@ var findInDirectory = async (directory, recursive2) => {
   const visible = entries.filter((entry) => !entry.name.startsWith("."));
   const results = await Promise.all(
     visible.map(async (entry) => {
-      const entryPath = join5(directory, entry.name);
+      const entryPath = join6(directory, entry.name);
       if (entry.isDirectory()) {
         return recursive2 ? await findInDirectory(entryPath, recursive2) : emptyFound();
       }
@@ -39708,7 +39770,7 @@ var findInDirectory = async (directory, recursive2) => {
   return mergeFound(results);
 };
 var findFiles = async (rawPath, recursive2) => {
-  const path = resolve(rawPath);
+  const path = resolve2(rawPath);
   const stats = await stat(path).catch(() => void 0);
   if (stats === void 0) {
     return { ...emptyFound(), missing: [path] };
@@ -41063,8 +41125,8 @@ var registerUploadTools = (server, client, ledger, options = {}) => {
 };
 
 // src/uploads/ledger.ts
-import { readFile as readFile6 } from "node:fs/promises";
-import { join as join6 } from "node:path";
+import { readFile as readFile7 } from "node:fs/promises";
+import { join as join7 } from "node:path";
 var ledgerEntry = external_exports.object({
   folderId: external_exports.number(),
   sha256: external_exports.string(),
@@ -41093,7 +41155,7 @@ var UploadLedger = class {
   pending = Promise.resolve();
   folderLocks = /* @__PURE__ */ new Map();
   constructor(dataDirectory, environment) {
-    this.path = join6(dataDirectory, `uploads.${environment}.json`);
+    this.path = join7(dataDirectory, `uploads.${environment}.json`);
   }
   async forFolder(folderId) {
     const entries = await this.read();
@@ -41125,7 +41187,7 @@ var UploadLedger = class {
     await next;
   }
   async read() {
-    const contents = await readFile6(this.path, "utf8").catch(
+    const contents = await readFile7(this.path, "utf8").catch(
       (error62) => {
         if (error62 instanceof Error && "code" in error62 && error62.code === "ENOENT") {
           return void 0;
@@ -41139,7 +41201,6 @@ var UploadLedger = class {
 
 // src/server.ts
 var SERVER_NAME = "permanent";
-var SERVER_VERSION = "0.1.9";
 var defaultDependencies = () => {
   const environment = environmentFromSettings(process.env);
   const dataDirectory = defaultDataDirectory();
@@ -41159,7 +41220,11 @@ var defaultDependencies = () => {
 var createServer2 = (dependencies = defaultDependencies()) => {
   const server = new McpServer({ name: SERVER_NAME, version: SERVER_VERSION });
   registerCurationTools(server);
-  registerAccountTools(server, dependencies.auth);
+  registerAccountTools(
+    server,
+    dependencies.auth,
+    dependencies.pluginRoot ?? defaultPluginRoot()
+  );
   registerArchiveTools(server, dependencies.client);
   registerUploadTools(
     server,

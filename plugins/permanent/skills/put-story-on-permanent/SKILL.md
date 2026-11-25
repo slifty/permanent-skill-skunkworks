@@ -24,7 +24,9 @@ first. Never upload photos the member hasn't approved.
 
 ## Steps
 
-1. **Sign in.** Call `check_sign_in`. If the member isn't signed in, call
+1. **Sign in.** Call `check_sign_in`. If the result has an `updateNote`,
+   a newer version of the plugin is installed than the one running: ask
+   the member to restart Claude before going further. If the member isn't signed in, call
    `sign_in` and tell them a Permanent sign-in page has opened in their
    browser. If it didn't open, give them the link. Then call
    `check_sign_in` with `waitSeconds: 60` until they're done. Never ask

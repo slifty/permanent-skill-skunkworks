@@ -62,6 +62,7 @@ export const startTestPermanent = async (
 		ledger: new UploadLedger(dataDirectory, "test"),
 		progress: new StoryProgress(dataDirectory, "test"),
 		publications: new PublicationStore(dataDirectory, "test"),
+		pluginRoot: join(dataDirectory, "plugin"),
 		uploadOptions: { pollIntervalMilliseconds: 10 },
 		publishPollMilliseconds: 10,
 		signIn: async () => {

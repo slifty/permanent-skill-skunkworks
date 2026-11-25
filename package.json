@@ -1,6 +1,6 @@
 {
 	"name": "permanent-claude-plugin",
-	"version": "0.1.9",
+	"version": "0.1.10",
 	"private": true,
 	"description": "Claude plugin for curating and archiving stories on Permanent.org",
 	"type": "module",

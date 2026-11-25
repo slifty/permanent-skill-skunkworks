@@ -1,6 +1,9 @@
+import { mkdir, writeFile } from "node:fs/promises";
+import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { z } from "zod";
 import { callTool, connectClient } from "../testing/client.ts";
+import { must } from "../testing/must.ts";
 import {
 	TEST_ACCOUNT,
 	startTestPermanent,
@@ -53,6 +56,31 @@ describe("account tools", () => {
 		const outcome = await callTool(client, "sign_in", {});
 
 		expect(outcome.json()).toMatchObject({ alreadySignedIn: true });
+	});
+
+	it("asks for a restart when a newer plugin is installed", async () => {
+		const test = await setUp();
+		const pluginRoot = must(test.pluginRoot);
+		await mkdir(join(pluginRoot, ".claude-plugin"), { recursive: true });
+		await writeFile(
+			join(pluginRoot, ".claude-plugin", "plugin.json"),
+			JSON.stringify({ name: "permanent", version: "99.0.0" }),
+		);
+		const client = await connectClient(test);
+
+		const outcome = await callTool(client, "check_sign_in", {});
+
+		expect(outcome.json()).toMatchObject({
+			updateNote: expect.stringContaining("Restart Claude") as unknown,
+		});
+	});
+
+	it("doesn't ask for a restart when the running plugin is current", async () => {
+		const client = await connectClient(await setUp());
+
+		const outcome = await callTool(client, "check_sign_in", {});
+
+		expect(outcome.json()).not.toHaveProperty("updateNote");
 	});
 
 	it("signs out", async () => {

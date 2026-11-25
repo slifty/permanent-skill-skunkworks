@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { environmentNote } from "../permanent/environment.ts";
+import { updateNote } from "../version.ts";
 import { jsonResult } from "./result.ts";
 import type { InterimAuth } from "../auth/interim-auth.ts";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -10,6 +11,7 @@ const MILLISECONDS_PER_SECOND = 1000;
 export const registerAccountTools = (
 	server: McpServer,
 	auth: InterimAuth,
+	pluginRoot: string,
 ): void => {
 	server.registerTool(
 		"sign_in",
@@ -60,9 +62,12 @@ export const registerAccountTools = (
 				waitSeconds * MILLISECONDS_PER_SECOND,
 			);
 			const note = environmentNote(status.environment);
-			return jsonResult(
-				note === undefined ? status : { ...status, environmentNote: note },
-			);
+			const outdated = await updateNote(pluginRoot);
+			return jsonResult({
+				...status,
+				...(note === undefined ? {} : { environmentNote: note }),
+				...(outdated === undefined ? {} : { updateNote: outdated }),
+			});
 		},
 	);
 

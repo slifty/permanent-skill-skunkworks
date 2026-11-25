@@ -29,6 +29,12 @@ Add `slifty/permanent-skill-skunkworks` as a plugin marketplace in Cowork's
 plugin settings, then install `permanent`. Cowork does not prompt for
 settings, so it always uses the default environment.
 
+After updating the plugin, restart Claude: the running session keeps
+using the old version until then. The plugin notices this and asks for a
+restart. Separate Claude configurations (for example ones chosen with
+`CLAUDE_CONFIG_DIR`) each keep their own copy of the plugin, so update
+each one.
+
 ## Signing in
 
 When Claude first needs your archive, it opens a Permanent sign-in page in

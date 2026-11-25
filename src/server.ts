@@ -12,11 +12,11 @@ import { registerShareTools } from "./tools/share.ts";
 import { registerStoryTools } from "./tools/story.ts";
 import { registerUploadTools } from "./tools/upload.ts";
 import { UploadLedger } from "./uploads/ledger.ts";
+import { SERVER_VERSION, defaultPluginRoot } from "./version.ts";
 import type { PermanentEnvironment } from "./permanent/environment.ts";
 import type { UploadToolOptions } from "./tools/upload.ts";
 
 const SERVER_NAME = "permanent";
-const SERVER_VERSION = "0.1.9";
 
 export interface ServerDependencies {
 	environment: PermanentEnvironment;
@@ -29,6 +29,7 @@ export interface ServerDependencies {
 	applyBudgetMilliseconds?: number;
 	publishPollMilliseconds?: number;
 	publishWaitMilliseconds?: number;
+	pluginRoot?: string;
 }
 
 export const defaultDependencies = (): ServerDependencies => {
@@ -53,7 +54,11 @@ export const createServer = (
 ): McpServer => {
 	const server = new McpServer({ name: SERVER_NAME, version: SERVER_VERSION });
 	registerCurationTools(server);
-	registerAccountTools(server, dependencies.auth);
+	registerAccountTools(
+		server,
+		dependencies.auth,
+		dependencies.pluginRoot ?? defaultPluginRoot(),
+	);
 	registerArchiveTools(server, dependencies.client);
 	registerUploadTools(
 		server,
