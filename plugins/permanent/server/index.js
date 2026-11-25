@@ -41057,7 +41057,7 @@ var UploadLedger = class {
 
 // src/server.ts
 var SERVER_NAME = "permanent";
-var SERVER_VERSION = "0.1.3";
+var SERVER_VERSION = "0.1.4";
 var defaultDependencies = () => {
   const environment = environmentFromSettings(process.env);
   const dataDirectory = defaultDataDirectory();

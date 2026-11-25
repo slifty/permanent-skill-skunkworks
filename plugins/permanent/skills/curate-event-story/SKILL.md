@@ -67,6 +67,9 @@ until the member has reviewed it.
    the manifest is saved. Invite changes. If they edit the file themselves,
    call `read_story_manifest` to pick up their edits.
 
+If a tool fails in a way that looks like a fault in the plugin rather
+than a problem with the photos, follow the report-plugin-problem skill.
+
 Uploading to Permanent is a separate step. Don't start it, and don't say
 the photos are on Permanent, until the member has approved the manifest.
 

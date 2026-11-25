@@ -1,7 +1,7 @@
 {
 	"name": "permanent",
 	"displayName": "Permanent",
-	"version": "0.1.3",
+	"version": "0.1.4",
 	"description": "Curate photos into stories and put them on Permanent.org",
 	"author": { "name": "Permanent.org", "url": "https://www.permanent.org" },
 	"homepage": "https://github.com/slifty/permanent-skill-skunkworks",

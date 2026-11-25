@@ -53,9 +53,17 @@ first. Never upload photos the member hasn't approved.
      Permanent on your own.
    - `failed`: `done` stays false so a temporary problem gets retried.
      Call again once. If the same files fail a second time, stop and tell
-     the member which files didn't make it and why, in plain words.
+     the member which files didn't make it and why, in plain words. Then
+     look at the errors:
+     - If they are about the files themselves (unreadable, changed while
+       uploading), there's nothing more to do.
+     - If they come from Permanent or the plugin (for example
+       "Permanent returned 500", "not found" or "rejected"), also follow
+       the report-plugin-problem skill.
    - Being signed out mid-way: sign in again, then call
      `apply_story_manifest` again. It picks up where it left off.
+   - Anything else that looks like a fault in the plugin itself: follow
+     the report-plugin-problem skill.
 7. **Wait for processing.** Permanent makes thumbnails and previews after
    upload. Call `check_processing` with the story's `recordIds` and
    `waitSeconds: 60`, so you can tell the member when everything is ready.
